@@ -17,4 +17,4 @@ Conditions:
 
 Anonymized participant data and scripts for statistical group analysis will be uploaded after study completion.
 
-Sr. Researcher: @jamesdowsettneuroscience
+Sr. Researcher: JamesDowsettNeuroscience

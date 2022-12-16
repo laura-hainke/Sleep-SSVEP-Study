@@ -9,7 +9,7 @@ Script assumptions:
     - Channels in order: C3, C4, TP10, POz, O1, O2, EOG, EOG-PD
     - Sampling rate = 1000 Hz; flicker frequency = 40 Hz
     - 1 photodiode trigger per second
-    - Files in directory: EXG_flicker.csv, EXG_flicker.bdf, EXG_blackout.csv, EXG_blackout.bdf, trigger_template.npy
+    - Files in directory: EXG_flicker.csv, EXG_flicker.bdf, EXG_blackout.csv, EXG_blackout.bdf
 
 """
 

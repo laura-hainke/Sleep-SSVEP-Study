@@ -6,7 +6,7 @@ int k = 0;
 int t = 0;
 
 unsigned int ON_time = 50; // for fade in duty cycle, in microseconds
-int OFF_time = 25; // in milliseconds
+unsigned int OFF_time = 25; // in milliseconds
 int cycle_ctr = 0; // counter for stimulation cycles
 
 
@@ -30,6 +30,8 @@ void setup() {//
 // for 4:20 hours, alternate on and off periods (with fade-in and fade-out)
 void loop() {
 
+  cycle_ctr = 0;
+
   while (cycle_ctr < 42) {
   
     // fade in duty cycle, no triggers
@@ -37,8 +39,10 @@ void loop() {
     t = 0;
   
     ON_time = 50;
+
+    OFF_time = 25;
   
-    while (t < 70) { // loop for 1:10 min, increase the duty cycle each second
+    while (t < 72) { // loop for 1:12 min, increase the duty cycle each second
   
       k = 0;
   
@@ -102,9 +106,11 @@ void loop() {
   
     t = 0;
   
-    ON_time = 12000;
+    ON_time = 12400;
+
+    OFF_time = 13;
   
-    while (t < 70) { // loop for 1:20 min, decrease the duty cycle each second
+    while (t < 72) { // loop for 1:12 min, decrease the duty cycle each second
   
       k = 0;
   
@@ -129,6 +135,7 @@ void loop() {
       }
         
       OFF_time =  25 - (ON_time / 1000);      // convert to milliseconds, because delayMicroseconds doesn't work for values above 16000
+      
       t++;
     }
   

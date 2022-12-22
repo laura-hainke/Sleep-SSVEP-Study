@@ -72,11 +72,14 @@ blackout_all_triggers = get_triggers(blackout_rawdata, 'Blackout')
 
 # %% 3. Sleep staging + timestamps per epoch
 
-## Participant data (for sleep staging); MODIFY
-# Age
-age = 18
-# Male: True / False?
-male = True
+## Participant data (for sleep staging)
+
+# Prompt user to modify these variables before continuing
+input('Modify participant age and sex before continuing!')
+# Age (int)
+age = 0
+# Gender (bool; True if male, False if female)
+male = 0
 
 ## Flicker
 flicker_sleep_stats, flicker_hypnogram, flicker_epoch_timestamps = sleep_staging('EXG_flicker', age, male) 

@@ -106,7 +106,7 @@ def get_triggers(rawdata, condition):
         k+=1
         
     
-    print(str(len(good_triggers_list)) + ' triggers found')
+    print(str(len(good_triggers_list)) + ' triggers included (max. 648000)')
      
     # convert to numpy array
     good_triggers_list = np.array(good_triggers_list, dtype=int)

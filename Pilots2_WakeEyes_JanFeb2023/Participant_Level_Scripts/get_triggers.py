@@ -49,7 +49,7 @@ def get_triggers(rawdata):
     
     while k < len(trigger_data) - 10:         
         
-        if diff_trigger_data[k] > 250: # if the first differential of the trigger data is above a certain threshold, indicating a steep rising edge
+        if diff_trigger_data[k] > 200: # if the first differential of the trigger data is above a certain threshold, indicating a steep rising edge
         
             trigger_time = np.argmax(diff_trigger_data[k-10:k+10]) + k + 11# check for the max value in the +/- 10 data points, to be sure the trigger is the peak
             

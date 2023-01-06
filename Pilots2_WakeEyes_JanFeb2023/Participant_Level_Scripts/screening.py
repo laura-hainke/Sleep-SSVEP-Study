@@ -23,10 +23,7 @@ import random
 
 #%% Load data
 
-# Get participant number from user
-participant_nr = input('Participant nr. (2-digit): ')
-
-file_name = participant_nr + '_screening.csv'
+file_name = 'screening_ExG.csv'
 
 for chan in range(0,8): # loop through each channel and save the data
     

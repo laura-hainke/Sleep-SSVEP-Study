@@ -29,7 +29,7 @@ all_outputs = np.zeros((12,4))
 # %% Condition: eyes open
 
 # Load data
-eyesopen_rawdata = load_data('eyes_open.csv') 
+eyesopen_rawdata = load_data('screening_ExG.csv') 
 
 # Get triggers
 eyesopen_triggers = get_triggers(eyesopen_rawdata)
@@ -48,7 +48,7 @@ eyesopen_FFT40, eyesopen_FFT40_SNR = induced_fft(eyesopen_occ, eyesopen_triggers
 # %% Condition: eyes centred
 
 # Load data
-eyescentred_rawdata = load_data('eyes_centred.csv') 
+eyescentred_rawdata = load_data('eyes_centred_ExG.csv') 
 
 # Get triggers
 eyescentred_triggers = get_triggers(eyescentred_rawdata)
@@ -67,7 +67,7 @@ eyescentred_FFT40, eyescentred_FFT40_SNR = induced_fft(eyescentred_occ, eyescent
 # %% Condition: eyes left
 
 # Load data
-eyesleft_rawdata = load_data('eyes_left.csv') 
+eyesleft_rawdata = load_data('eyes_left_ExG.csv') 
 
 # Get triggers
 eyesleft_triggers = get_triggers(eyesleft_rawdata)
@@ -86,7 +86,7 @@ eyesleft_FFT40, eyesleft_FFT40_SNR = induced_fft(eyesleft_occ, eyesleft_triggers
 # %% Condition: eyes right
 
 # Load data
-eyesright_rawdata = load_data('eyes_right.csv') 
+eyesright_rawdata = load_data('eyes_right_ExG.csv') 
 
 # Get triggers
 eyesright_triggers = get_triggers(eyesright_rawdata)
@@ -105,7 +105,7 @@ eyesright_FFT40, eyesright_FFT40_SNR = induced_fft(eyesright_occ, eyesright_trig
 # %% Condition: eyes up
 
 # Load data
-eyesup_rawdata = load_data('eyes_up.csv') 
+eyesup_rawdata = load_data('eyes_up_ExG.csv') 
 
 # Get triggers
 eyesup_triggers = get_triggers(eyesup_rawdata)
@@ -124,7 +124,7 @@ eyesup_FFT40, eyesup_FFT40_SNR = induced_fft(eyesup_occ, eyesup_triggers, 'Eyes 
 # %% Condition: eyes down
 
 # Load data
-eyesdown_rawdata = load_data('eyes_down.csv') 
+eyesdown_rawdata = load_data('eyes_down_ExG.csv') 
 
 # Get triggers
 eyesdown_triggers = get_triggers(eyesdown_rawdata)
@@ -143,7 +143,7 @@ eyesdown_FFT40, eyesdown_FFT40_SNR = induced_fft(eyesdown_occ, eyesdown_triggers
 # %% Condition: on-off
 
 # Load data
-onoff_rawdata = load_data('onoff.csv') 
+onoff_rawdata = load_data('onoff_ExG.csv') 
 
 # Get triggers
 onoff_triggers = get_triggers(onoff_rawdata)
@@ -162,7 +162,7 @@ onoff_FFT40, onoff_FFT40_SNR = induced_fft(onoff_occ, onoff_triggers, 'On-Off')
 # %% Condition: horizontal slow
 
 # Load data
-horslow_rawdata = load_data('hor_slow.csv') 
+horslow_rawdata = load_data('hor_slow_ExG.csv') 
 
 # Get triggers
 horslow_triggers = get_triggers(horslow_rawdata)
@@ -181,7 +181,7 @@ horslow_FFT40, horslow_FFT40_SNR = induced_fft(horslow_occ, horslow_triggers, 'H
 # %% Condition: horizontal fast
 
 # Load data
-horfast_rawdata = load_data('hor_fast.csv') 
+horfast_rawdata = load_data('hor_fast_ExG.csv') 
 
 # Get triggers
 horfast_triggers = get_triggers(horfast_rawdata)
@@ -200,7 +200,7 @@ horfast_FFT40, horfast_FFT40_SNR = induced_fft(horfast_occ, horfast_triggers, 'H
 # %% Condition: vertical slow
 
 # Load data
-verslow_rawdata = load_data('ver_slow.csv') 
+verslow_rawdata = load_data('ver_slow_ExG.csv') 
 
 # Get triggers
 verslow_triggers = get_triggers(verslow_rawdata)
@@ -219,7 +219,7 @@ verslow_FFT40, verslow_FFT40_SNR = induced_fft(verslow_occ, verslow_triggers, 'V
 # %% Condition: vertical fast
 
 # Load data
-verfast_rawdata = load_data('ver_fast.csv') 
+verfast_rawdata = load_data('ver_fast_ExG.csv') 
 
 # Get triggers
 verfast_triggers = get_triggers(verfast_rawdata)
@@ -238,7 +238,7 @@ verfast_FFT40, verfast_FFT40_SNR = induced_fft(verfast_occ, verfast_triggers, 'V
 # %% Condition: blackout
 
 # Load data
-blackout_rawdata = load_data('blackout.csv') 
+blackout_rawdata = load_data('blackout_ExG.csv') 
 
 # Get triggers
 blackout_triggers = get_triggers(blackout_rawdata)

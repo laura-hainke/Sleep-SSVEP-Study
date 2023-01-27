@@ -2,8 +2,7 @@
 """
 Run paired permutation test. 2 samples per subject (experimental vs. control condition)
 
-Assumptions:
-    - len(exp_condition_values) = len(con_condition_values)
+Assumption: both conditions have the same amount of cases
 
 """
 

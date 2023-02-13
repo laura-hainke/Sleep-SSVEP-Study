@@ -90,8 +90,6 @@ plt.yticks(size=15)
         
 plt.plot(gen_effects[:,0]-gen_mean_con, gen_effects[:,1], linewidth=4) 
 
-plt.legend(fontsize=20, loc = 'lower right')
-
 
 
 #%% Plot random sample drawn from one combination as histogram (just for visualization)

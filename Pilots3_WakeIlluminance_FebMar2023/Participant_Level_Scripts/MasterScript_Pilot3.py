@@ -30,6 +30,9 @@ nr_cond = len(all_conditions)
 # Output array for all metrics
 all_outputs = np.zeros((nr_cond,4))
 
+# Output array for the SSVEPs (for group plot)
+all_ssvep = np.zeros((2,nr_cond,125))
+
 
 
 # %% Loop through all conditions
@@ -56,8 +59,8 @@ for i in range(nr_cond):
     # Reconstruct the original events from raw object
     events, _ = mne.events_from_annotations(raw)
     
-    # Get TTL triggers
-    triggers = events[1:,0]
+    # Get TTL triggers (exclude last one, last segment may be cut off)
+    triggers = events[1:-1,0]
     
     
     ## SSVEP 
@@ -69,10 +72,10 @@ for i in range(nr_cond):
     ROI_data = data.mean(axis=0)
     
     # Run linear interpolation on data; CHANGE PARAMETERS DEPENDING ON SSVEP
-    # ROI_data = linear_interpolation(ROI_data, triggers, time_1=0, time_2=60, trig_length=8)
+    ROI_data = linear_interpolation(ROI_data, triggers, time_1=0, time_2=60, trig_length=8)
     
     # Compute SSVEP with peak-to-trough amplitude 
-    SSVEP_PTA, SSVEP_SNR = make_SSVEP_5kHz(ROI_data, triggers, i_cond)
+    SSVEP_PTA, SSVEP_SNR, SSVEP_avg, SSVEP_std = make_SSVEP_5kHz(ROI_data, triggers, i_cond)
     
     
     ## PSD & SNR
@@ -89,11 +92,15 @@ for i in range(nr_cond):
     
     ## Save outputs 
     all_outputs[i,:] = [SSVEP_PTA, SSVEP_SNR, max_abs_PSD, PSD_SNR] 
+    
+    all_ssvep[0,i,:] = SSVEP_avg
+    all_ssvep[1,i,:] = SSVEP_std
 
 
 ## Save output file as numpy; CHANGE PARTICIPANT NUMBER
 np.save('VPXX_P3_outputs.npy', all_outputs)
 
+np.save('VPXX_P3_ssveps.npy', all_ssvep)
 
 
 

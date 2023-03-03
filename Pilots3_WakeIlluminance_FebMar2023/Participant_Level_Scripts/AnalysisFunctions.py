@@ -15,6 +15,7 @@ import numpy as np
 import mne
 import random
 from math import trunc
+from scipy import stats
 import matplotlib.pyplot as plt
 
 
@@ -169,13 +170,13 @@ def plot_psd_snr(PSDs, SNRs, freqs, bin_len, idx_bin_40Hz, condition):
     print('Absolute PSD value (dB): ' + str(round(max_abs_PSD,2)))
     print('Corresponding frequency (Hz): ' + str(round(max_SNR_freq,2)))
     
-    return max_abs_PSD, max_SNR_freq
+    return max_abs_PSD, max_target_SNR
 
 
 
-# %% Function: compute SSVEP and corresponding SNR
+# %% Function: compute SSVEP and corresponding SNR (optional)
 
-def make_SSVEP_5kHz(data, triggers, condition, num_loops = 50):
+def make_SSVEP_5kHz(data, triggers, condition, num_loops = 50, computeSNR = True):
     
     """
     Source code: https://github.com/JamesDowsettNeuroscience/flicker_analysis_code
@@ -205,13 +206,24 @@ def make_SSVEP_5kHz(data, triggers, condition, num_loops = 50):
             
     print(str(trig_count) + ' good segments')
     print(str(bad_seg_count) + ' bad segments')
+    
+    # Get standard error for each point in SSVEP
+    stand_errors = np.zeros((125))
+    
+    for pt in range(len(segment_matrix[0])):
+        stand_errors[pt] = stats.sem(segment_matrix[pt])
             
     SSVEP = segment_matrix[0:trig_count,:].mean(axis=0) # average to make the SSVEP
     
     SSVEP = SSVEP - SSVEP.mean() # baseline correct 
+    
+    true_amplitude = np.ptp(SSVEP) 
         
     # Plot
-    plt.subplot(1,2,1)
+    
+    if computeSNR: # if SNR is computed, make this the first subplot
+        plt.subplot(1,2,1)
+        
     plt.title('Averaged Segments (SSVEP): ' + condition, size = 30, y=1.03)
     plt.ylabel('Amplitude (' + u"\u03bcV)", size=20)
     plt.yticks(size=20)
@@ -219,58 +231,65 @@ def make_SSVEP_5kHz(data, triggers, condition, num_loops = 50):
     plt.xticks(size=20)
     
     plt.plot(SSVEP, color = '#FFCC00') # plot averaged SSVEP graph
+    plt.fill_between(range(0,125), SSVEP-stand_errors, SSVEP+stand_errors, alpha = 0.3) # plot shaded error region
     
     
-    ### Shuffled SSVEP (SNR)
+    ### Shuffled SSVEP (SNR) - only if option selected
     ## Signal to noise ratio by randomly shuffling the data points of each segment and then making the SSVEP, compare to true SSVEP - looped               
  
-    random_amplitudes = np.zeros([num_loops,])
-    
-    for loop in range(0,num_loops):
+    if computeSNR: 
+        
+        random_amplitudes = np.zeros([num_loops,])
+        
+        for loop in range(0,num_loops):
+                      
+            shuffled_segment_matrix =  np.zeros([len(triggers), 125])  
+            
+            # loop through all triggers and put the corresponding segment of data into the matrix
+            trig_count = 0
+            
+            for trigger in triggers:
+                
+                segment =  data[trigger:trigger+125] 
+                
+                if np.ptp(segment) < 200: # some segments have large spikes in the data, ignore these
+              
+                    random.shuffle(segment) # randomly shuffle the data points
+                    
+                    shuffled_segment_matrix[trig_count,:] = segment
+                    
+                    trig_count += 1
+            
+            # Average to make random SSVEP
+            random_SSVEP = shuffled_segment_matrix[0:trig_count,:].mean(axis=0) 
+            
+            random_SSVEP = random_SSVEP - random_SSVEP.mean() # baseline correct
+            
+            random_amplitudes[loop] = np.ptp(random_SSVEP)
+                
+        # Plot
+        plt.subplot(1,2,2)
+        plt.title('Averaged shuffled segments', size = 30, y=1.03)
+        plt.ylabel('Amplitude (' + u"\u03bcV)", size=20)
+        plt.yticks(size=20)
+        plt.xlabel('Data points (25 ms)', size=20)
+        plt.xticks(size=20)
+        
+        plt.plot(random_SSVEP, color = '#FFCC00', alpha = 0.6)
                   
-        shuffled_segment_matrix =  np.zeros([len(triggers), 125])  
+        average_noise = random_amplitudes.mean()         
+    
+        SNR = true_amplitude/average_noise
         
-        # loop through all triggers and put the corresponding segment of data into the matrix
-        trig_count = 0
+        print('SSVEP SNR:', round(SNR,2))
         
-        for trigger in triggers:
+    else: # if SNR not computed, assign NaN
+        
+        SNR = float('NaN')
             
-            segment =  data[trigger:trigger+125] 
-            
-            if np.ptp(segment) < 200: # some segments have large spikes in the data, ignore these
-          
-                random.shuffle(segment) # randomly shuffle the data points
-                
-                shuffled_segment_matrix[trig_count,:] = segment
-                
-                trig_count += 1
-        
-        # Average to make random SSVEP
-        random_SSVEP = shuffled_segment_matrix[0:trig_count,:].mean(axis=0) 
-        
-        random_SSVEP = random_SSVEP - random_SSVEP.mean() # baseline correct
-        
-        random_amplitudes[loop] = np.ptp(random_SSVEP)
-            
-    # Plot
-    plt.subplot(1,2,2)
-    plt.title('Averaged shuffled segments', size = 30, y=1.03)
-    plt.ylabel('Amplitude (' + u"\u03bcV)", size=20)
-    plt.yticks(size=20)
-    plt.xlabel('Data points (25 ms)', size=20)
-    plt.xticks(size=20)
-    
-    plt.plot(random_SSVEP, color = '#FFCC00', alpha = 0.6)
-    
-    true_amplitude = np.ptp(SSVEP)   
-    average_noise = random_amplitudes.mean()         
-    
-    SNR = true_amplitude/average_noise
-    
-    print('Peak-to-trough amplitude ('+ u"\u03bcV):", round(true_amplitude, 2))
-    print('SSVEP SNR:', round(SNR,2))       
+    print('Peak-to-trough amplitude ('+ u"\u03bcV):", round(true_amplitude, 2))          
 
-    return true_amplitude, SNR
+    return true_amplitude, SNR, SSVEP, stand_errors
 
 
 # %% Function: linearly interpolate data

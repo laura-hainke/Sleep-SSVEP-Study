@@ -1,7 +1,7 @@
 {
     "creator": "REDCap MLM",
     "version": "v12.2.10",
-    "timestamp": "2023-03-10 14:19:08",
+    "timestamp": "2023-03-30 12:23:05",
     "instructions": "How to use this file: The essential elements are all 'id' and 'translation' items and the paths leading to them, as well as the root elements 'creator' (must be left as is), 'key', 'display', and 'rtl'. All other items, including this text, are non-essential and will not be regarded during an import operation. Furthermore, subsets of this file can be created and used at will, as long as it remains valid JSON. The 'hash' items are not essential, but assist in tracking if a default value has changed since the file was created, and thus a translation may be out of date. During an import operation, a best-effort approach is taken. Any paths and/or ids that do not match the target will be silently ignored. Thus, a cross-project import of field translations would only work for fields of the same name.",
     "key": "de",
     "display": "Deutsch",
@@ -2672,7 +2672,7 @@
     "fieldTranslations": [
         {
             "id": "record_id",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
                 "hash": "4686c9",
                 "translation": "VP ID"
@@ -2680,7 +2680,7 @@
         },
         {
             "id": "language",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
                 "hash": "1c7b0d",
                 "translation": ""
@@ -2700,7 +2700,7 @@
         },
         {
             "id": "volunteer",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
                 "hash": "3da3e1",
                 "translation": "<p>Ich habe die Studieninformation zur Kenntnis genommen und erw&auml;ge, an der Studie teilzunehmen.</p>"
@@ -2720,10 +2720,10 @@
         },
         {
             "id": "cutoff_age",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "header": {
-                "hash": "0f1021",
-                "translation": "<h5>Ausschlusskriterien</h5> <p><span style=\"font-weight: normal;\">Du wirst zu einigen Symptomen oder St&ouml;rungen befragt, die Du erlebt haben k&ouml;nntest. Bitte antworte ehrlich, sodass wir Dein Wohlbefinden und Deine Sicherheit w&auml;hrend der Studie gew&auml;hrleisten k&ouml;nnen.</span></p> <p><span style=\"font-weight: normal;\">Wenn Du Dir nicht sicher bist ob etwas, was Du erlebt hast, als Symptom oder St&ouml;rung z&auml;hlt, w&auml;hle bitte die Antwortoption \"vielleicht\" und spezifiziere es.</span></p>"
+                "hash": "87898e",
+                "translation": "<h5>Ausschlusskriterien</h5> <p>Du wirst zu einigen Symptomen oder St&ouml;rungen befragt, die Du erlebt haben k&ouml;nntest. Bitte antworte ehrlich, sodass wir Dein Wohlbefinden und Deine Sicherheit w&auml;hrend der Studie gew&auml;hrleisten k&ouml;nnen.</p> <p>Wenn Du Dir nicht sicher bist ob etwas, was Du erlebt hast, als Symptom oder St&ouml;rung z&auml;hlt, w&auml;hle bitte die Antwortoption \"vielleicht\" und spezifiziere es.</p>"
             },
             "label": {
                 "hash": "ce2c6b",
@@ -2732,15 +2732,15 @@
         },
         {
             "id": "cutoff_colour",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
-                "hash": "808d4f",
-                "translation": "<p>Hast Du Schwierigkeiten, zwischen rot und gr&uuml;n bzw. zwischen blau und gelb zu unterscheiden (Farbblindheit)?</p>"
+                "hash": "530b42",
+                "translation": "<p>Hast Du Schwierigkeiten, zwischen rot und gr&uuml;n zu unterscheiden (Rot-Gr&uuml;n-Schw&auml;che)?</p>"
             }
         },
         {
             "id": "cutoff_neuro",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
                 "hash": "924f46",
                 "translation": "<p>Hast Du <span style=\"text-decoration: underline;\">jemals in Deinem Leben</span> eine dieser Erfahrungen gemacht:</p> <ul> <li>Unkontrollierte sch&uuml;ttelnde Bewegungen des ganzen K&ouml;rpers oder von K&ouml;rperteilen, mit vollst&auml;ndigem oder teilweisem Bewusstseinsverlust (<em>Epilepsie, Anfall</em>)</li> <li>Pulsierende Kopfschmerzen, m&ouml;glicherweise begleitet von &Uuml;belkeit, Empfindlichkeit gegen&uuml;ber Licht / Ger&auml;uschen / Ger&uuml;chen, visuellen St&ouml;rungen (<em>Migr&auml;ne</em>)</li> <li>Gehirn-Operation (z.B. um einen Tumor zu entfernen, um ein Implantat durchzuf&uuml;hren...)</li> <li>Schwere Gehirnersch&uuml;tterung</li> <li>Schlaganfall</li> <li>Andere neurologische St&ouml;rungen</li> </ul>"
@@ -2765,84 +2765,30 @@
         },
         {
             "id": "cutoff_neuro_extra",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
                 "hash": "c386bb",
                 "translation": "Bitte spezifiziere:"
             }
         },
         {
-            "id": "cutoff_sleep",
-            "form": "screening_gammasleep",
+            "id": "epilepsy_family",
+            "form": "exclusion_criteria",
             "label": {
-                "hash": "725788",
-                "translation": "<p><span style=\"text-decoration: underline;\">Im letzten Jahr</span>, hast Du irgendeine von diesen Schlafst&ouml;rungen erlebt? Oder hat dies jemand bei Dir bemerkt?</p> <ul> <li>Regelm&auml;&szlig;ige Ein- oder Durchschlafst&ouml;rungen (<em>Insomnie</em>)</li> <li>Gehen oder Durchf&uuml;hren komplexer Aktivit&auml;ten in der Nacht ohne bei Bewusstsein zu sein und ohne anschlie&szlig;ende Erinnerung daran (<em>Schlafwandeln</em>)</li> <li>Unwillentliches, gew&ouml;hnliches Z&auml;hneknirschen w&auml;hrend des Schlafs (<em>Bruxismus</em>)</li> <li>Exzessive Schl&auml;frigkeit tags&uuml;ber mit pl&ouml;tzlicher Muskelschw&auml;che (<em>Narkolepsie</em>)</li> <li>Unangenehme \"kriechende\" Empfindungen und Schmerzen in den Beinen, die durch Bewegungen wie gehen oder treten abnehmen (<em>Restless Legs Syndrom</em>)</li> <li>Periodisch unterbrochenes Atmen w&auml;hrend des Schlafs, das Keuch- oder Schnaufger&auml;usche verursacht, mehr als nur Schnarchen (<em>Schlafapnoe</em>)</li> </ul>"
+                "hash": "d7712f",
+                "translation": "<p>Unter Deinen Verwandten ersten Grades: Wurde jemand mit Epilepsie diagostiziert, oder hat jemand Anf&auml;lle gehabt?</p>"
             },
-            "enum": [
-                {
-                    "id": 1,
-                    "hash": "5397e0",
-                    "translation": "Ja"
-                },
-                {
-                    "id": 2,
-                    "hash": "56dd8d",
-                    "translation": "Vielleicht"
-                },
-                {
-                    "id": 3,
-                    "hash": "816c52",
-                    "translation": "Nein"
-                }
-            ]
-        },
-        {
-            "id": "cutoff_sleep_extra",
-            "form": "screening_gammasleep",
-            "label": {
-                "hash": "c386bb",
-                "translation": "Bitte spezifiziere:"
-            }
-        },
-        {
-            "id": "cutoff_psych",
-            "form": "screening_gammasleep",
-            "label": {
-                "hash": "b50fa2",
-                "translation": "<p>Hast Du <span style=\"text-decoration: underline;\">im letzten Jahr</span> irgendeines dieser psychiatrischen Symptome gehabt?</p> <ul> <li>Depressive Stimmung</li> <li>Extreme Stimmungsschwankungen</li> <li>Exzessive &Auml;ngste oder Sorgen</li> <li>Halluzinationen oder Paranoia</li> <li>Suizidale Gedanken</li> <li>Andere psychische Probleme</li> </ul>"
-            },
-            "enum": [
-                {
-                    "id": 1,
-                    "hash": "5397e0",
-                    "translation": "Ja"
-                },
-                {
-                    "id": 2,
-                    "hash": "56dd8d",
-                    "translation": "Vielleicht"
-                },
-                {
-                    "id": 3,
-                    "hash": "816c52",
-                    "translation": "Nein"
-                }
-            ]
-        },
-        {
-            "id": "cutoff_psych_extra",
-            "form": "screening_gammasleep",
-            "label": {
-                "hash": "c386bb",
-                "translation": "Bitte spezifiziere:"
+            "note": {
+                "hash": "79ce79",
+                "translation": "(Deine Eltern, Geschwister oder Kinder)"
             }
         },
         {
             "id": "cutoff_substances",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
-                "hash": "626eef",
-                "translation": "<p>Hast Du <span style=\"text-decoration: underline;\">im letzten Jahr</span> irgendeine dieser Substanzen exzessiv konsumiert?</p> <ul> <li>Alkohol <span style=\"color: #7e8c8d;\">(mehr als 5 Bier oder 10 Shots an den meisten Wochen)</span></li> <li>Nikotin <span style=\"color: #7e8c8d;\">(mehr als 5 Zigaretten an den meisten Tagen)</span></li> <li>Cannabis <span style=\"color: #7e8c8d;\">(an den meisten Tagen / negative Konsequenzen im Alltag / Entzugssymptome)</span></li> <li>Verschreibungspflichtige Medikamente<span style=\"color: #7e8c8d;\"> (in gr&ouml;&szlig;eren Mengen oder l&auml;nger als verschrieben / Entzugssymptome)</span></li> <li>Andere illegale Drogen <span style=\"color: #7e8c8d;\">(mindestens eine illegale Droge an den meisten Monaten)</span></li> </ul>"
+                "hash": "8de7ed",
+                "translation": "<p>Hast Du <span style=\"text-decoration: underline;\">in den letzten 2 Monaten</span> irgendeine dieser Substanzen konsumiert?</p> <ul> <li>Nikotin</li> <li>Cannabis</li> <li>Psychopharmaka</li> <li>Andere Drogen</li> </ul>"
             },
             "enum": [
                 {
@@ -2864,15 +2810,97 @@
         },
         {
             "id": "cutoff_substances_extra",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
                 "hash": "c386bb",
                 "translation": "Bitte spezifiziere:"
             }
         },
         {
+            "id": "cutoff_sleep",
+            "form": "exclusion_criteria",
+            "label": {
+                "hash": "7a6b1b",
+                "translation": "<p><span style=\"text-decoration: underline;\">In den letzten 6 Monaten</span>, hast Du irgendeine von diesen Schlafst&ouml;rungen erlebt? Oder hat dies jemand bei Dir bemerkt?</p> <ul> <li>Regelm&auml;&szlig;ige Ein- oder Durchschlafst&ouml;rungen (<em>Insomnie</em>)</li> <li>Gehen oder Durchf&uuml;hren komplexer Aktivit&auml;ten in der Nacht ohne bei Bewusstsein zu sein und ohne anschlie&szlig;ende Erinnerung daran (<em>Schlafwandeln</em>)</li> <li>Unwillentliches, gew&ouml;hnliches Z&auml;hneknirschen w&auml;hrend des Schlafs (<em>Bruxismus</em>)</li> <li>Exzessive Schl&auml;frigkeit tags&uuml;ber mit pl&ouml;tzlicher Muskelschw&auml;che (<em>Narkolepsie</em>)</li> <li>Unangenehme \"kriechende\" Empfindungen und Schmerzen in den Beinen, die durch Bewegungen wie gehen oder treten abnehmen (<em>Restless Legs Syndrom</em>)</li> <li>Periodisch unterbrochenes Atmen w&auml;hrend des Schlafs, das Keuch- oder Schnaufger&auml;usche verursacht, mehr als nur Schnarchen (<em>Schlafapnoe</em>)</li> </ul>"
+            },
+            "enum": [
+                {
+                    "id": 1,
+                    "hash": "5397e0",
+                    "translation": "Ja"
+                },
+                {
+                    "id": 2,
+                    "hash": "56dd8d",
+                    "translation": "Vielleicht"
+                },
+                {
+                    "id": 3,
+                    "hash": "816c52",
+                    "translation": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "cutoff_sleep_extra",
+            "form": "exclusion_criteria",
+            "label": {
+                "hash": "c386bb",
+                "translation": "Bitte spezifiziere:"
+            }
+        },
+        {
+            "id": "cutoff_psych",
+            "form": "exclusion_criteria",
+            "label": {
+                "hash": "957b71",
+                "translation": "<p>Hast Du <span style=\"text-decoration: underline;\">in den letzten 6 Monaten</span> irgendeines dieser psychiatrischen Symptome gehabt?</p> <ul> <li>Depressive Stimmung</li> <li>Extreme Stimmungsschwankungen</li> <li>Exzessive &Auml;ngste oder Sorgen</li> <li>Substanzmissbrauch</li> <li>Halluzinationen oder Paranoia</li> <li>Suizidale Gedanken</li> <li>Andere psychische Probleme</li> </ul>"
+            },
+            "enum": [
+                {
+                    "id": 1,
+                    "hash": "5397e0",
+                    "translation": "Ja"
+                },
+                {
+                    "id": 2,
+                    "hash": "56dd8d",
+                    "translation": "Vielleicht"
+                },
+                {
+                    "id": 3,
+                    "hash": "816c52",
+                    "translation": "Nein"
+                }
+            ]
+        },
+        {
+            "id": "cutoff_psych_extra",
+            "form": "exclusion_criteria",
+            "label": {
+                "hash": "c386bb",
+                "translation": "Bitte spezifiziere:"
+            }
+        },
+        {
+            "id": "cutoff_shiftwork",
+            "form": "exclusion_criteria",
+            "label": {
+                "hash": "a3060c",
+                "translation": "<p>Ich war Schicht- oder Nachtarbeiter/in im letzten Monat:</p>"
+            }
+        },
+        {
+            "id": "cutoff_travel",
+            "form": "exclusion_criteria",
+            "label": {
+                "hash": "4d6a69",
+                "translation": "<p>Im letzten Monat bin ich durch zwei oder mehr Zeitzonen gereist:</p>"
+            }
+        },
+        {
             "id": "exclusion_confirm",
-            "form": "screening_gammasleep",
+            "form": "exclusion_criteria",
             "label": {
                 "hash": "bb24c4",
                 "translation": "Bitte überprüfe: Hast Du die Optionen korrekt ausgewählt, die für Dich zutreffen?"
@@ -2886,20 +2914,1097 @@
             ]
         },
         {
-            "id": "mumctq_shiftwork",
-            "form": "screening_gammasleep",
+            "id": "exclusion_criteria_complete",
+            "form": "exclusion_criteria",
             "header": {
-                "hash": "44a871",
-                "translation": "<h5>Dein Chronotyp</h5> <p><span style=\"color: #7e8c8d;\"><em>Munich ChronoType Questionnaire (&micro;MCTQ)</em></span></p> <p><span style=\"font-weight: normal;\">Im folgenden Abschnitt wirst Du zu Deinem Schlaf- und Wachverhalten an arbeits- sowie arbeitsfreien Tagen befragt. Bitte gebe eine Sch&auml;tzung zu Deinem \"normalen\" Schlafverhalten in den letzten 6 Wochen ab.</span></p>"
+                "hash": "c91e0b",
+                "translation": ""
             },
             "label": {
-                "hash": "b80531",
-                "translation": "<p>Ich war Schicht- oder Nachtarbeiter/in in den letzten 3 Monaten:</p>"
+                "hash": "fc84b4",
+                "translation": ""
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "387fd1",
+                    "translation": ""
+                },
+                {
+                    "id": 1,
+                    "hash": "eb27a1",
+                    "translation": ""
+                },
+                {
+                    "id": 2,
+                    "hash": "1f5a1a",
+                    "translation": ""
+                }
+            ]
+        },
+        {
+            "id": "audit_q1",
+            "form": "audit",
+            "label": {
+                "hash": "65ea9a",
+                "translation": "<p>Wie oft nehmen Sie alkoholische Getr&auml;nke zu sich?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "80c305",
+                    "translation": "nie"
+                },
+                {
+                    "id": 1,
+                    "hash": "04c5a0",
+                    "translation": "einmal im Monat oder seltener"
+                },
+                {
+                    "id": 2,
+                    "hash": "35c7cf",
+                    "translation": "2- bis 4-mal im Monat"
+                },
+                {
+                    "id": 3,
+                    "hash": "91db86",
+                    "translation": "2- bis 3-mal pro Woche"
+                },
+                {
+                    "id": 4,
+                    "hash": "4fc603",
+                    "translation": "4-mal oder öfters pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "audit_q2",
+            "form": "audit",
+            "label": {
+                "hash": "9e0a1c",
+                "translation": "<p>Wenn Sie Alkohol trinken, wie viele Gl&auml;ser trinken Sie dann &uuml;blicherweise an einem Tag? </p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "553ae1",
+                    "translation": "1 - 2"
+                },
+                {
+                    "id": 1,
+                    "hash": "d983ea",
+                    "translation": "3 - 4"
+                },
+                {
+                    "id": 2,
+                    "hash": "0f948c",
+                    "translation": "5 - 6"
+                },
+                {
+                    "id": 3,
+                    "hash": "fd43bd",
+                    "translation": "7 - 9"
+                },
+                {
+                    "id": 4,
+                    "hash": "1ce489",
+                    "translation": "10 oder mehr"
+                }
+            ]
+        },
+        {
+            "id": "audit_q3",
+            "form": "audit",
+            "label": {
+                "hash": "bd3e6c",
+                "translation": "<p>Wie oft trinken Sie sechs oder mehr Gl&auml;ser Alkohol bei einer Gelegenheit?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "80c305",
+                    "translation": "nie"
+                },
+                {
+                    "id": 1,
+                    "hash": "257d2d",
+                    "translation": "seltener als einmal pro Monat"
+                },
+                {
+                    "id": 2,
+                    "hash": "d31edb",
+                    "translation": "einmal pro Monat"
+                },
+                {
+                    "id": 3,
+                    "hash": "158f3d",
+                    "translation": "einmal pro Woche"
+                },
+                {
+                    "id": 4,
+                    "hash": "adbb2b",
+                    "translation": "täglich oder fast täglich"
+                }
+            ]
+        },
+        {
+            "id": "audit_q4",
+            "form": "audit",
+            "label": {
+                "hash": "29c679",
+                "translation": "<p>Wie oft stellten Sie im Verlauf der letzten 12 Monate fest, dass Sie mit dem Trinken nicht mehr aufh&ouml;ren k&ouml;nnen, wenn Sie einmal damit angefangen haben?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "80c305",
+                    "translation": "nie"
+                },
+                {
+                    "id": 1,
+                    "hash": "257d2d",
+                    "translation": "seltener als einmal pro Monat"
+                },
+                {
+                    "id": 2,
+                    "hash": "d31edb",
+                    "translation": "einmal pro Monat"
+                },
+                {
+                    "id": 3,
+                    "hash": "158f3d",
+                    "translation": "einmal pro Woche"
+                },
+                {
+                    "id": 4,
+                    "hash": "adbb2b",
+                    "translation": "täglich oder fast täglich"
+                }
+            ]
+        },
+        {
+            "id": "audit_q5",
+            "form": "audit",
+            "label": {
+                "hash": "15f787",
+                "translation": "<p>Wie oft hinderte Sie im Verlauf der letzten 12 Monate Ihr Alkoholkonsum, das zu tun, was von Ihnen erwartet wurde?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "80c305",
+                    "translation": "nie"
+                },
+                {
+                    "id": 1,
+                    "hash": "257d2d",
+                    "translation": "seltener als einmal pro Monat"
+                },
+                {
+                    "id": 2,
+                    "hash": "d31edb",
+                    "translation": "einmal pro Monat"
+                },
+                {
+                    "id": 3,
+                    "hash": "158f3d",
+                    "translation": "einmal pro Woche"
+                },
+                {
+                    "id": 4,
+                    "hash": "adbb2b",
+                    "translation": "täglich oder fast täglich"
+                }
+            ]
+        },
+        {
+            "id": "audit_q6",
+            "form": "audit",
+            "label": {
+                "hash": "fa0319",
+                "translation": "<p>Wie h&auml;ufig haben Sie im Verlauf der letzten 12 Monate am Morgen ein erstes Glas Alkohol getrunken, um in Gang zu kommen, nachdem Sie am Vortag viel getrunken hatten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "80c305",
+                    "translation": "nie"
+                },
+                {
+                    "id": 1,
+                    "hash": "257d2d",
+                    "translation": "seltener als einmal pro Monat"
+                },
+                {
+                    "id": 2,
+                    "hash": "d31edb",
+                    "translation": "einmal pro Monat"
+                },
+                {
+                    "id": 3,
+                    "hash": "158f3d",
+                    "translation": "einmal pro Woche"
+                },
+                {
+                    "id": 4,
+                    "hash": "adbb2b",
+                    "translation": "täglich oder fast täglich"
+                }
+            ]
+        },
+        {
+            "id": "audit_q7",
+            "form": "audit",
+            "label": {
+                "hash": "5738a2",
+                "translation": "<p>Wie oft empfanden Sie in den letzten 12 Monaten Schuld- oder Reuegef&uuml;hle, nachdem Sie getrunken hatten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "80c305",
+                    "translation": "nie"
+                },
+                {
+                    "id": 1,
+                    "hash": "257d2d",
+                    "translation": "seltener als einmal pro Monat"
+                },
+                {
+                    "id": 2,
+                    "hash": "d31edb",
+                    "translation": "einmal pro Monat"
+                },
+                {
+                    "id": 3,
+                    "hash": "158f3d",
+                    "translation": "einmal pro Woche"
+                },
+                {
+                    "id": 4,
+                    "hash": "adbb2b",
+                    "translation": "täglich oder fast täglich"
+                }
+            ]
+        },
+        {
+            "id": "audit_q8",
+            "form": "audit",
+            "label": {
+                "hash": "a213f6",
+                "translation": "<p>Wie oft war es Ihnen in den letzten 12 Monaten unm&ouml;glich, sich an das zu erinnern, was am Vorabend geschah, weil Sie getrunken hatten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "80c305",
+                    "translation": "nie"
+                },
+                {
+                    "id": 1,
+                    "hash": "257d2d",
+                    "translation": "seltener als einmal pro Monat"
+                },
+                {
+                    "id": 2,
+                    "hash": "d31edb",
+                    "translation": "einmal pro Monat"
+                },
+                {
+                    "id": 3,
+                    "hash": "158f3d",
+                    "translation": "einmal pro Woche"
+                },
+                {
+                    "id": 4,
+                    "hash": "adbb2b",
+                    "translation": "täglich oder fast täglich"
+                }
+            ]
+        },
+        {
+            "id": "audit_q9",
+            "form": "audit",
+            "label": {
+                "hash": "3e612a",
+                "translation": "<p>Sind Sie oder jemand anderes schon einmal verletzt worden, weil Sie getrunken hatten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "816c52",
+                    "translation": "nein"
+                },
+                {
+                    "id": 2,
+                    "hash": "249396",
+                    "translation": "ja, aber nicht in den letzten 12 Monaten"
+                },
+                {
+                    "id": 4,
+                    "hash": "bb00a0",
+                    "translation": "ja, in den letzten 12 Monaten"
+                }
+            ]
+        },
+        {
+            "id": "audit_q10",
+            "form": "audit",
+            "label": {
+                "hash": "36d6af",
+                "translation": "<p>Hat sich ein/e Angeh&ouml;rige/r, ein/e Freund/in, ein/e Arzt/&Auml;rztin oder eine andere Person aus dem Gesundheitsbereich schon einmal besorgt &uuml;ber Ihren Alkoholkonsum ge&auml;u&szlig;ert oder vorgeschlagen, dass Sie den Konsum einschr&auml;nken sollten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "816c52",
+                    "translation": "nein"
+                },
+                {
+                    "id": 2,
+                    "hash": "249396",
+                    "translation": "ja, aber nicht in den letzten 12 Monaten"
+                },
+                {
+                    "id": 4,
+                    "hash": "bb00a0",
+                    "translation": "ja, in den letzten 12 Monaten"
+                }
+            ]
+        },
+        {
+            "id": "audit_complete",
+            "form": "audit",
+            "header": {
+                "hash": "c91e0b",
+                "translation": ""
+            },
+            "label": {
+                "hash": "fc84b4",
+                "translation": ""
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "387fd1",
+                    "translation": ""
+                },
+                {
+                    "id": 1,
+                    "hash": "eb27a1",
+                    "translation": ""
+                },
+                {
+                    "id": 2,
+                    "hash": "1f5a1a",
+                    "translation": ""
+                }
+            ]
+        },
+        {
+            "id": "psqi_1",
+            "form": "psqi",
+            "label": {
+                "hash": "185f71",
+                "translation": "<p>1. Wann sind Sie w&auml;hrend der letzten vier Wochen gew&ouml;hnlich abends zu Bett gegangen?</p>"
+            },
+            "note": {
+                "hash": "3cf25d",
+                "translation": "<p>&uuml;bliche Uhrzeit:</p>"
             }
         },
         {
+            "id": "psqi_2",
+            "form": "psqi",
+            "label": {
+                "hash": "74c2d8",
+                "translation": "<p>2. Wie lange hat es w&auml;hrend der letzten vier Wochen gew&ouml;hnlich gedauert, bis Sie nachts eingeschlafen sind?</p>"
+            },
+            "note": {
+                "hash": "7b9a30",
+                "translation": "in Minuten:"
+            }
+        },
+        {
+            "id": "psqi_3",
+            "form": "psqi",
+            "label": {
+                "hash": "901633",
+                "translation": "<p>3. Wann sind Sie w&auml;hrend der letzten vier Wochen gew&ouml;hnlich morgens aufgestanden?</p>"
+            },
+            "note": {
+                "hash": "13aefd",
+                "translation": "übliche Uhrzeit:"
+            }
+        },
+        {
+            "id": "psqi_4",
+            "form": "psqi",
+            "label": {
+                "hash": "773258",
+                "translation": "<p>4. Wieviele Stunden haben Sie w&auml;hrend der letzten vier Wochen pro Nacht tats&auml;chlich geschlafen? (Das muss nicht mit der Anzahl der Stunden, die Sie im Bett verbracht haben, &uuml;bereinstimmen.)</p>"
+            },
+            "note": {
+                "hash": "3c3844",
+                "translation": "Effektive Schlafzeit (Stunden) pro Nacht:"
+            }
+        },
+        {
+            "id": "psqi_5a",
+            "form": "psqi",
+            "header": {
+                "hash": "c7a734",
+                "translation": "<p>Kreuzen Sie bitte f&uuml;r jede der folgenden Fragen die f&uuml;r Sie zutreffende Antwort an. Beantworten Sie bitte alle Fragen.</p> <p>5. Wie oft haben Sie w&auml;hrend der letzten vier Wochen schlecht geschlafen, ...</p>"
+            },
+            "label": {
+                "hash": "8b369a",
+                "translation": "<p>a) ... weil Sie nicht innerhalb von 30 Minuten einschlafen konnten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5b",
+            "form": "psqi",
+            "label": {
+                "hash": "d4270e",
+                "translation": "<p>b) ... weil Sie mitten in der Nacht oder fr&uuml;h morgens aufgewacht sind?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5c",
+            "form": "psqi",
+            "label": {
+                "hash": "8520a2",
+                "translation": "<p>c) ... weil Sie aufstehen mussten, um zur Toilette zu gehen?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5d",
+            "form": "psqi",
+            "label": {
+                "hash": "95d5b7",
+                "translation": "<p>d) ... weil Sie Beschwerden beim Atmen hatten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5e",
+            "form": "psqi",
+            "label": {
+                "hash": "c60781",
+                "translation": "<p>e) ... weil Sie husten mussten oder laut geschnarcht haben?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5f",
+            "form": "psqi",
+            "label": {
+                "hash": "4a3c8c",
+                "translation": "<p>f) ... weil Ihnen zu kalt war?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5g",
+            "form": "psqi",
+            "label": {
+                "hash": "b3d564",
+                "translation": "<p>g) ... weil Ihnen zu warm war?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5h",
+            "form": "psqi",
+            "label": {
+                "hash": "a4b1c6",
+                "translation": "<p>h) ... weil Sie schlecht getr&auml;umt hatten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5i",
+            "form": "psqi",
+            "label": {
+                "hash": "fe8729",
+                "translation": "<p>i) ... weil Sie Schmerzen hatten?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_5other",
+            "form": "psqi",
+            "label": {
+                "hash": "766b18",
+                "translation": "<p>j) ... aus anderen Gr&uuml;nden? Bitte beschreiben:</p>"
+            }
+        },
+        {
+            "id": "psqi_5othera",
+            "form": "psqi",
+            "label": {
+                "hash": "6a506d",
+                "translation": "<p>Und wie oft w&auml;hrend des letzten Monats konnten Sie aus diesem Grund schlecht schlafen?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_6",
+            "form": "psqi",
+            "label": {
+                "hash": "b6cadb",
+                "translation": "<p>6. Wie w&uuml;rden Sie insgesamt die Qualit&auml;t Ihres Schlafes w&auml;hrend der letzten vier Wochen beurteilen?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "f5babd",
+                    "translation": "Sehr gut"
+                },
+                {
+                    "id": 1,
+                    "hash": "4a4816",
+                    "translation": "Ziemlich gut"
+                },
+                {
+                    "id": 2,
+                    "hash": "6f085a",
+                    "translation": "Ziemlich schlecht"
+                },
+                {
+                    "id": 3,
+                    "hash": "3afa18",
+                    "translation": "Sehr schlecht"
+                }
+            ]
+        },
+        {
+            "id": "psqi_7",
+            "form": "psqi",
+            "label": {
+                "hash": "2f73b7",
+                "translation": "<p>7. Wie oft haben Sie w&auml;hrend der letzten vier Wochen Schlafmittel eingenommen (vom Arzt verschriebene oder frei verk&auml;ufliche)?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_8",
+            "form": "psqi",
+            "label": {
+                "hash": "cb7370",
+                "translation": "<p>8. Wie oft hatten Sie w&auml;hrend der letzten vier Wochen Schwierigkeiten wachzubleiben, etwa beim Autofahren, beim Essen oder bei gesellschaftlichen Anl&auml;ssen?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_9",
+            "form": "psqi",
+            "label": {
+                "hash": "ff6e49",
+                "translation": "<p>9. Hatten Sie w&auml;hrend der letzten vier Wochen Probleme, mit gen&uuml;gend Schwung die &uuml;blichen Alltagsaufgaben zu erledigen?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "72bd9a",
+                    "translation": "Keine Probleme"
+                },
+                {
+                    "id": 1,
+                    "hash": "389995",
+                    "translation": "Kaum Probleme"
+                },
+                {
+                    "id": 2,
+                    "hash": "81a5a2",
+                    "translation": "Etwas Probleme"
+                },
+                {
+                    "id": 3,
+                    "hash": "e07d97",
+                    "translation": "Große Probleme"
+                }
+            ]
+        },
+        {
+            "id": "psqi_10",
+            "form": "psqi",
+            "label": {
+                "hash": "81c9e4",
+                "translation": "<p>10. Schlafen Sie allein in Ihrem Zimmer?</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "5d4f00",
+                    "translation": "Ja"
+                },
+                {
+                    "id": 1,
+                    "hash": "ed0716",
+                    "translation": "Ja, aber ein Partner/Mitbewohner schläft in einem anderen Zimmer"
+                },
+                {
+                    "id": 2,
+                    "hash": "3dd311",
+                    "translation": "Nein, der Partner schläft im selben Zimmer, aber nicht im selben Bett"
+                },
+                {
+                    "id": 3,
+                    "hash": "32803c",
+                    "translation": "Nein, der Partner schläft im selben Bett"
+                }
+            ]
+        },
+        {
+            "id": "psqi_10_desctxt",
+            "form": "psqi",
+            "label": {
+                "hash": "8c264d",
+                "translation": "<p>Falls Sie einen Mitbewohner / Partner haben, fragen Sie sie/ihn bitte, ob und wie oft er/sie bei Ihnen folgendes bemerkt hat:</p>"
+            }
+        },
+        {
+            "id": "psqi_10a",
+            "form": "psqi",
+            "label": {
+                "hash": "2a4f9f",
+                "translation": "<p>a) Lautes Schnarchen</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_10b",
+            "form": "psqi",
+            "label": {
+                "hash": "290969",
+                "translation": "<p>b) Lange Atempausen w&auml;hrend des Schlafes</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_10c",
+            "form": "psqi",
+            "label": {
+                "hash": "fb4098",
+                "translation": "<p>c) Zucken oder ruckartige Bewegungen der Beine w&auml;hrend des Schlafes</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_10d",
+            "form": "psqi",
+            "label": {
+                "hash": "f0e4f7",
+                "translation": "<p>d) N&auml;chtliche Phasen von Verwirrung oder Desorientierung w&auml;hrend des Schlafes</p>"
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_10e",
+            "form": "psqi",
+            "label": {
+                "hash": "f4d3ef",
+                "translation": "<p>e) Oder andere Formen von Unruhe w&auml;hrend des Schlafes - bitte beschreiben:</p>"
+            }
+        },
+        {
+            "id": "psqi_10e1",
+            "form": "psqi",
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "96bb57",
+                    "translation": "Während der letzten vier Wochen gar nicht"
+                },
+                {
+                    "id": 1,
+                    "hash": "4d80d0",
+                    "translation": "Weniger als einmal pro Woche"
+                },
+                {
+                    "id": 2,
+                    "hash": "5fb0b9",
+                    "translation": "Einmal oder zweimal pro Woche"
+                },
+                {
+                    "id": 3,
+                    "hash": "94da0e",
+                    "translation": "Dreimal oder häufiger pro Woche"
+                }
+            ]
+        },
+        {
+            "id": "psqi_complete",
+            "form": "psqi",
+            "header": {
+                "hash": "c91e0b",
+                "translation": ""
+            },
+            "label": {
+                "hash": "fc84b4",
+                "translation": ""
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "387fd1",
+                    "translation": ""
+                },
+                {
+                    "id": 1,
+                    "hash": "eb27a1",
+                    "translation": ""
+                },
+                {
+                    "id": 2,
+                    "hash": "1f5a1a",
+                    "translation": ""
+                }
+            ]
+        },
+        {
             "id": "mumctq_nr_workdays",
-            "form": "screening_gammasleep",
+            "form": "mumctq",
             "label": {
                 "hash": "ab6a27",
                 "translation": "<p>Normalerweise arbeite ich an ___ Tagen / Woche:</p>"
@@ -2948,16 +4053,12 @@
             ]
         },
         {
-            "id": "mumctq_desctext_1",
-            "form": "screening_gammasleep",
-            "label": {
+            "id": "mumctq_fall_sleep_work",
+            "form": "mumctq",
+            "header": {
                 "hash": "d8672b",
                 "translation": "<p>Bitte beantworte alle folgenden Fragen selbst wenn Du nicht arbeitest, oder an 7 Tagen / Woche arbeitest. Benutze das 24-Stunden Format (z.B. 23:00 statt 11 PM).</p>"
-            }
-        },
-        {
-            "id": "mumctq_fall_sleep_work",
-            "form": "screening_gammasleep",
+            },
             "label": {
                 "hash": "126bb4",
                 "translation": "<p><span style=\"text-decoration: underline;\">An Arbeitstagen</span> schlafe ich normalerweise zu dieser Uhrzeit ein:</p>"
@@ -2969,7 +4070,7 @@
         },
         {
             "id": "mumctq_wake_up_work",
-            "form": "screening_gammasleep",
+            "form": "mumctq",
             "label": {
                 "hash": "022de6",
                 "translation": "<p><span style=\"text-decoration: underline;\">An Arbeitstagen</span> wache ich normalerweise zu dieser Uhrzeit auf:</p>"
@@ -2981,7 +4082,7 @@
         },
         {
             "id": "mumctq_fall_sleep_free",
-            "form": "screening_gammasleep",
+            "form": "mumctq",
             "label": {
                 "hash": "e9de63",
                 "translation": "<p><span style=\"text-decoration: underline;\">An arbeitsfreien Tagen</span>, wenn ich KEINEN Wecker benutze, schlafe ich normalerweise zu dieser Uhrzeit ein:</p>"
@@ -2993,7 +4094,7 @@
         },
         {
             "id": "mumctq_wake_up_free",
-            "form": "screening_gammasleep",
+            "form": "mumctq",
             "label": {
                 "hash": "fe9427",
                 "translation": "<p><span style=\"text-decoration: underline;\">An arbeitsfreien Tagen</span>, wenn ich KEINEN Wecker benutze, wache ich normalerweise zu dieser Uhrzeit auf:</p>"
@@ -3005,19 +4106,44 @@
         },
         {
             "id": "alarm_free_days",
-            "form": "screening_gammasleep",
+            "form": "mumctq",
             "label": {
                 "hash": "408094",
                 "translation": "<p>Benutzt Du <span style=\"text-decoration: underline;\">an den MEISTEN arbeitsfreien Tagen</span> einen Wecker?</p>"
             }
         },
         {
-            "id": "name",
-            "form": "screening_gammasleep",
+            "id": "mumctq_complete",
+            "form": "mumctq",
             "header": {
-                "hash": "d5855f",
-                "translation": "<h5>Danke f&uuml;r Deine Antworten.</h5> <p><span style=\"font-weight: normal;\">Anhand derer k&ouml;nnen wir jetzt &uuml;berpr&uuml;fen, ob Du an der Studie teilnehmen kannst.</span></p> <p><span style=\"font-weight: normal;\">Um als Proband:in eingetragen zu werden, f&uuml;lle bitte zuletzt noch folgende Felder aus:</span></p>"
+                "hash": "c91e0b",
+                "translation": ""
             },
+            "label": {
+                "hash": "fc84b4",
+                "translation": ""
+            },
+            "enum": [
+                {
+                    "id": 0,
+                    "hash": "387fd1",
+                    "translation": ""
+                },
+                {
+                    "id": 1,
+                    "hash": "eb27a1",
+                    "translation": ""
+                },
+                {
+                    "id": 2,
+                    "hash": "1f5a1a",
+                    "translation": ""
+                }
+            ]
+        },
+        {
+            "id": "name",
+            "form": "demographics",
             "label": {
                 "hash": "d90476",
                 "translation": "Dein voller Name"
@@ -3025,7 +4151,7 @@
         },
         {
             "id": "age",
-            "form": "screening_gammasleep",
+            "form": "demographics",
             "label": {
                 "hash": "08d76b",
                 "translation": "Dein Alter (in Jahren)"
@@ -3033,7 +4159,7 @@
         },
         {
             "id": "sex",
-            "form": "screening_gammasleep",
+            "form": "demographics",
             "label": {
                 "hash": "5bfd5e",
                 "translation": "Dein biologisches Geschlecht"
@@ -3056,26 +4182,86 @@
                 },
                 {
                     "id": 4,
-                    "hash": "0fc3a2",
+                    "hash": "5f53be",
                     "translation": "keine Angabe"
                 }
             ]
         },
         {
+            "id": "gender",
+            "form": "demographics",
+            "label": {
+                "hash": "b847e5",
+                "translation": "Deine Geschlechtsidentität"
+            },
+            "enum": [
+                {
+                    "id": 1,
+                    "hash": "edb1f4",
+                    "translation": "Frau"
+                },
+                {
+                    "id": 2,
+                    "hash": "8175e3",
+                    "translation": "Mann"
+                },
+                {
+                    "id": 3,
+                    "hash": "8142dc",
+                    "translation": "Nicht-binär"
+                },
+                {
+                    "id": 4,
+                    "hash": "5f53be",
+                    "translation": "keine Angabe"
+                },
+                {
+                    "id": 5,
+                    "hash": "d0941e",
+                    "translation": "Andere"
+                }
+            ]
+        },
+        {
+            "id": "handedness",
+            "form": "demographics",
+            "label": {
+                "hash": "d26515",
+                "translation": "Deine Händigkeit"
+            },
+            "enum": [
+                {
+                    "id": 1,
+                    "hash": "8bb924",
+                    "translation": "Rechtshändig"
+                },
+                {
+                    "id": 2,
+                    "hash": "7844f9",
+                    "translation": "Beidhändig"
+                },
+                {
+                    "id": 3,
+                    "hash": "54f45d",
+                    "translation": "Linkshändig"
+                }
+            ]
+        },
+        {
             "id": "email",
-            "form": "screening_gammasleep",
+            "form": "demographics",
             "label": {
                 "hash": "3fa6f5",
                 "translation": "Deine Email-Adresse"
             },
             "note": {
                 "hash": "ab82af",
-                "translation": "(Bitte überprüfe dass keine Tippfehler drin sind!)"
+                "translation": "(Bitte überprüfe, dass keine Tippfehler drin sind!)"
             }
         },
         {
-            "id": "screening_gammasleep_complete",
-            "form": "screening_gammasleep",
+            "id": "demographics_complete",
+            "form": "demographics",
             "header": {
                 "hash": "c91e0b",
                 "translation": ""
@@ -3106,7 +4292,7 @@
     "matrixTranslations": [],
     "surveyTranslations": [
         {
-            "id": "screening_gammasleep",
+            "id": "exclusion_criteria",
             "active": true,
             "settings": [
                 {
@@ -3116,8 +4302,8 @@
                 },
                 {
                     "id": "survey-instructions",
-                    "hash": "5a58fc",
-                    "translation": "<h5 style=\"text-align: right;\"><span style=\"color: #e03e2d;\"><strong><em>DEUTSCH / ENGLISH</em></strong></span></h5> <hr /> <h5>Willkommen!</h5> <p>Danke f&uuml;r Dein Interesse an meiner Studie.</p> <p>Bevor ich Dich zu uns ins Labor einlade, w&uuml;rde ich gerne <strong>&uuml;berpr&uuml;fen, ob Du zur Teilnahme geeignet bist</strong>. Daf&uuml;r ist dieser Fragebogen gedacht. Ich werde Dir <strong>einige Fragen zu Deiner Gesundheit und Deinem Schlaf </strong>stellen.</p> <p>Am Ende des Fragebogens, falls Du zur Teilnahme berechtigt und bereit bist, wirst Du um pers&ouml;nliche Informationen gebeten (Name, Email), sodass wir die erste Studiensitzung ausmachen k&ouml;nnen. Erst in dieser Sitzung entscheidest Du, ob Du der Teilnahme zustimmst oder nicht. Dein Einverst&auml;ndnis wird nicht automatisch erteilt, indem Du diesen Fragebogen ausf&uuml;llst.</p> <p>Fragebogendaten werden sicher auf der Plattform REDCap f&uuml;r die Dauer der Studie (Februar - Dezember 2023) gespeichert, dennoch kannst Du die L&ouml;schung Deiner Daten jederzeit verlangen.</p> <p><span style=\"color: #34495e;\">Dauer des Fragebogens: ca. 5 min</span></p> <h5>Worum geht es in der Studie?</h5> <p>Im Rahmen meines Promotionsprojekts an der TU M&uuml;nchen untersuche ich die <strong>Effekte von schnell flackerndem Licht</strong> auf <strong>Gehirnaktivit&auml;t im Schlaf</strong>. Das Ziel ist es, eine gewisse Form von Gehirnaktivit&auml;t zu verst&auml;rken, die in Erkrankungen wie Alzheimer-Demenz beeintr&auml;chtigt ist: neue Forschungsergebnisse zeigt, dass schnell flackerndes Licht dazu in der Lage ist. Ich m&ouml;chte testen, ob eine Anwendung w&auml;hrend des Schlafs machbar und effektiv bei jungen, gesunden Menschen ist. Wenn ja, k&ouml;nnen wir es als N&auml;chstes an &auml;lteren Menschen mit Demenzrisiko untersuchen.</p> <p>Auf lange Sicht m&ouml;chte ich zur Demenzpr&auml;vention bzw. -verz&ouml;gerung beitragen, mit einer Intervention, die f&uuml;r Betroffene m&ouml;glichst nicht invasiv, preiswert und praktisch ist. <em>Das geht nur mit der Hilfe von Menschen wie Dir!</em></p> <p>Das Experiment beinhaltet die folgenden Sitzungen (sie finden immer am Wochenende statt):</p> <ol> <li>Eine 1-st&uuml;ndige Sitzung, bei der Du Dein Einverst&auml;ndnis erteilst und eine Messung im Wachzustand durchgef&uuml;hrt wird.</li> <li>Eine Nacht im Schlaflabor (am n&auml;chsten Freitag oder Samstag), in der nur Deine Gehirnaktivit&auml;t gemessen wird, sodass wir deinen \"gew&ouml;hnlichen\" Schlaf abbilden k&ouml;nnen.</li> <li>Eine weitere Nacht im Schlaflabor (die direkt darauffolgende Nacht), in der Deine Gehirnaktivit&auml;t gemessen wird und zus&auml;tzlich die Stimulation aktiviert wird, w&auml;hrend Du schl&auml;fst.</li> </ol> <p>In der ersten Sitzung erkl&auml;re ich gerne mehr dazu und beantworte alle Fragen. Versuchsteilnehmende bekommen eine Aufwandsentsch&auml;digung von bis zu 100 &euro;, zudem biete ich individualisierte Schlafberichte an.</p>"
+                    "hash": "d25a79",
+                    "translation": "<h5 style=\"text-align: right;\"><span style=\"color: #e03e2d;\"><strong><em>DEUTSCH / ENGLISH</em></strong></span></h5> <hr /> <h5>Willkommen!</h5> <p>Danke f&uuml;r Dein Interesse an meiner Studie.</p> <p>Bevor ich Dich zu uns ins Labor einlade, w&uuml;rde ich gerne <strong>&uuml;berpr&uuml;fen, ob Du zur Teilnahme geeignet bist</strong>. Daf&uuml;r ist dieser Fragebogen gedacht. Ich werde Dir <strong>einige Fragen zu Deiner Gesundheit und Deinem Schlaf </strong>stellen.</p> <p>Am Ende des Fragebogens, falls Du zur Teilnahme berechtigt und bereit bist, wirst Du um pers&ouml;nliche Informationen gebeten (Name, Email), sodass wir die erste Studiensitzung ausmachen k&ouml;nnen. Erst in dieser Sitzung entscheidest Du, ob Du der Teilnahme zustimmst oder nicht. Dein Einverst&auml;ndnis wird nicht automatisch erteilt, indem Du diesen Fragebogen ausf&uuml;llst.</p> <p>Fragebogendaten werden sicher auf der Plattform REDCap f&uuml;r die Dauer der Studie (Juni - Dezember 2023) gespeichert, dennoch kannst Du die L&ouml;schung Deiner Daten jederzeit verlangen.</p> <p><span style=\"color: #34495e;\">Dauer des Fragebogens: ~ 10 min</span></p> <h5>Worum geht es in der Studie?</h5> <p>Im Rahmen meines Promotionsprojekts an der TU M&uuml;nchen untersuche ich die <strong>Effekte von schnell flackerndem Licht</strong> auf <strong>Gehirnaktivit&auml;t im Schlaf</strong>. Das Ziel ist es, eine gewisse Form von Gehirnaktivit&auml;t zu verst&auml;rken, die in Erkrankungen wie Alzheimer-Demenz beeintr&auml;chtigt ist: neue Forschungsergebnisse zeigen, dass schnell flackerndes Licht dazu in der Lage ist. Ich m&ouml;chte testen, ob eine Anwendung w&auml;hrend des Schlafs machbar und effektiv bei jungen, gesunden Menschen ist. Wenn ja, k&ouml;nnen wir es als N&auml;chstes an &auml;lteren Menschen mit Demenzrisiko untersuchen.</p> <p>Auf lange Sicht m&ouml;chte ich zur Demenzpr&auml;vention bzw. -verz&ouml;gerung beitragen, mit einer Intervention, die f&uuml;r Betroffene m&ouml;glichst nicht invasiv, preiswert und praktisch ist. <em>Das geht nur mit der Hilfe von Menschen wie Dir!</em></p> <p>Das Experiment beinhaltet die folgenden Sitzungen:</p> <ol> <li>Eine 1-st&uuml;ndige Sitzung an einem Tag Deiner Wahl, bei der Du Dein Einverst&auml;ndnis erteilst und eine Messung im Wachzustand durchgef&uuml;hrt wird.</li> <li>Eine Nacht im Schlaflabor an einem Wochenende, in der nur Deine Gehirnaktivit&auml;t gemessen wird, sodass wir deinen \"gew&ouml;hnlichen\" Schlaf abbilden k&ouml;nnen.</li> <li>Eine weitere Nacht im Schlaflabor (die direkt darauffolgende Nacht), in der Deine Gehirnaktivit&auml;t gemessen wird und zus&auml;tzlich die Stimulation aktiviert wird, w&auml;hrend Du schl&auml;fst.</li> </ol> <p>In der ersten Sitzung erkl&auml;re ich gerne mehr dazu und beantworte alle Fragen. Versuchsteilnehmende bekommen eine Aufwandsentsch&auml;digung von 100 &euro;, zudem biete ich individualisierte Schlafberichte an.</p>"
                 },
                 {
                     "id": "survey-acknowledgement",
@@ -3153,6 +4339,262 @@
                     "id": "survey-text_to_speech_language",
                     "hash": "4150a2",
                     "translation": "de-DE_BirgitV3Voice",
+                    "valid-translation-values": [
+                        "ar-AR_OmarVoice = Arabic (Male)",
+                        "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
+                        "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
+                        "en-GB_JamesV3Voice = English - United Kingdom (Male)",
+                        "en-US_AllisonV3Voice = English - United States (Female)",
+                        "en-US_HenryV3Voice = English - United States (Male)",
+                        "fr-FR_NicolasV3Voice = French (Male)",
+                        "fr-FR_ReneeV3Voice = French (Female)",
+                        "de-DE_BirgitV3Voice = German (Female)",
+                        "de-DE_DieterV3Voice = German (Male)",
+                        "it-IT_FrancescaV3Voice = Italian (Female)",
+                        "ja-JP_EmiV3Voice = Japanese (Female)",
+                        "es-ES_EnriqueV3Voice = Spanish - Castilian (Male)",
+                        "es-ES_LauraV3Voice = Spanish - Castilian (Female)",
+                        "es-LA_SofiaV3Voice = Spanish - Latin American (Female)",
+                        "es-US_SofiaV3Voice = Spanish - North American (Female)"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "audit",
+            "active": true,
+            "settings": [
+                {
+                    "id": "survey-title",
+                    "hash": "a9795c",
+                    "translation": "Alcohol Use Disorders Identification Test (AUDIT)"
+                },
+                {
+                    "id": "survey-instructions",
+                    "hash": "cc023c",
+                    "translation": "<p>&nbsp;Alkoholkonsum kann Ihre Gesundheit beeinflussen und bestimmte Medikamente und Behandlungen beeintr&auml;chtigen. Daher ist es wichtig, dass wir Sie zu Ihrem Alkoholkonsum befragen. Ihre Angaben werden vertraulich behandelt, bitte antworten Sie ehrlich.</p> <p>W&auml;hlen Sie bitte jeweils die Option, die Ihre Antwort am besten beschreibt.</p>"
+                },
+                {
+                    "id": "survey-acknowledgement",
+                    "hash": "65a08f",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-logo_alt_text",
+                    "hash": "a9795c",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-response_limit_custom_text",
+                    "hash": "0f7185",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-text_to_speech",
+                    "hash": "b6589f",
+                    "translation": "",
+                    "valid-translation-values": [
+                        "0 = Disabled",
+                        "1 = Enabled (initially On but can be turned Off by participant)",
+                        "2 = Enabled (initially Off but can be turned On by participant)"
+                    ]
+                },
+                {
+                    "id": "survey-text_to_speech_language",
+                    "hash": "094b0f",
+                    "translation": "",
+                    "valid-translation-values": [
+                        "ar-AR_OmarVoice = Arabic (Male)",
+                        "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
+                        "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
+                        "en-GB_JamesV3Voice = English - United Kingdom (Male)",
+                        "en-US_AllisonV3Voice = English - United States (Female)",
+                        "en-US_HenryV3Voice = English - United States (Male)",
+                        "fr-FR_NicolasV3Voice = French (Male)",
+                        "fr-FR_ReneeV3Voice = French (Female)",
+                        "de-DE_BirgitV3Voice = German (Female)",
+                        "de-DE_DieterV3Voice = German (Male)",
+                        "it-IT_FrancescaV3Voice = Italian (Female)",
+                        "ja-JP_EmiV3Voice = Japanese (Female)",
+                        "es-ES_EnriqueV3Voice = Spanish - Castilian (Male)",
+                        "es-ES_LauraV3Voice = Spanish - Castilian (Female)",
+                        "es-LA_SofiaV3Voice = Spanish - Latin American (Female)",
+                        "es-US_SofiaV3Voice = Spanish - North American (Female)"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "psqi",
+            "active": true,
+            "settings": [
+                {
+                    "id": "survey-title",
+                    "hash": "955fe0",
+                    "translation": "Pittsburgh Sleep Quality Index (PSQI)"
+                },
+                {
+                    "id": "survey-instructions",
+                    "hash": "94952f",
+                    "translation": "<p><strong>Die folgenden Fragen beziehen sich auf Ihre &uuml;blichen Schlafgewohnheiten <span style=\"text-decoration: underline;\">w&auml;hrend der letzten vier Wochen</span>. Ihre Antworten sollten m&ouml;glichst genau sein und sich auf die <span style=\"text-decoration: underline;\">Mehrzahl</span> der Tage und N&auml;chte w&auml;hrend der letzten vier Wochen beziehen. Beantworten Sie bitte alle Fragen.</strong></p>"
+                },
+                {
+                    "id": "survey-acknowledgement",
+                    "hash": "65a08f",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-logo_alt_text",
+                    "hash": "955fe0",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-response_limit_custom_text",
+                    "hash": "0f7185",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-text_to_speech",
+                    "hash": "b6589f",
+                    "translation": "",
+                    "valid-translation-values": [
+                        "0 = Disabled",
+                        "1 = Enabled (initially On but can be turned Off by participant)",
+                        "2 = Enabled (initially Off but can be turned On by participant)"
+                    ]
+                },
+                {
+                    "id": "survey-text_to_speech_language",
+                    "hash": "094b0f",
+                    "translation": "",
+                    "valid-translation-values": [
+                        "ar-AR_OmarVoice = Arabic (Male)",
+                        "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
+                        "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
+                        "en-GB_JamesV3Voice = English - United Kingdom (Male)",
+                        "en-US_AllisonV3Voice = English - United States (Female)",
+                        "en-US_HenryV3Voice = English - United States (Male)",
+                        "fr-FR_NicolasV3Voice = French (Male)",
+                        "fr-FR_ReneeV3Voice = French (Female)",
+                        "de-DE_BirgitV3Voice = German (Female)",
+                        "de-DE_DieterV3Voice = German (Male)",
+                        "it-IT_FrancescaV3Voice = Italian (Female)",
+                        "ja-JP_EmiV3Voice = Japanese (Female)",
+                        "es-ES_EnriqueV3Voice = Spanish - Castilian (Male)",
+                        "es-ES_LauraV3Voice = Spanish - Castilian (Female)",
+                        "es-LA_SofiaV3Voice = Spanish - Latin American (Female)",
+                        "es-US_SofiaV3Voice = Spanish - North American (Female)"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "mumctq",
+            "active": true,
+            "settings": [
+                {
+                    "id": "survey-title",
+                    "hash": "e454a9",
+                    "translation": "Munich Chronotype Questionnaire Micro (muMCTQ)"
+                },
+                {
+                    "id": "survey-instructions",
+                    "hash": "e19fa2",
+                    "translation": "<p>Im n&auml;chsten Abschnitt werden Dir Fragen im Bezug auf Dein Schlaf- und Wachverhalten an arbeits- und arbeitsfreien Tagen gestellt. Bitte sch&auml;tze Dein 'normales' Schlafverhalten in den letzten 6 Wochen ein.</p>"
+                },
+                {
+                    "id": "survey-acknowledgement",
+                    "hash": "65a08f",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-logo_alt_text",
+                    "hash": "e454a9",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-response_limit_custom_text",
+                    "hash": "0f7185",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-text_to_speech",
+                    "hash": "b6589f",
+                    "translation": "",
+                    "valid-translation-values": [
+                        "0 = Disabled",
+                        "1 = Enabled (initially On but can be turned Off by participant)",
+                        "2 = Enabled (initially Off but can be turned On by participant)"
+                    ]
+                },
+                {
+                    "id": "survey-text_to_speech_language",
+                    "hash": "094b0f",
+                    "translation": "",
+                    "valid-translation-values": [
+                        "ar-AR_OmarVoice = Arabic (Male)",
+                        "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
+                        "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
+                        "en-GB_JamesV3Voice = English - United Kingdom (Male)",
+                        "en-US_AllisonV3Voice = English - United States (Female)",
+                        "en-US_HenryV3Voice = English - United States (Male)",
+                        "fr-FR_NicolasV3Voice = French (Male)",
+                        "fr-FR_ReneeV3Voice = French (Female)",
+                        "de-DE_BirgitV3Voice = German (Female)",
+                        "de-DE_DieterV3Voice = German (Male)",
+                        "it-IT_FrancescaV3Voice = Italian (Female)",
+                        "ja-JP_EmiV3Voice = Japanese (Female)",
+                        "es-ES_EnriqueV3Voice = Spanish - Castilian (Male)",
+                        "es-ES_LauraV3Voice = Spanish - Castilian (Female)",
+                        "es-LA_SofiaV3Voice = Spanish - Latin American (Female)",
+                        "es-US_SofiaV3Voice = Spanish - North American (Female)"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "demographics",
+            "active": true,
+            "settings": [
+                {
+                    "id": "survey-title",
+                    "hash": "faff45",
+                    "translation": "Danke für Deine Antworten!"
+                },
+                {
+                    "id": "survey-instructions",
+                    "hash": "959059",
+                    "translation": "Wir werden damit überprüfen, ob Du zur Teilnahme berechtigt bist. Um Dich für die Studie einzuschreiben, vervollständige bitte noch folgendes: "
+                },
+                {
+                    "id": "survey-acknowledgement",
+                    "hash": "c91760",
+                    "translation": "<p>Vielen Dank, Du hast den Fragebogen erfolgreich ausgef&uuml;llt!</p> <p>Du wirst sehr bald eine Email von mir bekommen.</p> <p>Ich w&uuml;nsche Dir einen sch&ouml;nen Tag :)</p> <p>&nbsp;</p> <hr /> <p>&nbsp;</p> <p>Laura Hainke<br />(Doktorandin)</p> <p>Technische Universit&auml;t M&uuml;nchen<br />Fakult&auml;t f&uuml;r Sport- und Gesundheitswissenschaften<br />Assistant Professorship of Chronobiology &amp; Health<br /><a href=\"mailto:laura.hainke@tum.de\">laura.hainke@tum.de</a></p>"
+                },
+                {
+                    "id": "survey-logo_alt_text",
+                    "hash": "faff45",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-response_limit_custom_text",
+                    "hash": "0f7185",
+                    "translation": ""
+                },
+                {
+                    "id": "survey-text_to_speech",
+                    "hash": "b6589f",
+                    "translation": "",
+                    "valid-translation-values": [
+                        "0 = Disabled",
+                        "1 = Enabled (initially On but can be turned Off by participant)",
+                        "2 = Enabled (initially Off but can be turned On by participant)"
+                    ]
+                },
+                {
+                    "id": "survey-text_to_speech_language",
+                    "hash": "094b0f",
+                    "translation": "",
                     "valid-translation-values": [
                         "ar-AR_OmarVoice = Arabic (Male)",
                         "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",

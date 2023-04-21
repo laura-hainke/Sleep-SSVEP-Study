@@ -1,3 +1,3 @@
-# Sleep-SSVEP-Study
+# Study: Gamma-Sleep
 
-This repository will contain materials and scripts for the ongoing "Gamma_Sleep" experiment.
+This repository contains materials and scripts for the Gamma-Sleep experiment (ongoing).

@@ -13,13 +13,13 @@ library(lubridate)
 
 
 # Function: load_redcap -------------------------------------------------------------------------------------------
-# Load a CSV data from redcap and format it.
+# Load a CSV file from redcap and format it.
 # Based on a script provided by REDCap when exporting data for R.
 
 ## INPUT
 
 # filename : str
-#   Name of the CSV file plus ending. E.g., "redcapdata.csv"
+#   Name of the CSV file, including path and extension
 
 ## OUTPUT
 

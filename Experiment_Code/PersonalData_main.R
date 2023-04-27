@@ -11,30 +11,36 @@
 library(data.table)
 library(lubridate)
 
-# Source functions
+# Source functions, file in current directory
 source("PersonalData_functions.r")
 
 # Get participant number from user
-subject_nr <- readline(prompt="Subject number: ")
+subject_nr = readline(prompt="Subject number: ")
+
+# Path to file with input data
+path_in = paste("D:/Documents/Gamma_Sleep/Data/Raw/", subject_nr, "/REDCap/", subject_nr, "_Screening.csv", sep="")
+
+# Path to file with output data
+path_out = paste("D:/Documents/Gamma_Sleep/Data/Derivatives/", subject_nr, "/REDCap/", subject_nr, "_PersonalData.csv", sep="")
+
 
 
 # Data & exclusion criteria check ------------------------------------------------------------------------------------------------------------
 
 ## Load data file and format it
-imp_filename = paste(subject_nr, "exampledata.csv", sep = "_")
-data = load_redcap(imp_filename)
+data = load_redcap(path_in)
 
 
 ## Check: are there any columns with unintended NA values?
-check_data(data,'NA_values')
+check_data(data,"NA_values")
 
 
 ## Check: consent granted?
-check_data(data,'consent')
+check_data(data,"consent")
 
 
-## Check: any cutoff questions answered with 'maybe'?
-check_data(data,'cutoff_extra')
+## Check: any cutoff questions answered with "maybe"?
+check_data(data,"cutoff_extra")
 
 
 
@@ -43,25 +49,24 @@ check_data(data,'cutoff_extra')
 ## Extract & check AUDIT score
 audit_score = as.integer(data$audit_score[2])
 
-check_score(audit_score,'AUDIT')
+check_score(audit_score,"AUDIT")
 
 
 ## Compute & check uMCTQ score
 MSF_sc = score_uMCTQ(data)
 
-check_score(MSF_sc,'uMCTQ')
+check_score(MSF_sc,"uMCTQ")
 
 
 ## Compute & check PSQI score
 psqi_score = score_PSQI(data)
 
-check_score(psqi_score,'PSQI')
+check_score(psqi_score,"PSQI")
 
 
 ## Time to schedule arrival at sleep lab, 2 hours before usual bedtime on free days
 lab_arrival = strptime(data$mumctq_fall_sleep_free[2], format = "%H:%M") - hours(2)
 lab_arrival = format(lab_arrival, "%H:%M") # format to include only hours and minutes
-
 
 
 
@@ -76,7 +81,7 @@ if (data$sex[2] == 1 & data$gender[2] == 1) { # female & woman
   gender_match = 1
 } else if (data$sex[2] == 2 & data$gender[2] == 2) { # male & man
   gender_match = 1
-} else { # all other cases, including intersex, transgender, non-binary, 'prefer not to say'; check individual case
+} else { # all other cases, including intersex, transgender, non-binary, "prefer not to say"; check individual case
   gender_match = 0
 }
 
@@ -91,9 +96,6 @@ outputs$uMCTQ_score = hms::parse_hm(MSF_sc) # hms
 outputs$PSQI_score = psqi_score # num
 
 # Export as CSV
-exp_filename = paste(subject_nr, "PersonalData.csv", sep = "_")
-write.csv(outputs, file=exp_filename)
-
-
+write.csv(outputs, file=path_out)
 
 

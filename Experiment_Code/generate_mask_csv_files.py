@@ -147,7 +147,7 @@ def create_data_rampup(flicker_freq,max_analog,sample_rate):
     # Triggers (none)
     triggers = np.zeros((nsamples, 5))
     
-    # Notes
+    # Notes (none)
     notes = np.array([''] * nsamples)
 
 
@@ -195,20 +195,20 @@ def create_data_rampup(flicker_freq,max_analog,sample_rate):
     ## Transform into data array with flicker
     
     # Initialize data array (2 channels)
-    ramp_5min = np.zeros((nsamples,2))
+    ramp_up = np.zeros((nsamples,2))
     
     # Fill cycles with ON period from cosines_int, leave OFF period at 0
     i = 0
     while i in range(0, ncycles):
         
-        ramp_5min[i*2] = y_abs_lin_int[i]
+        ramp_up[i*2] = y_abs_lin_int[i]
         i += 1
     
 
     ## Combine arrays
     
     # Sample nrs, data, notes
-    data = np.c_[sample_nrs, ramp_5min, triggers, notes]
+    data = np.c_[sample_nrs, ramp_up, triggers, notes]
     
     # Add headers
     data = np.vstack([headers,data])
@@ -251,10 +251,10 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
     ## Compute parameters
     
     # Max. stim time in sec (8 hours)
-    max_stim_time = 8 * 60 * 60
+    max_stim_time = int(8 * 60 * 60)
     
-    # Duration of data file in sec (1 min)
-    data_file_time = 60
+    # Duration of data file in sec (1 hour)
+    data_file_time = int(max_stim_time / 8)
     
     # Nr. of samples for defined stim data duration
     nsamples = int(sample_rate * data_file_time)
@@ -271,7 +271,7 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
     # Sample nrs
     sample_nrs = np.array([i for i in range(1, nsamples+1)])
     
-    # Notes
+    # Notes (none)
     notes = np.array([''] * nsamples)
     
 
@@ -280,7 +280,7 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
     # Data for 1 flicker cycle
     cycle_data = np.array([[max_analog,max_analog,0,0,0,1,1], [0,0,0,0,0,0,0]])
 
-    # Data for 1 min
+    # Data for full file
     cycles_1min = np.tile(cycle_data, (flicker_freq*data_file_time, 1))
     
     
@@ -288,6 +288,133 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
     
     # Sample nrs, data, notes
     data = np.c_[sample_nrs, cycles_1min, notes]
+    
+    # Add headers
+    data = np.vstack([headers,data])
+
+    return data, nsamples, nrepeat
+
+
+
+# %% Function: generate rampdown data
+
+"""
+    Function to create stimulation data for rampdown routine.
+    
+    Input
+    ----------
+    flicker_freq : int
+	Flicker frequency (40 Hz).
+    
+    max_analog : int
+    Analog value corresponding to stim target illuminance (20 lux).
+    
+    sample_rate : int
+    Frequency at which the Arduino reads CSV rows, in Hz.
+
+    Output
+    -------
+    data : ndarray
+	CSV file content below header.
+    
+    nsamples : int
+	Nr of CSV rows containing output data.
+    
+    nrepeat : int
+	Nr of times the CSV should be iterated over.
+
+"""
+
+def create_data_rampdown(flicker_freq,max_analog,sample_rate):
+
+    ## Compute parameters
+
+    # Duration of data file in sec (30 sec rampdown)
+    data_file_time = 30
+    
+    # Nr. of samples for defined stim data duration
+    nsamples = int(sample_rate * data_file_time)
+    
+    # Nr. of flicker cycles for defined stim data duration
+    ncycles = flicker_freq * data_file_time
+
+    # Nr. of repetitions (rampdown once)
+    nrepeat = 1
+
+
+    ## Required CSV format elements
+    
+    # Header row of data
+    headers = ['Sample', 'Channel1', 'Channel2', 'Channel3', 'Channel4', 'Channel5', 'Channel6', 'Trigger', 'Note']
+
+    # Sample nrs
+    sample_nrs = np.array([i for i in range(1, nsamples+1)])
+    
+    # Triggers (none)
+    triggers = np.zeros((nsamples, 5))
+    
+    # Notes (none)
+    notes = np.array([''] * nsamples)
+
+
+    ## Generate cosine ramp
+    
+    # Array of radians between 0 (peak) & pi (trough), with nr. of elements = nr. of cycles
+    radians = np.array([i for i in np.arange(0, np.pi, np.pi/(ncycles-0.5))]) # subtract 0.5 from ncycles to get correct nr of elements
+    
+    # Take cosine values of radians, with fitted amplitude & upward shift (for y in cosine shape)
+    cosines = np.array([i for i in (max_analog/2) * np.cos(radians) + max_analog/2])
+
+    
+    ## Apply linearization of raw analog values to match lux decrease
+    
+    # y values relative to max_analog
+    y_rel = np.array([i/max_analog for i in cosines])
+    
+    # Apply linearization function to relative values
+    y_rel_lin = scipy.stats.beta.cdf(y_rel, opt_param[0], opt_param[1])
+    
+    # Revert to absolute values
+    y_abs_lin = np.array([i*max_analog for i in y_rel_lin])
+    
+    # Round y values, as program only takes int values
+    y_abs_lin_int = np.round(y_abs_lin)
+     
+    
+    ## Plot for visual inspection
+    
+    fig, ax = plt.subplots(1,2)
+    
+    # Plot 1: uncorrected ramp
+    ax[0].plot(np.round(cosines)) # round for better comparison
+    ax[0].set_title('Cosine ramp-down, uncorrected', size=30, y=1.05)
+    ax[0].set_xlabel('Flicker cycles (0-30 sec)', size=20)
+    ax[0].set_ylabel('Rounded analog values', size=20)
+    
+    # Plot 2: linearized ramp
+    ax[1].plot(y_abs_lin_int)
+    ax[1].set_title('Cosine ramp-down, linearized', size=30, y=1.05)
+    ax[1].set_xlabel('Flicker cycles (0-30 sec)', size=20)
+    ax[1].set_ylabel('Rounded analog values', size=20)
+
+
+    ## Transform into data array with flicker
+    
+    # Initialize data array (2 channels)
+    ramp_down = np.zeros((nsamples,2))
+    
+    # Fill cycles with ON period from cosines_int, leave OFF period at 0
+    i = 0
+    while i in range(0, ncycles):
+        
+        ramp_down[i*2] = y_abs_lin_int[i]
+        i += 1
+    
+
+    ## Combine arrays
+    
+    # Sample nrs, data, notes
+    data = np.c_[sample_nrs, ramp_down, triggers, notes]
     
     # Add headers
     data = np.vstack([headers,data])
@@ -373,6 +500,16 @@ header_flicker = create_header(date,sample_rate,min_analog,max_analog,nsamples_f
 write_CSV(2,header_flicker,data_flicker)
 
 
+## Ramp-down
+
+# Generate data
+data_rampdown, nsamples_rampdown, nrepeat_rampdown = create_data_rampdown(flicker_freq,max_analog,sample_rate)
+
+# Generate header
+header_rampdown = create_header(date,sample_rate,min_analog,max_analog,nsamples_rampdown,nrepeat_rampdown)
+
+# Generate CSV
+write_CSV(3,header_rampdown,data_rampdown)
 
 
 

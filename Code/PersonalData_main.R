@@ -1,5 +1,5 @@
 # Author: LH
-# Date: 2023-04-19
+# Date: 06.2023
 # Functionality: Script to import, process and evaluate personal data (Gamma-Sleep study).
 # Notes:
 
@@ -18,10 +18,10 @@ source("PersonalData_functions.r")
 subject_nr = readline(prompt="Subject number: ")
 
 # Path to file with input data
-path_in = paste("D:/Documents/Gamma_Sleep/Data/Raw/", subject_nr, "/REDCap/", subject_nr, "_Screening.csv", sep="")
+path_in = paste("D:/Documents/Gamma_Sleep/Data/Raw/", subject_nr, "/REDCap/", subject_nr, "_screening.csv", sep="")
 
 # Path to file with output data
-path_out = paste("D:/Documents/Gamma_Sleep/Data/Derivatives/", subject_nr, "/REDCap/", subject_nr, "_PersonalData.csv", sep="")
+path_out = paste("D:/Documents/Gamma_Sleep/Data/Derivatives/", subject_nr, "/REDCap/", subject_nr, "_personal-data.csv", sep="")
 
 
 

@@ -1,6 +1,6 @@
 # Author: LH
-# Date: 2023-04-26
-# Functionality: 
+# Date: 06.2023
+# Functionality: Functions for the extraction of sleep quality data (Gamma-Sleep study).
 # Notes:
 
 

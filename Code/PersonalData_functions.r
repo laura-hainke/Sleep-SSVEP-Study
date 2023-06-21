@@ -1,5 +1,5 @@
 # Author: LH
-# Date: 2023-04-19
+# Date: 06.2023
 # Functionality: Functions for the evaluation of personal data (Gamma-Sleep study).
 
 

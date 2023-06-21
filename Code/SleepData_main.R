@@ -1,5 +1,5 @@
 # Author: LH
-# Date: 2023-04-26
+# Date: 06.2023
 # Functionality: Script to import, process and evaluate sleep data (Gamma-Sleep study).
 # Notes:
 
@@ -17,16 +17,16 @@ subject_nr = readline(prompt="Subject number: ")
 path_in = paste("D:/Documents/Gamma_Sleep/Data/Raw/", subject_nr, sep="")
 
 # Paths to files in input data folders
-path_gsqs = paste(path_in, "/REDCap/", subject_nr, "_SleepQuality.csv", sep="") # File: GSQS, con + exp
-path_psg_con = paste(path_in, "/Session02/", subject_nr, "_con_PSG-Report.pdf", sep="") # File: PSG, control
-path_psg_exp = paste(path_in, "/Session03/", subject_nr, "_exp_PSG-Report.pdf", sep="") # File: PSG, experimental
+path_gsqs = paste(path_in, "/REDCap/", subject_nr, "_sleep-quality.csv", sep="") # File: GSQS, con + exp
+path_psg_con = paste(path_in, "/Session02/", subject_nr, "_session02_PSG-report.pdf", sep="") # File: PSG, control
+path_psg_exp = paste(path_in, "/Session03/", subject_nr, "_session03_PSG-report.pdf", sep="") # File: PSG, experimental
 
 # Path to folders with output data
 path_out = paste("D:/Documents/Gamma_Sleep/Data/Derivatives/", subject_nr, sep="")
 
 # Path to files in output data folders
-path_out_con = paste(path_out, "/Session02/", subject_nr, "_con_SleepData.csv", sep="") # File: all outputs, control
-path_out_exp = paste(path_out, "/Session03/", subject_nr, "_exp_SleepData.csv", sep="") # File: all outputs, experimental
+path_out_con = paste(path_out, "/Control/", subject_nr, "_session02_sleep-data.csv", sep="") # File: all outputs, control
+path_out_exp = paste(path_out, "/Experimental/", subject_nr, "_session03_sleep-data.csv", sep="") # File: all outputs, experimental
 
 
 
@@ -60,6 +60,10 @@ for (cond in c("con","exp")) {
     psg_data = psg_data_con # PSG parameters
     path = path_out_con # Output filename
     
+	# Only in control condition: subtracting 10 min from sleep latency
+	# This is due to the instruction to stay awake for 10 min, to ensure a minimal number of W epochs in the control condition
+	psg_data$sleep_lat = psg_data$sleep_lat - 10
+	
   } else if (cond == "exp") { # experimental
     
     gsqs_sum = as.integer(gsqs_data$gsqs_sum_exp[2]) # GSQS sum score

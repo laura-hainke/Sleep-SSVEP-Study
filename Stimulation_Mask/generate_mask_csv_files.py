@@ -182,13 +182,13 @@ def create_data_rampup(flicker_freq,max_analog,sample_rate):
     # Plot 1: uncorrected ramp
     ax[0].plot(np.round(cosines)) # round for better comparison
     ax[0].set_title('Cosine ramp-up, uncorrected', size=30, y=1.05)
-    ax[0].set_xlabel('Flicker cycles (0-5 min)', size=20)
+    ax[0].set_xlabel('Flicker cycles (0-' + str(data_file_time/60) + ' min)', size=20)
     ax[0].set_ylabel('Rounded analog values', size=20)
     
     # Plot 2: linearized ramp
     ax[1].plot(y_abs_lin_int)
     ax[1].set_title('Cosine ramp-up, linearized', size=30, y=1.05)
-    ax[1].set_xlabel('Flicker cycles (0-5 min)', size=20)
+    ax[1].set_xlabel('Flicker cycles (0-' + str(data_file_time/60) + ' min)', size=20)
     ax[1].set_ylabel('Rounded analog values', size=20)
 
 
@@ -329,8 +329,8 @@ def create_data_rampdown(flicker_freq,max_analog,sample_rate):
 
     ## Compute parameters
 
-    # Duration of data file in sec (30 sec rampdown)
-    data_file_time = 30
+    # Duration of data file in sec
+    data_file_time = 5
     
     # Nr. of samples for defined stim data duration
     nsamples = int(sample_rate * data_file_time)
@@ -388,13 +388,13 @@ def create_data_rampdown(flicker_freq,max_analog,sample_rate):
     # Plot 1: uncorrected ramp
     ax[0].plot(np.round(cosines)) # round for better comparison
     ax[0].set_title('Cosine ramp-down, uncorrected', size=30, y=1.05)
-    ax[0].set_xlabel('Flicker cycles (0-30 sec)', size=20)
+    ax[0].set_xlabel('Flicker cycles (0-' + str(data_file_time) + ' sec)', size=20)
     ax[0].set_ylabel('Rounded analog values', size=20)
     
     # Plot 2: linearized ramp
     ax[1].plot(y_abs_lin_int)
     ax[1].set_title('Cosine ramp-down, linearized', size=30, y=1.05)
-    ax[1].set_xlabel('Flicker cycles (0-30 sec)', size=20)
+    ax[1].set_xlabel('Flicker cycles (0-' + str(data_file_time) + ' sec)', size=20)
     ax[1].set_ylabel('Rounded analog values', size=20)
 
 

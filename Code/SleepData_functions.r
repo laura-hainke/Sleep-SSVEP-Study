@@ -168,6 +168,17 @@ load_psg <- function(filename) {
   # Access text
   text = file[[1]]$text
   
+  ## Sanity check: do filename & participant ID in PDF match?
+  
+  # Get subject IDs
+  id_pdf = text[21] # Subject ID of PDF file
+  id_folder = substr(filename, 53, 54) # Subject ID of folder
+  
+  # Print warning if not matching
+  if (id_pdf != id_folder) {
+    print('Subject IDs not matching, check if files are correct!')
+  }
+  
   # Initialize output dataframe
   data = data.frame(matrix(ncol = 9, nrow = 1))
   colnames(data) = c("time_lightsoff","time_lightson","sleep_lat","TST","WASO","perN1","perN2","perN3","perREM")
@@ -175,15 +186,15 @@ load_psg <- function(filename) {
   # Fill in correct values
   # NOTE: this was written based on an example PDF file. Quick check recommended for 'real' recordings
   
-  data$time_lightsoff = text[58] # str; HMS
-  data$time_lightson = text[63] # str; HMS
-  data$WASO = as.integer(text[151]) # min
-  data$sleep_lat = as.integer(text[153]) # min
-  data$TST = as.integer(text[76])*60 # hours
-  data$perN1 = as.integer(text[171]) # % of TST
-  data$perN2 = as.integer(text[171]) # % of TST
-  data$perN3 = as.integer(text[171]) # % of TST
-  data$perREM = as.integer(text[171]) # % of TST
+  data$time_lightsoff = text[44] # str; HMS
+  data$time_lightson = text[48] # str; HMS
+  data$WASO = as.numeric(text[152]) # min
+  data$sleep_lat = as.numeric(text[154]) # min
+  data$TST = as.numeric(text[77]) # min
+  data$perN1 = as.numeric(text[172]) # % of TST
+  data$perN2 = as.numeric(text[173]) # % of TST
+  data$perN3 = as.numeric(text[174]) # % of TST
+  data$perREM = as.numeric(text[175]) # % of TST
   
   return(data)
   

@@ -1,5 +1,5 @@
 # Author: LH
-# Date: 06.2023
+# Date: 07.2023
 # Functionality: Script to import, process and evaluate sleep data (Gamma-Sleep study).
 # Notes:
 
@@ -14,7 +14,7 @@ source("SleepData_functions.r")
 subject_nr = readline(prompt="Subject number: ")
 
 # Path to folders with input data
-path_in = paste("D:/Documents/Gamma_Sleep/Data/Raw/", subject_nr, sep="")
+path_in = paste("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Raw/", subject_nr, sep="")
 
 # Paths to files in input data folders
 path_gsqs = paste(path_in, "/REDCap/", subject_nr, "_sleep-quality.csv", sep="") # File: GSQS, con + exp
@@ -22,7 +22,7 @@ path_psg_con = paste(path_in, "/Session02/", subject_nr, "_session02_PSG-report.
 path_psg_exp = paste(path_in, "/Session03/", subject_nr, "_session03_PSG-report.pdf", sep="") # File: PSG, experimental
 
 # Path to folders with output data
-path_out = paste("D:/Documents/Gamma_Sleep/Data/Derivatives/", subject_nr, sep="")
+path_out = paste("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Derivatives/", subject_nr, sep="")
 
 # Path to files in output data folders
 path_out_con = paste(path_out, "/Control/", subject_nr, "_session02_sleep-data.csv", sep="") # File: all outputs, control
@@ -80,7 +80,7 @@ for (cond in c("con","exp")) {
   outputs = cbind(outputs,psg_data)
   
   # Export as CSV
-  write.csv(outputs, file=path)
+  write.csv(outputs, file=path, row.names = FALSE)
   
 }
 

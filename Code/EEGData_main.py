@@ -18,11 +18,16 @@ Notes:
 # %% Environment Setup
 
 # Import custom functions
-from EEGData_functions import load_raw, assign_epochs
+from EEGData_functions import load_raw, assign_epochs, select_epochs, compute_PSD
 
 # Import packages
 import csv
 import mne
+import pandas as pd 
+import numpy as np
+
+# Define scored epoch duration (AASM standard, 30 sec)
+epoch_len = 30
 
 
 
@@ -79,14 +84,81 @@ path_exp_curves_SSVEP = str(path_out + "/Experimental/" + subject_nr + "_experim
 
 # %% Load & process control data
 
+## Load files
+
 # Load data, select ROI channels
 raw_s02 = load_raw(path_ses02_EEG)
 
-# Assign scored epochs to data
-data_epochs_s02 = assign_epochs(raw_s02, path_ses02_epochs)
+# Load scored epochs, assign to data
+raw_s02, data_s02 = assign_epochs(raw_s02, epoch_len, path_ses02_epochs)
 
-# Compute average PSD per condition
-PSD_spectra_con, PSD_metrics_con = [] 
+
+## Loop over stages to compute PSD & SNR
+
+# Initialize dict for output metrics
+PSD_metrics_con = dict()
+
+# Initialize array for spectra
+PSD_spectra_con = []
+
+# Loop
+for stage in [0,2,3,4]:
+    
+    # Create and select epochs (=30 sec trials) for PSD analyses of current stage
+    epochs_s02 = select_epochs(raw_s02, epoch_len, event_id=[stage])
+
+    # Get nr. of trials factoring into PSD analyses for current stage
+    PSD_ntrials = len(epochs_s02)
+
+    # Compute PSD and SNR spectra for current stage + metrics
+    PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_s02, epoch_len, stage)
+    
+    # Store metrics in dict
+    if stage == 0: # Wake
+        
+        PSD_metrics_con['PSD_ntrials_W'] = PSD_ntrials
+        PSD_metrics_con['PSD_40Hz_W'] = PSD_40Hz
+        PSD_metrics_con['PSD_SNR_W'] = SNR_40Hz
+        
+    elif stage == 2: # N2
+    
+        PSD_metrics_con['PSD_ntrials_N2'] = PSD_ntrials
+        PSD_metrics_con['PSD_40Hz_N2'] = PSD_40Hz
+        PSD_metrics_con['PSD_SNR_N2'] = SNR_40Hz
+        
+    elif stage == 3: # N3
+    
+        PSD_metrics_con['PSD_ntrials_N3'] = PSD_ntrials
+        PSD_metrics_con['PSD_40Hz_N3'] = PSD_40Hz
+        PSD_metrics_con['PSD_SNR_N3'] = SNR_40Hz
+        
+    elif stage == 4: # REM
+    
+        PSD_metrics_con['PSD_ntrials_REM'] = PSD_ntrials
+        PSD_metrics_con['PSD_40Hz_REM'] = PSD_40Hz
+        PSD_metrics_con['PSD_SNR_REM'] = SNR_40Hz
+
+    # Store spectra in array
+    PSD_spectra_con.append(np.ndarray.tolist(PSD_spectrum))
+    PSD_spectra_con.append(np.ndarray.tolist(SNR_spectrum))
+        
+
+## Create pandas dataframes for easier export
+
+# Turn array with spectra into pandas dataframe 
+PSD_spectra_con = pd.DataFrame(data=PSD_spectra_con)
+
+# Transpose dataframe
+PSD_spectra_con = PSD_spectra_con.transpose()
+
+# Add variable names as headers
+PSD_spectra_con.columns=['W_PSD','W_SNR','N2_PSD','N2_SNR','N3_PSD','N3_SNR','REM_PSD','REM_SNR']
+
+# Convert metrics dict into pandas as well
+PSD_metrics_con = pd.DataFrame(PSD_metrics_con)
+
+
+## Loop over stages to compute SSVEP & SNR
 
 # Compute average SSVEP per condition
 SSVEP_curves_con, SSVEP_metrics_con = []

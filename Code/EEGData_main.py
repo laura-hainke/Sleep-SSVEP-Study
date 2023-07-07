@@ -25,6 +25,10 @@ import csv
 import mne
 import pandas as pd 
 import numpy as np
+import os
+
+# Define directory
+os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
 
 # Define scored epoch duration (AASM standard, 30 sec)
 epoch_len = 30
@@ -105,13 +109,22 @@ PSD_spectra_con = []
 for stage in [0,2,3,4]:
     
     # Create and select epochs (=30 sec trials) for PSD analyses of current stage
-    epochs_s02 = select_epochs(raw_s02, epoch_len, event_id=[stage])
-
-    # Get nr. of trials factoring into PSD analyses for current stage
-    PSD_ntrials = len(epochs_s02)
+    epochs_s02 = select_epochs(raw_s02, epoch_len, event_id=stage)
+    
+    # Print nr. of epochs recorded at this stage
+    print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_s02.events)))
 
     # Compute PSD and SNR spectra for current stage + metrics
     PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_s02, epoch_len, stage)
+    
+    # Get nr. of trials factoring into PSD analyses for current stage
+    try:
+        PSD_ntrials = len(epochs_s02) # only works when bad epochs have been dropped
+    except:
+        PSD_ntrials = len(epochs_s02.events) # full list of events in case no epochs have been dropped
+        
+    # Print nr. of epochs used for analysis
+    print('Nr. of epochs used in analysis: ' + str(PSD_ntrials))
     
     # Store metrics in dict
     if stage == 0: # Wake
@@ -155,7 +168,7 @@ PSD_spectra_con = PSD_spectra_con.transpose()
 PSD_spectra_con.columns=['W_PSD','W_SNR','N2_PSD','N2_SNR','N3_PSD','N3_SNR','REM_PSD','REM_SNR']
 
 # Convert metrics dict into pandas as well
-PSD_metrics_con = pd.DataFrame(PSD_metrics_con)
+PSD_metrics_con = pd.DataFrame.from_dict(PSD_metrics_con, orient='index')
 
 
 ## Loop over stages to compute SSVEP & SNR

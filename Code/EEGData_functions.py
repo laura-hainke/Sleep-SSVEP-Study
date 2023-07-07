@@ -87,12 +87,12 @@ def load_raw(filename,bad_ch=None):
     Length of scored epochs
     
     filename : str
-	 Path to epoch report file in .txt format
+	Path to epoch report file in .txt format
 
     Output
     -------
     data : ndarray
-	 Array containing data points and assigned stages
+	Array containing data points and assigned stages
     
     raw : MNE object
     Original raw object with added annotations for epochs
@@ -183,7 +183,7 @@ def assign_epochs(raw, epoch_len, filename):
     # Onset of annotations: every 30 sec, for whole recording
     onset = list(range(0, rec_len, 30))
     
-    # Create anotations
+    # Create anotations: every 30 sec, each lasting 30 sec, with scored stages as markers
     annotations = mne.Annotations(onset=onset, duration=epoch_len, description=epoch_stages)  
     
     # Add to raw object
@@ -249,17 +249,16 @@ def assign_epochs(raw, epoch_len, filename):
 
 def select_epochs(raw, epoch_len, event_id):
     
-    # Turn annotations into events
-    events, _ = mne.events_from_annotations(raw, verbose=False)
+    # Turn annotations of currently selected stage into events
+    events, _ = mne.events_from_annotations(raw, event_id = {str(event_id):event_id}, verbose=False)
     
     # Create epochs
     epochs = mne.Epochs(
         raw,
         events=events,
-        event_id=event_id, # events to consider; here, sleep stages 
         tmin=0, # start trials at beginning of scored epochs
         tmax=epoch_len, # end trials at end of scored epochs
-        reject=dict(eeg = 0.001),  # Trial rejection criterion: 1 mV peak to peak
+        reject=dict(eeg = 0.001),  # trial rejection criterion: 1 mV peak to peak
         baseline=None,
         verbose=False
     )
@@ -309,14 +308,15 @@ def compute_PSD(epochs, epoch_len, stage):
     # Get sampling rate
     sfreq = epochs.info["sfreq"]
     
-    # Compute average PSD spectra per stage
+    # Compute average PSD spectra for this stage's epochs
+    # Note: only at this point do bad epochs get rejected
     spectrum = epochs.compute_psd(
         "welch",
         n_fft=int(sfreq * epoch_len), # length of FFT
         tmin=0,
         tmax=epoch_len,
-        fmin=1, # min. frequency to include in spectra
-        fmax=100, # max. frequency to include in spectra
+        fmin=0, # min. frequency to include in spectra (Hz)
+        fmax=100, # max. frequency to include in spectra (Hz)
         window='hamming',
         verbose=False
     )
@@ -332,13 +332,13 @@ def compute_PSD(epochs, epoch_len, stage):
     # Find index of lower boundary for target frequency range (here, 39.5 Hz)
     idx_bin_lower = np.argmin(abs(freqs - 39.5))
 
-    # Half length of target frequency range (in nr. of frequencies)
+    # Half length of target frequency range (in nr. of frequency bins)
     bin_len = idx_bin_40Hz - idx_bin_lower
 
     
     ## Compute SNR
     
-    # Nr. of neighboring frequencies used to compute noise level, on each side (here, 'noise' = [38-39.5 Hz] + [40.5-42 Hz])
+    # Nr. of neighboring frequency bins used to compute noise level, on each side (here, 'noise' = [38-39.5 Hz] + [40.5-42 Hz])
     noise_n_neighbor_freqs = bin_len*3
 
     # Exclude immediately neighboring frequency bins in noise level calculation (here, 'signal' = [39.5-40.5 Hz])
@@ -367,18 +367,19 @@ def compute_PSD(epochs, epoch_len, stage):
     )
     
     # Compute SNR spectra
+    # snrs: ndarray with shape (n_epochs, n_channels, n_freqs)
     snrs = psds / mean_noise
     
     
     ## Plot spectra
     
     fig, axes = plt.subplots(2, 1, sharex='all', sharey='none', figsize=(8, 5))
-    freq_range = range(np.where(np.floor(freqs) == 1.)[0][0], np.where(np.ceil(freqs) == 100 - 1)[0][0])
+    freq_range = range(np.where(np.floor(freqs) == 0)[0][0], np.where(np.ceil(freqs) == 100)[0][0])
     
     # PSD spectrum
-    psds_plot = 10 * np.log10(psds)
-    psds_mean = psds_plot.mean(axis=(0, 1))[freq_range]
-    psds_std = psds_plot.std(axis=(0, 1))[freq_range]
+    psds_plot = 10 * np.log10(psds) # in dB
+    psds_mean = psds_plot.mean(axis=(0, 1))[freq_range] # across channels and epochs
+    psds_std = psds_plot.std(axis=(0, 1))[freq_range] # add standard deviation
     axes[0].plot(freqs[freq_range], psds_mean, color='b')
     axes[0].fill_between(
         freqs[freq_range], psds_mean - psds_std, psds_mean + psds_std,
@@ -386,24 +387,25 @@ def compute_PSD(epochs, epoch_len, stage):
     axes[0].set(title="PSD spectrum, stage "+str(stage), ylabel='Power Spectral Density [dB]')
     
     # SNR spectrum
-    snr_mean = snrs.mean(axis=(0, 1))[freq_range]
-    snr_std = snrs.std(axis=(0, 1))[freq_range]
+    snr_mean = snrs.mean(axis=(0, 1))[freq_range] # across channels and epochs
+    snr_std = snrs.std(axis=(0, 1))[freq_range] # add standard deviation
     
     axes[1].plot(freqs[freq_range], snr_mean, color='r')
     axes[1].fill_between(
         freqs[freq_range], snr_mean - snr_std, snr_mean + snr_std,
         color='r', alpha=.2)
-    axes[1].set( title="SNR spectrum, stage "+str(stage), xlabel='Frequency [Hz]', ylabel='SNR', ylim=[-2, 30], xlim=[1, 100])
+    axes[1].set( title="SNR spectrum, stage "+str(stage), xlabel='Frequency [Hz]', ylabel='SNR', ylim=[-1, 50], xlim=[1, 100])
     fig.show()
     
     
     ## Get metrics
     
-    # Get SNRs in defined range around target frequency (allowing for slightly different individual SSVEP frequencies)
-    snrs_40Hz = snrs[0,:,(idx_bin_40Hz-bin_len):(idx_bin_40Hz+bin_len)]
+    # Get SNRs in defined range around target frequency 
+    # (allowing for slightly different individual SSVEP frequencies / inconsistencies in flicker)
+    snrs_40Hz = snrs[:,:,(idx_bin_40Hz-bin_len):(idx_bin_40Hz+bin_len)]
 
-    # Average across occipital electrodes
-    snrs_40Hz_avg = snrs_40Hz.mean(axis=0)
+    # Average across epochs & channels
+    snrs_40Hz_avg = snrs_40Hz.mean(axis=(0, 1))
 
     # Get maximum averaged SNR in that range
     idx_max_SNR = np.argmax(snrs_40Hz_avg) # index in target frequency subset

@@ -16,226 +16,308 @@ import mne
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import yasa
+import pandas as pd 
 
 
 
 # %% Function: load_raw
 """
-    Load raw EEG file in Nihon Kohden format and perform basic processing.
+    Load raw EEG data in EDF format, split into PSG and EEG, perform basic processing.
 
     Input
     ----------
     filename : str
-    Path to the Nihon Kohden file
+    Path to the Nihon Kohden files
         
     bad_ch : list
-    Names of bad channels identified visually
+    Names of bad channels identified visually.
+    Examples: [] (no bad channels); ['LEMG'] (1 bad channel); ['C3','LEMG'] (more than 1 bad channel)
     
     Output
     -------
-    raw : MNE raw object
-    Processed data in MNE format
+    raw_PSG : MNE raw object
+    Processed data in MNE format - PSG channels
+    
+    raw_EEG : MNE raw object
+    Processed data in MNE format - EEG channels
 
 """
 
-def load_raw(filename,bad_ch=None):
+def load_raw(filename,bad_ch):
+
+    ## Load raw file    
 
     # Go to directory containing files (necessary for read_raw_nihon)
     os.chdir(filename[0:55])
     
-    # Load raw data in Nihon Kohden format (Note: takes ~25 min for a full night)
-    raw = mne.io.read_raw_nihon(filename, preload=True)
+    # Load metadata of full raw file in EDF format
+    # Note: not yet preloading data to save memory
+    raw = mne.io.read_raw_edf(filename, preload=False)
     
-    # Rename channels (original channel names needed to match Neurofax headbox)
-    raw.rename_channels({'Cz':'Oz', 'P3':'PO3', 'P4':'PO4', 'Pz':'POz'})
-    
-    # Re-reference all ROI channels to Fz
-    raw.set_eeg_reference(ref_channels=['Fz'])
-    
-    # Keep only ROI channels
-    raw.pick_channels(['O1','O2','Oz','PO3','PO4','POz'], ordered=True)
+    # Rename channels whose original names needed to match Neurofax headbox
+    raw.rename_channels({'Cz':'Oz', 'P3':'PO3', 'P4':'PO4', 'Pz':'POz', 'PG1':'LEOG', 'PG2':'REOG', 'T1':'LEMG', 'T2':'REMG'})
     
     # Mark bad channels, if any
-    if bad_ch:
+    raw.info['bads'] = bad_ch
     
-        if len(bad_ch) == 1:
+    
+    ## PSG channels
+    
+    # Add an exception catcher if something fails (e.g., memory overload)
+    try:
+    
+        # Make a copy of the raw object
+        raw_PSG = raw.copy()
         
-            raw.info['bads'].append(bad_ch)
+        # Get the channel subset for PSG
+        raw_PSG.pick(['C3','C4','LEOG','REOG','LEMG','REMG','A1','A2'])
         
-        elif len(bad_ch) > 1:
+        # Load data into memory
+        raw_PSG.load_data()
         
-            raw.info['bads'].extend(bad_ch)
+        # Downsample to 100 Hz for faster computation; assumed for spectrogram
+        raw_PSG.resample(100) 
+        
+        # Apply band-pass filter
+        raw_PSG.filter(l_freq=0.1, h_freq=45)
+        
+        # Re-reference channels to mastoid average
+        raw_PSG.set_eeg_reference(ref_channels=['A1','A2'])
+        
+        # Correctly label EOG and EMG channels
+        raw_PSG.set_channel_types({'LEOG':'eog', 'REOG':'eog', 'LEMG':'emg', 'REMG':'emg'})
+        
+    except:
+        
+        print('Raw PSG object could not be created properly!')
+        raw_PSG = None
+    
+    
+    ## EEG channels
+    
+    # Add an exception catcher if something fails (e.g., memory overload)
+    try:
+    
+        # Make a copy of the raw object
+        raw_EEG = raw.copy()
+        
+        # Get the channel subset for EEG
+        raw_EEG.pick(['PO3','PO4','POz','O1','O2','Oz','A1','A2'])
+        
+        # Load data into memory
+        raw_EEG.load_data()
+        
+        # Re-reference channels to mastoid average
+        raw_EEG.set_eeg_reference(ref_channels=['A1','A2'])
+    
+    except:
+        
+        print('Raw EEG object could not be created properly!')
+        raw_EEG = None
+            
         
     # Move back to main directory
     os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
+        
+
+    return raw_PSG, raw_EEG
+
+
     
-    return raw
-    
-    
-    
-# %% Function: assign_epochs
-   
+# %% Function: score_sleep
+
 """
-    Match scored epochs to data points.
+    Source code: https://raphaelvallat.com/yasa/build/html/api.html
+
+    Use YASA package to automatically score sleep stages and compute PSG metrics.
     
     Input
     ----------
-    raw : MNE object
-    Output of load_raw()
+    raw_PSG : MNE object
+    Output of load_raw() for PSG channels
     
-    epoch_len : int
-    Length of scored epochs
+    raw_EEG : MNE object
+    Output of load_raw() for EEG channels
     
-    filename : str
-	Path to epoch report file in .txt format
+    bad_ch : list
+    Names of bad channels identified visually
+    
+    path_demographics : str
+    Path to participant's demographics data file
 
     Output
     -------
-    data : ndarray
-	Array containing data points and assigned stages
+    hypnogram : array
+    Array containing epochs scored by YASA
     
-    raw : MNE object
-    Original raw object with added annotations for epochs
+    hypno_up : array
+    Upsampled hypnogram to match EEG data points
+    
+    uncertain_epochs : list
+    List of epoch indices scored with a certainty below 50 %
+        
+    sleep_stats : dict
+    Dictionary containing calculated PSG metrics
+
+"""
+
+def score_sleep(raw_PSG, raw_EEG, bad_ch, path_demographics):
+
+    ## Define input channels; right side as default, left side as backup
+    
+    # Central EEG (minimal requirement)
+    if 'C4' in bad_ch:
+        eeg = 'C3'
+    else:
+        eeg = 'C4'
+        
+    # EOG
+    if 'REOG' in bad_ch and 'LEOG' not in bad_ch: # if only LEOG is good
+        eog = 'LEOG'
+    elif 'REOG' in bad_ch and 'LEOG' in bad_ch: # if both EOG are bad
+        eog = None
+    else: # default: REOG
+        eog = 'REOG'
+        
+    # EMG
+    if 'REMG' in bad_ch and 'LEMG' not in bad_ch: # if only LEMG is good
+        emg = 'LEMG'
+    elif 'REMG' in bad_ch and 'LEMG' in bad_ch: # if both EMG are bad
+        emg = None
+    else: # default: REMG
+        emg = 'REMG'
+        
+        
+    ## Demographic data
+    
+    # Load data from CSV file
+    demographics = pd.read_csv(path_demographics)
+    
+    # Extract age
+    age = demographics.age[0]
+    
+    # Extract sex, code as boolean for SleepStaging function
+    if demographics.sex[0] == 1: # sex = female
+        male = False
+    elif demographics.sex[0] == 2: # sex = male
+        male = True
+    else: # sex = 'intersex' or 'prefer not to say'
+        male = None
+        
+        
+    ## Automated sleep staging
+    
+    # Create YASA object
+    if male is not None: # default: sex variable is defined as either female or male (only valid inputs in YASA)
+        sls = yasa.SleepStaging(raw_PSG, eeg_name=eeg, eog_name=eog, emg_name=emg, metadata=dict(age=age, male=male))
+    else: # alternative: run the algorithm without sex variable
+        sls = yasa.SleepStaging(raw_PSG, eeg_name=eeg, eog_name=eog, emg_name=emg, metadata=dict(age=age))
+        
+    # Predict the sleep stages
+    hypnogram = sls.predict()
+    
+    # Convert "W" to 0, "N1" to 1, etc; 4 is REM
+    hypnogram = yasa.hypno_str_to_int(hypnogram)
+    
+    # Upsample hypnogram to match EEG data
+    # Note: 'data' is an empty array with nr. of samples of 
+    hypno_up = yasa.hypno_upsample_to_data(hypnogram, sf_hypno=1/30, data=raw_EEG)
+    
+    # Predicted probabilities of each sleep stage at each epoch
+    sls.predict_proba()
+    
+    # Extract a confidence level (ranging from 0 to 1) for each epoch
+    confidence = sls.predict_proba().max(1)
+    
+    # Get list of uncertain epochs (below 50 % probability)
+    uncertain_epochs = confidence.loc[confidence < 0.5]
+    uncertain_epochs = list(uncertain_epochs.index)
+    print('\nStages scored;', len(uncertain_epochs), 'epochs out of', len(hypnogram), 'below 50 % probability')
+    
+    
+    ### Metrics & plot
+    
+    # Sleep statistics
+    sleep_stats = yasa.sleep_statistics(hypnogram, sf_hyp=1/30) # SR of hypnogram is one value every 30-seconds (staged epochs)
+    
+    # Upsample hypnogram to match data, for plot
+    hypno_plot = yasa.hypno_upsample_to_data(hypnogram, sf_hypno=1/30, data=raw_PSG)
+    
+    # Access data of central derivation channel used for prediction
+    data_plot = raw_PSG.get_data(picks=eeg)
+    
+    # Plot spectrogram for chosen EEG channel
+    yasa.plot_spectrogram(data_plot[0], 100, hypno_plot, fmin=0.5, fmax=25)
+
+
+    return hypnogram, hypno_up, uncertain_epochs, sleep_stats
+
+
+    
+# %% Function: select_annotations
+   
+"""
+    Turn stages scored with enough confidence into annotations.
+    
+    Input
+    ----------
+    raw_EEG : MNE object
+    Output of load_raw() for EEG channels
+    
+    hypnogram : array
+    Output of score_sleep()
+    
+    uncertain_epochs : list
+    Output of score_sleep()
+
+    Output
+    -------
+    raw_EEG : MNE raw object
+    Processed data in MNE format (EEG channels) with selected stage annotations
 
 """ 
 
-def assign_epochs(raw, epoch_len, filename):
+def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
     
-    # Load the .txt file containing the epochs
-    with open(filename, 'r') as f:
-        
-        file = f.readlines()
-     
-        
-    ## Extract info on stages
-    
-    # Delete file header
-    file = file[22:]
-    
-    # Delete empty rows
-    file = [row for row in file if row != "\n"]
-    
-    # Delete table header rows
-    file = [row for row in file if "Chin" not in row]
-    
-    # Get nr. of epochs from file and print
-    n_epochs = len(file)
-    print('Nr. of epochs reported:', n_epochs)
-        
-    # Initialize array of epoch stages
-    epoch_stages = np.zeros(n_epochs, dtype=int)
-    
-    # Get relevant data points
-    i = 0
-    while i < len(file):
-        
-        # Split file row into substrings
-        split = file[i].split()
-        
-        # Second-to-last element = stage
-        stage = split[-2]
-          
-        # Convert stage name into int, add to epoch_stages array
-        if stage == 'L': # Lights on (will be ignored in analyses)
-            
-            epoch_stages[i] = 99
-            
-        elif stage == 'W': # Wake
-            
-            epoch_stages[i] = 0
-            
-        elif stage == 'N1': # Sleep stage 1 
-            
-            epoch_stages[i] = 1
-            
-        elif stage == 'N2': # Sleep stage 2
-            
-            epoch_stages[i] = 2
-            
-        elif stage == 'N3': # Sleep stage 3
-            
-            epoch_stages[i] = 3
-            
-        elif stage == 'R': # REM sleep
-            
-            epoch_stages[i] = 4
-            
-        elif stage == 'M': # Movement (will be ignored in analyses)
-        
-            epoch_stages[i] = 99
-           
-        # Move to next line
-        i += 1
-
-
-    ## Get recording info
-    
-    # Get sampling rate
-    sfreq = raw.info['sfreq']
-    
-    # Get recording duration in seconds
-    rec_len = raw._raw_lengths[0]/sfreq
-    rec_len = int(np.floor(rec_len)) # round down, convert to int
-    
-
     ## For PSD analyses: stage info as annotations
     
+    # Get sampling rate
+    sfreq = raw_EEG.info['sfreq']
+    
+    # Get recording duration in seconds
+    rec_len = raw_EEG._raw_lengths[0]/sfreq
+    rec_len = int(np.floor(rec_len)) # round down, convert to int
+    
     # Onset of annotations: every 30 sec, for whole recording
-    onset = list(range(0, rec_len, 30))
+    onset = range(0, rec_len, 30)
+    
+    # Array with epoch onsets (in seconds) + all stages
+    all_stages = np.column_stack((np.asarray(onset),hypnogram))
+    
+    # Remove uncertain epochs
+    clean_stages = np.delete(all_stages,uncertain_epochs,axis=0)
     
     # Create anotations: every 30 sec, each lasting 30 sec, with scored stages as markers
-    annotations = mne.Annotations(onset=onset, duration=epoch_len, description=epoch_stages)  
+    annotations = mne.Annotations(onset=clean_stages[:,0], duration=30, description=clean_stages[:,1])  
     
     # Add to raw object
-    raw.set_annotations(annotations)  
+    raw_EEG.set_annotations(annotations)  
     
     
-    ## For SSVEP analyses: stage info as column in data array
-
-    # Access raw data, convert from Volts to microVolts
-    data = raw.get_data() * 1e6
-    
-    # Transpose to vertical format for better readability
-    data = np.transpose(data)
-    
-    # Sanity check: print nr. of epochs recorded
-    print('Nr. of epochs recorded:', len(data)/sfreq/epoch_len)
-    
-    # Initialize empty column for stage values
-    stages = np.full(len(data),np.nan)
-    
-    # Add stage info to each data point
-    for i in range(len(epoch_stages)):
-        
-        # Data point index of current epoch start
-        epoch_start = int(i * sfreq * epoch_len)
-        
-        # Data point index of current epoch end
-        epoch_end = int(epoch_start + sfreq * epoch_len)
-        
-        # Add stage value to selected data points
-        stages[epoch_start:epoch_end] = epoch_stages[i]
-        
-    # Merge stages array with data array
-    data = np.c_[data, stages]
-    
-    
-    return raw, data
+    return raw_EEG
     
     
     
-# %% Function: select_epochs
+# %% Function: create_epochs
 
 """
-    Construct and select epochs for PSD analysis.
+    Construct and select epochs for PSD analysis based on chosen stage.
     
     Input
     ----------
     raw : MNE Raw object
-	Output of assign_epochs()
-    
-    epoch_len : int
-    Length of scored epochs
+	Output of select_annotations()
     
     event_id : list of int
     List of stages to include in epoch selection. 0=wake, 1=N1, 2=N2, 3=N3, 4=REM
@@ -247,7 +329,7 @@ def assign_epochs(raw, epoch_len, filename):
 
 """
 
-def select_epochs(raw, epoch_len, event_id):
+def create_epochs(raw, event_id):
     
     # Turn annotations of currently selected stage into events
     events, _ = mne.events_from_annotations(raw, event_id = {str(event_id):event_id}, verbose=False)
@@ -257,7 +339,7 @@ def select_epochs(raw, epoch_len, event_id):
         raw,
         events=events,
         tmin=0, # start trials at beginning of scored epochs
-        tmax=epoch_len, # end trials at end of scored epochs
+        tmax=30, # end trials at end of scored epochs
         reject=dict(eeg = 0.001),  # trial rejection criterion: 1 mV peak to peak
         baseline=None,
         verbose=False
@@ -279,9 +361,6 @@ def select_epochs(raw, epoch_len, event_id):
     epochs : MNE Epochs object
     Output of select_epochs()
     
-    epoch_len : int
-    Length of scored epochs
-    
     stage : int
     Stage the epochs are assigned to (for plot title)
 
@@ -301,7 +380,7 @@ def select_epochs(raw, epoch_len, event_id):
 
 """
 
-def compute_PSD(epochs, epoch_len, stage):
+def compute_PSD(epochs, stage):
     
     ## Compute PSD
     
@@ -312,9 +391,9 @@ def compute_PSD(epochs, epoch_len, stage):
     # Note: only at this point do bad epochs get rejected
     spectrum = epochs.compute_psd(
         "welch",
-        n_fft=int(sfreq * epoch_len), # length of FFT
+        n_fft=int(sfreq * 30), # length of FFT
         tmin=0,
-        tmax=epoch_len,
+        tmax=30,
         fmin=0, # min. frequency to include in spectra (Hz)
         fmax=100, # max. frequency to include in spectra (Hz)
         window='hamming',
@@ -436,28 +515,6 @@ def compute_PSD(epochs, epoch_len, stage):
     
     
     
-    
-    
-    
-# %% SCRATCHPAD
-
-# # For PSD metrics:
-# PSD_metrics_con = {'PSD_ntrials_W':,
-#  'PSD_ntrials_N2':,
-#  'PSD_ntrials_N3':,
-#  'PSD_ntrials_REM':,
-#  'PSD_40Hz_W':,
-#  'PSD_40Hz_N2':,
-#  'PSD_40Hz_N3':,
-#  'PSD_40Hz_REM':,
-#  'PSD_SNR_W':,
-#  'PSD_SNR_N2':,
-#  'PSD_SNR_N3':,
-#  'PSD_SNR_REM':}
-
-# SSVEP_metrics_con = {'SSVEP_ntrials_W','SSVEP_ntrials_N2','SSVEP_ntrials_N3','SSVEP_ntrials_REM',
-# 'SSVEP_PTA_W','SSVEP_PTA_N2','SSVEP_PTA_N3','SSVEP_PTA_REM',
-# 'SSVEP_SNR_W','SSVEP_SNR_N2','SSVEP_SNR_N3','SSVEP_SNR_REM'}
     
     
     

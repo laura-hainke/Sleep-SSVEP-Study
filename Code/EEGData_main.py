@@ -17,9 +17,6 @@ Notes:
 
 # %% Environment Setup
 
-# Import custom functions
-from EEGData_functions import load_raw, assign_epochs, select_epochs, compute_PSD
-
 # Import packages
 import csv
 import mne
@@ -30,8 +27,8 @@ import os
 # Define directory
 os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
 
-# Define scored epoch duration (AASM standard, 30 sec)
-epoch_len = 30
+# Import custom functions
+from EEGData_functions import load_raw, score_sleep, select_annotations, create_epochs, compute_PSD
 
 
 
@@ -40,33 +37,32 @@ epoch_len = 30
 # Get participant number from user
 subject_nr = input("Subject number: ")
 
-
-## Input data
-
-# Path to folders
+# Path to all input folders
 path_in = str("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Raw/" + subject_nr)
 
-# Path to session 01 EEG data files
-path_ses01_EEG = str(path_in + "/Session01/" + subject_nr + "_session01_raw-EEG.eeg")
-
-# Path to session 02 EEG data files
-path_ses02_EEG = str(path_in + "/Session02/" + subject_nr + "_session02_raw-EEG.eeg")
-
-# Path to session 02 epoch report file
-path_ses02_epochs = str(path_in + "/Session02/" + subject_nr + "_session02_epoch-report.txt")
-
-# Path to session 03 EEG data files
-path_ses03_EEG = str(path_in + "/Session03/" + subject_nr + "_session03_raw-EEG.eeg")
-
-# Path to session 03 epoch report file
-path_ses03_epochs = str(path_in + "/Session03/" + subject_nr + "_session03_epoch-report.txt")
-
-
-## Output data
-# NOTE: sessions 01 and 03 are merged into an 'experimental' condition; session 02 = 'control'
-
-# Path to folders
+# Path to all output folders
 path_out = str("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Derivatives/" + subject_nr)
+
+
+## Input data: all sessions
+
+# Path to personal data file (located in Derivatives folder)
+path_demographics = str(path_in[0:-6] + "Derivatives/" + subject_nr + "/REDCap/" + subject_nr + "_personal-data.csv")
+
+# Path to subjective sleep quality scale file
+path_gsqs = str(path_in + "/REDCap/" + subject_nr + "_sleep-quality.csv")
+
+# Path to session 01 EEG data & annotation files
+path_ses01_EEG = str(path_in + "/Session01/" + subject_nr + "_session01_raw-EEG.edf")
+
+# Path to session 02 EEG data & annotation files
+path_ses02_EEG = str(path_in + "/Session02/" + subject_nr + "_session02_raw-EEG.edf")
+
+# Path to session 03 EEG data & annotation files
+path_ses03_EEG = str(path_in + "/Session03/" + subject_nr + "_session03_raw-EEG.edf")
+
+
+## Output data: control condition (session 02)
 
 # Path to output EEG metrics data file, control condition
 path_con_metrics_PSD = str(path_out + "/Control/" + subject_nr + "_control_PSD-output-metrics.csv")
@@ -76,6 +72,12 @@ path_con_metrics_SSVEP = str(path_out + "/Control/" + subject_nr + "_control_SSV
 path_con_spectra_PSD = str(path_out + "/Control/" + subject_nr + "_control_PSD-output-spectra.csv")
 path_con_curves_SSVEP = str(path_out + "/Control/" + subject_nr + "_control_SSVEP-output-curves.csv")
 
+# Path to output sleep variables, control condition
+path_con_sleep = str(path_out + "/Control/" + subject_nr + "_control_sleep-data.csv")
+
+
+## Output data: experimental condition (sessions 01 + 03 merged)
+
 # Path to output EEG metrics data file, experimental condition
 path_exp_metrics_PSD = str(path_out + "/Experimental/" + subject_nr + "_experimental_PSD-output-metrics.csv")
 path_exp_metrics_SSVEP = str(path_out + "/Experimental/" + subject_nr + "_experimental_SSVEP-output-metrics.csv")
@@ -84,17 +86,62 @@ path_exp_metrics_SSVEP = str(path_out + "/Experimental/" + subject_nr + "_experi
 path_exp_spectra_PSD = str(path_out + "/Experimental/" + subject_nr + "_experimental_PSD-output-spectra.csv")
 path_exp_curves_SSVEP = str(path_out + "/Experimental/" + subject_nr + "_experimental_SSVEP-output-curves.csv")
 
+# Path to output sleep variables, experimental condition
+path_exp_sleep = str(path_out + "/Experimental/" + subject_nr + "_experimental_sleep-data.csv")
+
 
 
 # %% Load & process control data
 
 ## Load files
 
-# Load data, select ROI channels
-raw_s02 = load_raw(path_ses02_EEG)
+# Prompt for bad channels
+bads_bool = input("Any bad channels? (y/n)")
 
-# Load scored epochs, assign to data
-raw_s02, data_s02 = assign_epochs(raw_s02, epoch_len, path_ses02_epochs)
+# Initialize empty bad channel list
+bad_ch_con = []
+
+# Get bad channel names from user
+while bads_bool == 'y':
+    
+    bad_name = input("Enter bad channel name:")
+    bad_ch_con.append(bad_name)
+    bads_bool = input("Any more bad channels? (y/n)")
+
+# Load data
+raw_s02_PSG, raw_s02_EEG = load_raw(path_ses02_EEG, bad_ch_con)
+
+# Print raw info for confirmation
+print('\nInfos - PSG dataset:\n')
+print(raw_s02_PSG.info)
+print('\nInfos - EEG dataset:\n')
+print(raw_s02_EEG.info)
+
+
+## Score sleep, get epochs, store metrics
+
+# Run YASA algorithm
+hypno_s02, hypno_up_s02, uncertain_epochs_s02, sleep_stats_s02 = score_sleep(raw_s02_PSG, raw_s02_EEG, bad_ch_con, path_demographics)
+
+# Control condition: subtract 10 min from sleep onset latency (10 min W by design)
+sol_orig = sleep_stats_s02['SOL']
+sleep_stats_s02['SOL'] = sol_orig - 10
+
+# Turn stages scored with enough confidence into annotations
+raw_s02_EEG = select_annotations(raw_s02_EEG, hypno_s02, uncertain_epochs_s02)
+
+# Access GSQS sum score for control night
+gsqs = pd.read_csv(path_gsqs)
+gsqs_sum_con = gsqs.gsqs_sum_con[0]
+
+# Get subset of sleep metrics of interest 
+sleep_data_con = {k: sleep_stats_s02[k] for k in ('SOL','TST','WASO','%N1','%N2','%N3','%REM')}
+
+# Add GSQS score
+sleep_data_con['GSQS_sum'] = gsqs_sum_con
+
+# Convert metrics dict into pandas as well
+sleep_data_con = pd.DataFrame.from_dict(sleep_data_con, orient='index')
 
 
 ## Loop over stages to compute PSD & SNR
@@ -109,13 +156,13 @@ PSD_spectra_con = []
 for stage in [0,2,3,4]:
     
     # Create and select epochs (=30 sec trials) for PSD analyses of current stage
-    epochs_s02 = select_epochs(raw_s02, epoch_len, event_id=stage)
+    epochs_s02 = create_epochs(raw_s02_EEG, event_id=stage)
     
     # Print nr. of epochs recorded at this stage
     print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_s02.events)))
 
     # Compute PSD and SNR spectra for current stage + metrics
-    PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_s02, epoch_len, stage)
+    PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_s02, stage)
     
     # Get nr. of trials factoring into PSD analyses for current stage
     try:
@@ -174,7 +221,10 @@ PSD_metrics_con = pd.DataFrame.from_dict(PSD_metrics_con, orient='index')
 ## Loop over stages to compute SSVEP & SNR
 
 # Compute average SSVEP per condition
-SSVEP_curves_con, SSVEP_metrics_con = []
+# SSVEP_curves_con, SSVEP_metrics_con = []
+
+
+
 
 
 

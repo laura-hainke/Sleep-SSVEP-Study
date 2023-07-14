@@ -96,6 +96,6 @@ outputs$uMCTQ_score = hms::parse_hm(MSF_sc) # hms
 outputs$PSQI_score = psqi_score # num
 
 # Export as CSV
-write.csv(outputs, file=path_out)
+write.csv(outputs, file=path_out,  row.names = FALSE)
 
 

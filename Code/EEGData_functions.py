@@ -18,6 +18,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import yasa
 import pandas as pd 
+import scipy
+import random
 
 
 
@@ -221,7 +223,6 @@ def score_sleep(raw_PSG, raw_EEG, bad_ch, path_demographics):
     hypnogram = yasa.hypno_str_to_int(hypnogram)
     
     # Upsample hypnogram to match EEG data
-    # Note: 'data' is an empty array with nr. of samples of 
     hypno_up = yasa.hypno_upsample_to_data(hypnogram, sf_hypno=1/30, data=raw_EEG)
     
     # Predicted probabilities of each sleep stage at each epoch
@@ -302,7 +303,7 @@ def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
     annotations = mne.Annotations(onset=clean_stages[:,0], duration=30, description=clean_stages[:,1])  
     
     # Add to raw object
-    raw_EEG.set_annotations(annotations)  
+    raw_EEG.set_annotations(annotations, emit_warning=True)  
     
     
     return raw_EEG
@@ -515,6 +516,183 @@ def compute_PSD(epochs, stage):
     
     
     
+# %% Function: compute_SSVEP
+
+"""
+    Source code: https://github.com/JamesDowsettNeuroscience/flicker_analysis_code
     
+    Get SSVEP segments, plot average, compute SNR (true vs. permuted SSVEP)
+
+    Input
+    ----------
+    data : array
+    1 row, averaged ROI data
+    
+    all_triggers : array
+    1 row of triggers, i.e., index of data points at which a trigger occurred
+    
+    condition : int
+    Number of current condition: 0,2,3,4 (wake,N2,N3,REM)
+    
+    hypno_up : array
+    Output of score_sleep()
+        
+    SNR : bool
+    Optional calculation of SNR
+
+    Output
+    ----------
+    true_amplitude : int
+    Peak-to-trough amplitude of the averaged SSVEP
+    
+    SNR : int
+    Ratio of true SSVEP peak-to-trough amplitude to random SSVEP peak-to-trough amplitude
+    
+    n_trials : int
+    Nr. of trials (=25 ms segments) included in average SSVEP
+    
+    SSVEP : array
+    Final averaged SSVEP curve
+    
+"""
+
+def compute_SSVEP(data, all_triggers, hypno_up, condition, computeSNR=True):
+        
+    ## Compute "true" SSVEP
+    
+    # Initialize array for trigger subset
+    triggers = []
+    
+    # Select subset of triggers for current stage
+    for i in range(len(all_triggers)):
+        
+        trig = all_triggers[i] # current trigger
+        
+        if hypno_up[trig] == condition: # if current trigger matches current stage
+            
+            triggers.append(trig) # add trigger to list   
+    
+    # Initialize empty matrix to put segments into        
+    segment_matrix = np.zeros([len(triggers),25])         
+                    
+    # Counters
+    trig_count = 0
+    
+    # Loop over trigger subset
+    for trigger in triggers:
+ 
+        segment = data[trigger:trigger+25] # current segment
+ 
+        # Include only segments with a peak-to-trough amplitude below 100 uV
+        if np.ptp(segment) < 100: 
+        
+            segment_matrix[trig_count,:] = segment # put into matrix                        
+            
+            trig_count += 1 # update counter
+            
+    # Get nr. of segments included
+    n_trials = trig_count
+    
+    # Display nr. of segments included
+    print(trig_count, 'good segments of', len(triggers))
+                
+    # Average to make the SSVEP
+    SSVEP = segment_matrix[0:trig_count,:].mean(axis=0) 
+    
+    # Baseline correct 
+    SSVEP = SSVEP - SSVEP.mean() 
+    
+    # Get peak-to-trough amplitude
+    true_amplitude = np.ptp(SSVEP) 
+    
+    # Initialize array for standard error values
+    stand_errors = np.zeros(25)
+    
+    # Get standard error for each point in SSVEP
+    for pt in range(len(segment_matrix[0])):
+        
+        stand_errors[pt] = scipy.stats.sem(segment_matrix[pt])
+       
+    
+    ## Plot
+    
+    # Open figure
+    plt.figure() 
+        
+    # Plot aesthetics
+    plt.title('Averaged Segments (SSVEP): stage ' + str(condition), size = 30, y=1.03)
+    plt.ylabel('Amplitude (' + u"\u03bcV)", size=20)
+    plt.yticks(size=20)
+    plt.xlabel('Time (ms)', size=20)
+    plt.xticks(size=20)
+    
+    # Plot averaged SSVEP 
+    plt.plot(SSVEP, color = 'black') 
+    
+    # Plot shaded error region
+    plt.fill_between(range(0,25), SSVEP-stand_errors, SSVEP+stand_errors, alpha = 0.3) 
+    
+    
+    ## Compute SNR (optional)
+    # Note: compute by randomly shuffling the data points of each segment and then making the SSVEP, compare to true SSVEP - looped               
+    # Skip to quickly check SSVEP; this takes a few minutes, depending on num_loops
+    
+    if computeSNR: 
+        
+        print('Computing SNR...')
+        
+        # Define nr. of iterations for SNR calculation
+        num_loops = 100
+        
+        # Initialize array for shuffled peak-to-trough amplitudes
+        random_amplitudes = np.zeros([num_loops,])
+        
+        # Loop over defined nr. of iterations
+        for loop in range(0,num_loops):
+            
+            # Initialize array for shuffled segments
+            shuffled_segment_matrix =  np.zeros([len(triggers), 25])  
+            
+            # Loop over all triggers for this stage 
+            trig_count = 0
+            
+            for trigger in triggers:
+                
+                segment =  data[trigger:trigger+25] # select current segment
+                
+                if np.ptp(segment) < 100: # as in "true" SSVEP, include only good segments
+              
+                    random.shuffle(segment) # randomly shuffle the data points
+                    
+                    shuffled_segment_matrix[trig_count,:] = segment # add segment to matrix
+                    
+                    trig_count += 1 # update counter
+            
+            # Average to make random SSVEP
+            random_SSVEP = shuffled_segment_matrix[0:trig_count,:].mean(axis=0) 
+            
+            # Baseline correct
+            random_SSVEP = random_SSVEP - random_SSVEP.mean() 
+            
+            # Store peak-to-trough amplitude for this iteration
+            random_amplitudes[loop] = np.ptp(random_SSVEP)
+               
+        # Get mean of random peak-to-trough amplitude  s      
+        average_noise = random_amplitudes.mean()         
+    
+        # Compute SNR
+        SNR = true_amplitude/average_noise
+        
+        print('\nSSVEP SNR:', round(SNR,2))
+        
+    else: # if SNR not computed, assign NaN
+        
+        SNR = float('NaN')
+            
+    print('\nPeak-to-trough amplitude ('+ u"\u03bcV):", round(true_amplitude, 2))          
+
+
+    return true_amplitude, SNR, n_trials, SSVEP
+
     
     

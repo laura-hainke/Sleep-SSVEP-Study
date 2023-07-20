@@ -255,11 +255,11 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
     # Duration of data file in sec (1 flicker cycle, 25 ms)
     data_file_time = 0.025
     
-    # Nr. of samples for defined file duration (now hardcoded due to buffer)
+    # Nr. of samples for defined file duration (now hardcoded due to buffer; on & off)
     nsamples = 2
 
     # Nr. of repetitions for 8 hours of total stim time
-    nrepeat = 60 / data_file_time * max_stim_time # flicker cycles in 1 sec, multiplied by total nr. of seconds
+    nrepeat = flicker_freq * max_stim_time # flicker cycles in 1 sec, multiplied by total nr. of seconds
     
 
     ## Required CSV format elements

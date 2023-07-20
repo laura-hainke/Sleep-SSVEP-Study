@@ -17,7 +17,6 @@ import csv
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.stats 
 
 
 ## Constants
@@ -33,13 +32,11 @@ flicker_freq = 40
 min_analog = 0
 
 # Analog value corresponding to stim target illuminance of 20 lux
-max_analog = 320 
+# NOTE: change to exact value!
+max_analog = 800
     
 # Frequency at which the Arduino reads CSV rows, in Hz
 sample_rate = flicker_freq * 2 # For 40 Hz square-wave flicker, 40x ON + 40x OFF
-
-# Load parameters for linearization of raw analog values
-opt_param = np.load('beta_parameters.npy')
 
 
 
@@ -123,14 +120,23 @@ def create_data_rampup(flicker_freq,max_analog,sample_rate):
 
     ## Compute parameters
 
-    # Duration of data file in sec (=5 min rampup duration)
-    data_file_time = 5 * 60
+    # Duration of rampup in sec (=5 min)
+    ramp_time = int(5 * 60)
     
-    # Nr. of samples for defined stim data duration
-    nsamples = int(sample_rate * data_file_time)
+    # Duration of post-ramp transition flicker time in sec
+    flicker_time = 10
     
-    # Nr. of flicker cycles for defined stim data duration
-    ncycles = flicker_freq * data_file_time
+    # Nr. of samples for defined ramp data duration
+    nsamples_ramp = int(sample_rate * ramp_time)
+    
+    # Nr. of samples including post-ramp transition flicker
+    nsamples_flicker = int(sample_rate * flicker_time)
+    
+    # Nr. of flicker cycles for defined ramp data duration
+    ncycles_ramp = flicker_freq * ramp_time
+    
+    # Nr. of flicker cycles for post-ramp transition flicker
+    ncycles_flicker = flicker_freq * flicker_time
 
     # Nr. of repetitions (rampup once, then move to flicker)
     nrepeat = 1
@@ -142,78 +148,71 @@ def create_data_rampup(flicker_freq,max_analog,sample_rate):
     headers = ['Sample', 'Channel1', 'Channel2', 'Channel3', 'Channel4', 'Channel5', 'Channel6', 'Trigger', 'Note']
 
     # Sample nrs
-    sample_nrs = np.array([i for i in range(1, nsamples+1)])
+    sample_nrs = np.array([i for i in range(1, nsamples_ramp + nsamples_flicker + 1)])
     
     # Triggers (none)
-    triggers = np.zeros((nsamples, 5))
+    triggers = np.zeros((nsamples_ramp + nsamples_flicker, 5))
     
     # Notes (none)
-    notes = np.array([''] * nsamples)
+    notes = np.array([''] * (nsamples_ramp + nsamples_flicker))
 
 
     ## Generate cosine ramp
     
     # Array of radians between pi (trough) & 2*pi (peak), with nr. of elements = nr. of cycles
-    radians = np.array([i for i in np.arange(np.pi, np.pi*2, np.pi/(ncycles-0.5))]) # subtract 0.5 from ncycles to get 12k elements
+    radians = np.array([i for i in np.arange(np.pi, np.pi*2, np.pi/(ncycles_ramp-0.5))]) # subtract 0.5 from ncycles to get 12k elements
     
     # Take cosine values of radians, with fitted amplitude & upward shift (for y in cosine shape)
     cosines = np.array([i for i in (max_analog/2) * np.cos(radians) + max_analog/2])
-
-    
-    ## Apply linearization of raw analog values to match lux increase
-    
-    # y values relative to max_analog
-    y_rel = np.array([i/max_analog for i in cosines])
-    
-    # Apply linearization function to relative values
-    y_rel_lin = scipy.stats.beta.cdf(y_rel, opt_param[0], opt_param[1])
-    
-    # Revert to absolute values
-    y_abs_lin = np.array([i*max_analog for i in y_rel_lin])
     
     # Round y values, as program only takes int values
-    y_abs_lin_int = np.round(y_abs_lin)
+    y_cos_int = np.round(cosines)
      
     
     ## Plot for visual inspection
     
-    fig, ax = plt.subplots(1,2)
-    
-    # Plot 1: uncorrected ramp
-    ax[0].plot(np.round(cosines)) # round for better comparison
-    ax[0].set_title('Cosine ramp-up, uncorrected', size=30, y=1.05)
-    ax[0].set_xlabel('Flicker cycles (0-' + str(data_file_time/60) + ' min)', size=20)
-    ax[0].set_ylabel('Rounded analog values', size=20)
-    
-    # Plot 2: linearized ramp
-    ax[1].plot(y_abs_lin_int)
-    ax[1].set_title('Cosine ramp-up, linearized', size=30, y=1.05)
-    ax[1].set_xlabel('Flicker cycles (0-' + str(data_file_time/60) + ' min)', size=20)
-    ax[1].set_ylabel('Rounded analog values', size=20)
+    plt.figure()
+    plt.plot(y_cos_int) 
+    plt.title('Cosine ramp-up', size=30, y=1.05)
+    plt.xlabel('Flicker cycles (0 - ' + str(ramp_time/60) + ' min)', size=20)
+    plt.ylabel('Analog values', size=20)
 
 
     ## Transform into data array with flicker
     
     # Initialize data array (2 channels)
-    ramp_up = np.zeros((nsamples,2))
+    ramp_up = np.zeros((nsamples_ramp,2))
     
     # Fill cycles with ON period from cosines_int, leave OFF period at 0
     i = 0
-    while i in range(0, ncycles):
+    while i in range(0, ncycles_ramp):
         
-        ramp_up[i*2] = y_abs_lin_int[i]
+        ramp_up[i*2] = y_cos_int[i]
         i += 1
+        
     
+    ## Add 10 sec flicker after ramp for smoother transition to flicker
+    
+    # Data for 1 flicker cycle
+    data_1_cycle = np.array([[max_analog,max_analog], [0,0]])
+
+    # Data for full file 
+    data_all_cycles = np.tile(data_1_cycle, (ncycles_flicker, 1))
+    
+    # Stack flicker onto ramp
+    ramp_flicker = np.vstack([ramp_up, data_all_cycles])
+                             
 
     ## Combine arrays
     
     # Sample nrs, data, notes
-    data = np.c_[sample_nrs, ramp_up, triggers, notes]
+    data = np.c_[sample_nrs, ramp_flicker, triggers, notes]
     
     # Add headers
     data = np.vstack([headers,data])
 
-    return data, nsamples, nrepeat
+
+    return data, nsamples_ramp + nsamples_flicker, nrepeat
 
 
 
@@ -253,15 +252,15 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
     # Max. stim time in sec (8 hours)
     max_stim_time = int(8 * 60 * 60)
     
-    # Duration of data file in sec (1 hour)
-    data_file_time = int(max_stim_time / 8)
+    # Duration of data file in sec (1 flicker cycle, 25 ms)
+    data_file_time = 0.025
     
-    # Nr. of samples for defined stim data duration
-    nsamples = int(sample_rate * data_file_time)
+    # Nr. of samples for defined file duration (now hardcoded due to buffer)
+    nsamples = 2
 
     # Nr. of repetitions for 8 hours of total stim time
-    nrepeat = int(max_stim_time / data_file_time)
-
+    nrepeat = 60 / data_file_time * max_stim_time # flicker cycles in 1 sec, multiplied by total nr. of seconds
+    
 
     ## Required CSV format elements
     
@@ -278,19 +277,20 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
     ## Generate data
     
     # Data for 1 flicker cycle
-    cycle_data = np.array([[max_analog,max_analog,0,0,0,1,1], [0,0,0,0,0,0,0]])
+    data_1_cycle = np.array([[max_analog,max_analog,1,1,1,1,1], [0,0,0,0,0,0,0]])
 
-    # Data for full file
-    cycles_1min = np.tile(cycle_data, (flicker_freq*data_file_time, 1))
+    # Data for full file (currently, same)
+    data_all_cycles = np.tile(data_1_cycle, (flicker_freq*data_file_time, 1))
     
     
     ## Combine arrays
     
     # Sample nrs, data, notes
-    data = np.c_[sample_nrs, cycles_1min, notes]
+    data = np.c_[sample_nrs, data_all_cycles, notes]
     
     # Add headers
     data = np.vstack([headers,data])
+    
 
     return data, nsamples, nrepeat
 
@@ -364,38 +364,18 @@ def create_data_rampdown(flicker_freq,max_analog,sample_rate):
     
     # Take cosine values of radians, with fitted amplitude & upward shift (for y in cosine shape)
     cosines = np.array([i for i in (max_analog/2) * np.cos(radians) + max_analog/2])
-
-    
-    ## Apply linearization of raw analog values to match lux decrease
-    
-    # y values relative to max_analog
-    y_rel = np.array([i/max_analog for i in cosines])
-    
-    # Apply linearization function to relative values
-    y_rel_lin = scipy.stats.beta.cdf(y_rel, opt_param[0], opt_param[1])
-    
-    # Revert to absolute values
-    y_abs_lin = np.array([i*max_analog for i in y_rel_lin])
     
     # Round y values, as program only takes int values
-    y_abs_lin_int = np.round(y_abs_lin)
+    y_cos_int = np.round(cosines)
      
     
     ## Plot for visual inspection
     
-    fig, ax = plt.subplots(1,2)
-    
-    # Plot 1: uncorrected ramp
-    ax[0].plot(np.round(cosines)) # round for better comparison
-    ax[0].set_title('Cosine ramp-down, uncorrected', size=30, y=1.05)
-    ax[0].set_xlabel('Flicker cycles (0-' + str(data_file_time) + ' sec)', size=20)
-    ax[0].set_ylabel('Rounded analog values', size=20)
-    
-    # Plot 2: linearized ramp
-    ax[1].plot(y_abs_lin_int)
-    ax[1].set_title('Cosine ramp-down, linearized', size=30, y=1.05)
-    ax[1].set_xlabel('Flicker cycles (0-' + str(data_file_time) + ' sec)', size=20)
-    ax[1].set_ylabel('Rounded analog values', size=20)
+    plt.figure()
+    plt.plot(y_cos_int) # round for better comparison
+    plt.title('Cosine ramp-down', size=30, y=1.05)
+    plt.xlabel('Flicker cycles (0 - ' + str(data_file_time) + ' sec)', size=20)
+    plt.ylabel('Analog values', size=20)
 
 
     ## Transform into data array with flicker
@@ -407,7 +387,7 @@ def create_data_rampdown(flicker_freq,max_analog,sample_rate):
     i = 0
     while i in range(0, ncycles):
         
-        ramp_down[i*2] = y_abs_lin_int[i]
+        ramp_down[i*2] = y_cos_int[i]
         i += 1
     
 
@@ -418,6 +398,7 @@ def create_data_rampdown(flicker_freq,max_analog,sample_rate):
     
     # Add headers
     data = np.vstack([headers,data])
+
 
     return data, nsamples, nrepeat
 

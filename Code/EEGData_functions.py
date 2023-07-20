@@ -25,12 +25,12 @@ import random
 
 # %% Function: load_raw
 """
-    Load raw EEG data in EDF format, split into PSG and EEG, perform basic processing.
+    Load raw EEG data, split into PSG and EEG, perform basic processing.
 
     Input
     ----------
     filename : str
-    Path to the Nihon Kohden files
+    Path to the EEG data file in EDF format
         
     bad_ch : list
     Names of bad channels identified visually.
@@ -126,7 +126,108 @@ def load_raw(filename,bad_ch):
     return raw_PSG, raw_EEG
 
 
+# %% Function: import_triggers
+
+"""
+    Access triggers from experimental sessions, optionally merge into one trigger set (control condition).
     
+    Input
+    ----------
+    filename1 : str
+    Path to annotations of experimental session 01
+    
+    filename2 : str
+    Path to annotations of experimental session 03
+    
+    raw_EEG : MNE raw object
+    Output of load_raw()
+    
+    condition : str
+    Specify if currently analyzing control ('con') or experimental ('exp') data
+
+    Output
+    -------
+    all_triggers : array
+    Array containing trigger data points from both exp sessions
+    
+    triggers_s01 : array
+    Array containing trigger data points from session 01
+    
+    triggers_s03 : array
+    Array containing trigger data points from session 03
+
+"""
+
+def import_triggers(filename1, filename2, raw_EEG, condition):
+    
+    # Clone raw object, just a placeholder to access annotations
+    raw_copy = raw_EEG.copy()
+    
+    
+    ## Access triggers from session 01: wake exp
+    
+    # Import annotations from EDF file, session 01
+    annotations_s01 = mne.read_annotations(filename1, sfreq=1000)
+
+    # Add to raw object (necessary for next step)
+    raw_copy.set_annotations(annotations_s01, emit_warning=True)  
+
+    # Create events from trigger annotations only
+    events_s01, _ = mne.events_from_annotations(raw_copy, event_id={'DC trigger 12':1}) 
+
+    # Access data points containing triggers
+    triggers_s01 = events_s01[:,0]
+    
+    
+    ## Access triggers from session 03: sleep exp
+    
+    # Import annotations from EDF file, session 03
+    annotations_s03 = mne.read_annotations(filename2, sfreq=1000)
+    
+    # Add to raw object (necessary for next step); overwrites s01 annotations
+    raw_copy.set_annotations(annotations_s03, emit_warning=True)
+    
+    # Create events from trigger annotations only
+    events_s03, _ = mne.events_from_annotations(raw_copy, event_id={'DC trigger 12':1}) 
+
+    # Access data points containing triggers
+    triggers_s03 = events_s03[:,0]
+    
+
+    ## Return correct set of triggers
+    
+    # For control condition only: merge two trigger sets
+    if condition == 'con':
+
+        # Shift triggers from s03 by length of s01 (last trigger)
+        triggers_s03_shift = triggers_s03 + triggers_s01[-1] + 25 # add length of one segment (25 ms), to prevent any overlap
+        
+        # Stack both trigger arrays
+        all_triggers = np.hstack((triggers_s01, triggers_s03_shift))
+    
+        # Get length of control data file
+        len_data_con = raw_EEG.__len__()
+    
+        # Keep only triggers that fit within file, ensuring last segment is not cropped
+        all_triggers = np.asarray([trig for trig in all_triggers if trig < len_data_con - 25])
+        
+        # Print nr. of triggers included
+        print('\nNr. of triggers found:', len(all_triggers))
+    
+        return all_triggers
+
+    # Experimental condition: return trigger sets separately
+    elif condition == 'exp':
+        
+        return triggers_s01, triggers_s03
+    
+    # Any other input is wrong
+    else: 
+        
+        print('Condition must be con or exp')
+
+
+
 # %% Function: score_sleep
 
 """
@@ -136,10 +237,10 @@ def load_raw(filename,bad_ch):
     
     Input
     ----------
-    raw_PSG : MNE object
+    raw_PSG : MNE raw object
     Output of load_raw() for PSG channels
     
-    raw_EEG : MNE object
+    raw_EEG : MNE raw object
     Output of load_raw() for EEG channels
     
     bad_ch : list
@@ -259,11 +360,11 @@ def score_sleep(raw_PSG, raw_EEG, bad_ch, path_demographics):
 # %% Function: select_annotations
    
 """
-    Turn stages scored with enough confidence into annotations.
+    Turn sleep stages into annotations, for PSD analyses.
     
     Input
     ----------
-    raw_EEG : MNE object
+    raw_EEG : raw object
     Output of load_raw() for EEG channels
     
     hypnogram : array
@@ -281,17 +382,11 @@ def score_sleep(raw_PSG, raw_EEG, bad_ch, path_demographics):
 
 def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
     
-    ## For PSD analyses: stage info as annotations
+    # Get length of hypnogram in seconds (this excludes the last epoch if incomplete)
+    len_hypno = len(hypnogram) * 30 
     
-    # Get sampling rate
-    sfreq = raw_EEG.info['sfreq']
-    
-    # Get recording duration in seconds
-    rec_len = raw_EEG._raw_lengths[0]/sfreq
-    rec_len = int(np.floor(rec_len)) # round down, convert to int
-    
-    # Onset of annotations: every 30 sec, for whole recording
-    onset = range(0, rec_len, 30)
+    # Onset of annotations: every 30 sec, for whole hypnogram
+    onset = range(0, len_hypno, 30)
     
     # Array with epoch onsets (in seconds) + all stages
     all_stages = np.column_stack((np.asarray(onset),hypnogram))
@@ -299,7 +394,7 @@ def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
     # Remove uncertain epochs
     clean_stages = np.delete(all_stages,uncertain_epochs,axis=0)
     
-    # Create anotations: every 30 sec, each lasting 30 sec, with scored stages as markers
+    # Create anotations with scored stages as markers
     annotations = mne.Annotations(onset=clean_stages[:,0], duration=30, description=clean_stages[:,1])  
     
     # Add to raw object
@@ -317,28 +412,65 @@ def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
     
     Input
     ----------
-    raw : MNE Raw object
+    raw : MNE raw object
 	Output of select_annotations()
     
-    event_id : list of int
-    List of stages to include in epoch selection. 0=wake, 1=N1, 2=N2, 3=N3, 4=REM
+    all_triggers : array
+    Output of import_triggers(); merged trigger set or from one session
+    
+    event_id : int
+    Stage to include in epoch selection. 0=wake, 1=N1, 2=N2, 3=N3, 4=REM
 
     Output
     -------
-    epochs : MNE Epochs object
+    epochs : MNE epochs object
 	Selection of 30 s trials for PSD analyses
 
 """
 
-def create_epochs(raw, event_id):
+def create_epochs(raw, all_triggers, event_id):
     
     # Turn annotations of currently selected stage into events
     events, _ = mne.events_from_annotations(raw, event_id = {str(event_id):event_id}, verbose=False)
     
-    # Create epochs
+    
+    ## Select epochs with triggers
+    
+    # Define minimal nr. of triggers required for a stimulation epoch (40 Hz, 25 sec)
+    min_n_triggers = 40 * 25
+    
+    # Initialize list of non-stim epochs
+    not_stim = []
+    
+    # Loop over events
+    for e in range(len(events)):
+        
+        # Get epoch start (data point)
+        epoch_start = events[e,0]
+        
+        # Define epoch end after 30 sec
+        epoch_end = int(epoch_start + raw.info['sfreq'] * 30)
+    
+        # Get all triggers recorded between epoch start & end, if any
+        epoch_triggers = [t for t in all_triggers if t >= epoch_start and t <= epoch_end]
+        
+        # Get nr. of triggers in this epoch
+        n_epoch_triggers = len(epoch_triggers)
+        
+        # If the epoch does not contain enough triggers, mark for removal
+        if n_epoch_triggers < min_n_triggers:
+            
+            not_stim.append(e)
+            
+    # Remove all epochs without a sufficient nr. of triggers from events
+    events_clean = np.delete(events, not_stim, axis=0)
+    
+    
+    ## Create epochs object
+    
     epochs = mne.Epochs(
         raw,
-        events=events,
+        events=events_clean,
         tmin=0, # start trials at beginning of scored epochs
         tmax=30, # end trials at end of scored epochs
         reject=dict(eeg = 0.001),  # trial rejection criterion: 1 mV peak to peak
@@ -355,11 +487,11 @@ def create_epochs(raw, event_id):
 """
     Source code: https://mne.tools/stable/auto_tutorials/time-freq/50_ssvep.html
 
-    Compute PSD spectra and SNR values of epochs, then plot them.
+    Compute PSD spectra and SNR values for current stage and plot.
     
     Input
     ----------
-    epochs : MNE Epochs object
+    epochs : MNE epochs object
     Output of select_epochs()
     
     stage : int
@@ -374,10 +506,10 @@ def create_epochs(raw, event_id):
     Absolute SNR value corresponding to PSD_40Hz
     
     PSD_spectrum : array
-    Average PSD spectrum across epochs and channels
+    Average PSD spectrum across channels and epochs in current stage 
     
     SNR_spectrum : array
-    Average SNR spectrum of PSD values across epochs and channels
+    Average SNR spectrum of PSD values across channels and epochs in current stage
 
 """
 
@@ -521,7 +653,7 @@ def compute_PSD(epochs, stage):
 """
     Source code: https://github.com/JamesDowsettNeuroscience/flicker_analysis_code
     
-    Get SSVEP segments, plot average, compute SNR (true vs. permuted SSVEP)
+    Get SSVEP segments for current stage, plot average, compute SNR.
 
     Input
     ----------
@@ -529,10 +661,10 @@ def compute_PSD(epochs, stage):
     1 row, averaged ROI data
     
     all_triggers : array
-    1 row of triggers, i.e., index of data points at which a trigger occurred
+    Output of import_triggers(); merged trigger set or from one session
     
     condition : int
-    Number of current condition: 0,2,3,4 (wake,N2,N3,REM)
+    Number of current condition: 0=wake, 1=N1, 2=N2, 3=N3, 4=REM
     
     hypno_up : array
     Output of score_sleep()
@@ -594,6 +726,7 @@ def compute_SSVEP(data, all_triggers, hypno_up, condition, computeSNR=True):
     n_trials = trig_count
     
     # Display nr. of segments included
+    print('\nStage', condition, '\n')
     print(trig_count, 'good segments of', len(triggers))
                 
     # Average to make the SSVEP
@@ -611,7 +744,7 @@ def compute_SSVEP(data, all_triggers, hypno_up, condition, computeSNR=True):
     # Get standard error for each point in SSVEP
     for pt in range(len(segment_matrix[0])):
         
-        stand_errors[pt] = scipy.stats.sem(segment_matrix[pt])
+        stand_errors[pt] = scipy.stats.sem(segment_matrix[:,pt])
        
     
     ## Plot
@@ -683,13 +816,13 @@ def compute_SSVEP(data, all_triggers, hypno_up, condition, computeSNR=True):
         # Compute SNR
         SNR = true_amplitude/average_noise
         
-        print('\nSSVEP SNR:', round(SNR,2))
+        print('SSVEP SNR:', round(SNR,2))
         
     else: # if SNR not computed, assign NaN
         
         SNR = float('NaN')
             
-    print('\nPeak-to-trough amplitude ('+ u"\u03bcV):", round(true_amplitude, 2))          
+    print('Peak-to-trough amplitude ('+ u"\u03bcV):", round(true_amplitude, 2))          
 
 
     return true_amplitude, SNR, n_trials, SSVEP

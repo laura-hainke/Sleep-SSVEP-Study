@@ -12,8 +12,6 @@ Notes: In progress
 # %% Environment Setup
 
 # Import packages
-import csv
-import mne
 import pandas as pd 
 import numpy as np
 import os
@@ -22,7 +20,7 @@ import os
 os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
 
 # Import custom functions
-from EEGData_functions import load_raw, copy_triggers, score_sleep, select_annotations, create_epochs, compute_PSD, compute_SSVEP
+from EEGData_functions import load_raw, import_triggers, score_sleep, select_annotations, create_epochs, compute_PSD, compute_SSVEP
 
 
 
@@ -94,17 +92,22 @@ print('\nInfos - EEG dataset:\n')
 print(raw_s02_EEG.info)
 
 # Import triggers from experimental sessions
-all_triggers = copy_triggers(path_ses01_annotations, path_ses03_annotations, raw_s02_EEG)
+all_triggers = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s02_EEG, 'con')
 
 
 
 # %% Score sleep, get epochs, store metrics
+
+## Session 02: full night
 
 # Run YASA algorithm
 hypno_s02, hypno_up_s02, uncertain_epochs_s02, sleep_stats_s02 = score_sleep(raw_s02_PSG, raw_s02_EEG, bad_ch_con, path_demographics)
 
 # Turn stages scored with enough confidence into annotations
 raw_s02_EEG = select_annotations(raw_s02_EEG, hypno_s02, uncertain_epochs_s02)
+
+
+## Metrics
 
 # Control condition: subtract 10 min from sleep onset latency (10 min W by design)
 sol_orig = sleep_stats_s02['SOL']
@@ -140,19 +143,19 @@ for stage in [0,2,3,4]:
     try:
     
         # Create and select epochs (=30 sec trials) for PSD analyses of current stage
-        epochs_s02 = create_epochs(raw_s02_EEG, all_triggers, event_id=stage)
+        epochs_stage = create_epochs(raw_s02_EEG, all_triggers, event_id=stage)
         
         # Print nr. of epochs recorded at this stage
-        print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_s02.events)))
+        print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_stage.events)))
     
         # Compute PSD and SNR spectra for current stage + metrics
-        PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_s02, stage)
+        PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_stage, stage)
         
         # Get nr. of trials factoring into PSD analyses for current stage
         try:
-            PSD_ntrials = len(epochs_s02) # only works when bad epochs have been dropped
+            PSD_ntrials = len(epochs_stage) # only works when bad epochs have been dropped
         except:
-            PSD_ntrials = len(epochs_s02.events) # full list of events in case no epochs have been dropped
+            PSD_ntrials = len(epochs_stage.events) # full list of events in case no epochs have been dropped
             
         # Print nr. of epochs used for analysis
         print('Nr. of epochs used in analysis: ' + str(PSD_ntrials))

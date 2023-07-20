@@ -22,7 +22,7 @@ import os
 os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
 
 # Import custom functions
-from EEGData_functions import load_raw, score_sleep, select_annotations, create_epochs, compute_PSD, compute_SSVEP
+from EEGData_functions import load_raw, copy_triggers, score_sleep, select_annotations, create_epochs, compute_PSD, compute_SSVEP
 
 
 
@@ -49,13 +49,14 @@ path_gsqs = str(path_in + "/REDCap/" + subject_nr + "_sleep-quality.csv")
 # Path to session 02 EEG data
 path_ses02_EEG = str(path_in + "/Session02/" + subject_nr + "_session02_raw-EEG.edf")
 
-# Path to session 03 annotations
+# Path to annotations, sessions 01 & 03
+path_ses01_annotations = str(path_in + "/Session01/" + subject_nr + "_session01_annotations.edf")
 path_ses03_annotations = str(path_in + "/Session03/" + subject_nr + "_session03_annotations.edf")
 
 
 ## Output data
 
-# Path to output EEG metrics data file, control condition
+# Path to output EEG metrics data files, control condition
 path_con_metrics_PSD = str(path_out + "/Control/" + subject_nr + "_control_PSD-output-metrics.csv")
 path_con_metrics_SSVEP = str(path_out + "/Control/" + subject_nr + "_control_SSVEP-output-metrics.csv")
 
@@ -68,20 +69,20 @@ path_con_sleep = str(path_out + "/Control/" + subject_nr + "_control_sleep-data.
 
 
 
-# %% Load raw EEG file
+# %% Load raw EEG file & triggers
 
 # Initialize empty bad channel list
 bad_ch_con = []
 
 # Prompt for bad channels
-bads_bool = input("Any bad channels? (y/n)")
+bads_bool = input("Any bad channels? (y/n) ")
 
 # If 'yes' was selected, get bad channel names from user
 while bads_bool == 'y':
     
-    bad_name = input("Enter bad channel name:")
+    bad_name = input("Enter bad channel name: ")
     bad_ch_con.append(bad_name)
-    bads_bool = input("Any more bad channels? (y/n)")
+    bads_bool = input("Any more bad channels? (y/n) ")
 
 # Load data, split into 2 raw objects
 raw_s02_PSG, raw_s02_EEG = load_raw(path_ses02_EEG, bad_ch_con)
@@ -92,29 +93,8 @@ print(raw_s02_PSG.info)
 print('\nInfos - EEG dataset:\n')
 print(raw_s02_EEG.info)
 
-
-
-# %% Import triggers from experimental session
-
-# NOTE: needs annotations from s01
-
-# Import annotations from EDF file
-trig_annotations = mne.read_annotations(path_ses03_annotations, sfreq=1000)
-
-# Add to raw object (necessary for next step)
-raw_s02_PSG.set_annotations(trig_annotations, emit_warning=True)  
-
-# Create events from trigger annotations only
-events, _ = mne.events_from_annotations(raw_s02_PSG, event_id={'DC trigger 12':1}) 
-
-# Access data points containing triggers
-all_triggers = events[:,0]
-
-# Get length of control data file
-len_data_con = raw_s02_EEG.__len__()
-
-# Keep only triggers that fit within file, ensuring last segment is not cropped
-all_triggers = np.asarray([trig for trig in all_triggers if trig < len_data_con - 25])
+# Import triggers from experimental sessions
+all_triggers = copy_triggers(path_ses01_annotations, path_ses03_annotations, raw_s02_EEG)
 
 
 
@@ -147,8 +127,6 @@ sleep_data_con = pd.DataFrame.from_dict(sleep_data_con, orient='index')
 
 # %% Loop over stages to compute PSD & SNR
 
-# NOTE: needs epoch selection by stim
-
 # Initialize dict for output metrics
 PSD_metrics_con = dict()
 
@@ -158,23 +136,40 @@ PSD_spectra_con = []
 # Loop
 for stage in [0,2,3,4]:
     
-    # Create and select epochs (=30 sec trials) for PSD analyses of current stage
-    epochs_s02 = create_epochs(raw_s02_EEG, event_id=stage)
-    
-    # Print nr. of epochs recorded at this stage
-    print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_s02.events)))
-
-    # Compute PSD and SNR spectra for current stage + metrics
-    PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_s02, stage)
-    
-    # Get nr. of trials factoring into PSD analyses for current stage
+    # Exception catcher in case analysis cannot be run for a given stage
     try:
-        PSD_ntrials = len(epochs_s02) # only works when bad epochs have been dropped
-    except:
-        PSD_ntrials = len(epochs_s02.events) # full list of events in case no epochs have been dropped
+    
+        # Create and select epochs (=30 sec trials) for PSD analyses of current stage
+        epochs_s02 = create_epochs(raw_s02_EEG, all_triggers, event_id=stage)
         
-    # Print nr. of epochs used for analysis
-    print('Nr. of epochs used in analysis: ' + str(PSD_ntrials))
+        # Print nr. of epochs recorded at this stage
+        print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_s02.events)))
+    
+        # Compute PSD and SNR spectra for current stage + metrics
+        PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_s02, stage)
+        
+        # Get nr. of trials factoring into PSD analyses for current stage
+        try:
+            PSD_ntrials = len(epochs_s02) # only works when bad epochs have been dropped
+        except:
+            PSD_ntrials = len(epochs_s02.events) # full list of events in case no epochs have been dropped
+            
+        # Print nr. of epochs used for analysis
+        print('Nr. of epochs used in analysis: ' + str(PSD_ntrials))
+        
+    # Alternative
+    except:
+        
+        # Display warning
+        print('\nWARNING: Could not run PSD analysis for stage', stage)
+        
+        # Mark variables as NaN
+        PSD_40Hz = float('NaN')
+        SNR_40Hz = float('NaN')
+        PSD_ntrials = 0
+        PSD_spectrum = np.full((2971), np.nan)
+        SNR_spectrum = np.full((2971), np.nan)
+        
     
     # Store metrics in dict
     if stage == 0: # Wake
@@ -248,8 +243,23 @@ SSVEP_curves_con = []
 # Compute average SSVEP per condition
 for stage in [0,2,3,4]:
     
-    # Compute SSVEP and SNR for current stage + metrics
-    SSVEP_amp, SSVEP_SNR, SSVEP_ntrials, SSVEP_curve = compute_SSVEP(data_s02, all_triggers, hypno_up_s02, stage, computeSNR=True)
+    # Exception catcher in case analysis cannot be run for a given stage
+    try:
+        
+        # Compute SSVEP and SNR for current stage + metrics
+        SSVEP_amp, SSVEP_SNR, SSVEP_ntrials, SSVEP_curve = compute_SSVEP(data_s02, all_triggers, hypno_up_s02, stage, computeSNR=True)
+
+    # Alternative
+    except:
+        
+        # Display warning
+        print('\nWARNING: Could not run SSVEP analysis for stage', stage)
+        
+        # Mark variables as NaN
+        SSVEP_amp = float('NaN')
+        SSVEP_SNR = float('NaN')
+        SSVEP_ntrials = 0
+        SSVEP_curve = np.full((25), np.nan)
 
     # Store metrics in dict
     if stage == 0: # Wake

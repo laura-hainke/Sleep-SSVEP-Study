@@ -3,8 +3,8 @@
 Author: Laura Hainke
 Date: 07.2023
 Functionality: Functions for EEG data processing (Gamma-Sleep Study).
-Assumptions:
-Notes:
+Assumptions: - 
+Notes: V1
 
 """
 
@@ -382,7 +382,7 @@ def score_sleep(raw_PSG, raw_EEG, bad_ch, path_demographics):
 
 def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
     
-    # Get length of hypnogram in seconds (this excludes the last epoch if incomplete)
+    # Get length of scored recording in seconds (this excludes the last epoch if incomplete)
     len_hypno = len(hypnogram) * 30 
     
     # Onset of annotations: every 30 sec, for whole hypnogram
@@ -412,7 +412,7 @@ def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
     
     Input
     ----------
-    raw : MNE raw object
+    raw_EEG : MNE raw object
 	Output of select_annotations()
     
     all_triggers : array
@@ -428,13 +428,13 @@ def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
 
 """
 
-def create_epochs(raw, all_triggers, event_id):
+def create_epochs(raw_EEG, all_triggers, event_id):
     
     # Turn annotations of currently selected stage into events
-    events, _ = mne.events_from_annotations(raw, event_id = {str(event_id):event_id}, verbose=False)
+    events, _ = mne.events_from_annotations(raw_EEG, event_id = {str(event_id):event_id}, verbose=False)
     
     
-    ## Select epochs with triggers
+    ## Select epochs with enough triggers
     
     # Define minimal nr. of triggers required for a stimulation epoch (40 Hz, 25 sec)
     min_n_triggers = 40 * 25
@@ -448,8 +448,8 @@ def create_epochs(raw, all_triggers, event_id):
         # Get epoch start (data point)
         epoch_start = events[e,0]
         
-        # Define epoch end after 30 sec
-        epoch_end = int(epoch_start + raw.info['sfreq'] * 30)
+        # Define epoch end after 30 sec, factoring in sample rate
+        epoch_end = int(epoch_start + raw_EEG.info['sfreq'] * 30)
     
         # Get all triggers recorded between epoch start & end, if any
         epoch_triggers = [t for t in all_triggers if t >= epoch_start and t <= epoch_end]
@@ -460,7 +460,7 @@ def create_epochs(raw, all_triggers, event_id):
         # If the epoch does not contain enough triggers, mark for removal
         if n_epoch_triggers < min_n_triggers:
             
-            not_stim.append(e)
+            not_stim.append(e) # add to list of non-stim epochs
             
     # Remove all epochs without a sufficient nr. of triggers from events
     events_clean = np.delete(events, not_stim, axis=0)
@@ -469,7 +469,7 @@ def create_epochs(raw, all_triggers, event_id):
     ## Create epochs object
     
     epochs = mne.Epochs(
-        raw,
+        raw_EEG,
         events=events_clean,
         tmin=0, # start trials at beginning of scored epochs
         tmax=30, # end trials at end of scored epochs

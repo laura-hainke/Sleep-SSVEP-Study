@@ -2,9 +2,9 @@
 """
 Author: Laura Hainke
 Date: 07.2023
-Functionality: Script to import and process EEG data; Gamma-Sleep study, control condition
+Functionality: Script to import and process EEG data; Gamma-Sleep study, experimental condition
 Assumptions: Files as defined in section %% Paths to files
-Notes: In progress
+Notes: V1
 
 """
 
@@ -111,7 +111,7 @@ triggers_s01, triggers_s03 = import_triggers(path_ses01_annotations, path_ses03_
 n_wake_epochs = np.floor(raw_s01_EEG.__len__() / raw_s01_EEG.info['sfreq'] / 30)
 
 # Create a "hypnogram" containing only stage 0
-hypno_s01 = np.zeros(int(n_wake_epochs), dtype=int)
+hypno_s01 = np.zeros(int(n_wake_epochs), dtype=int) 
 
 # Upsample to match data (needed for SSVEP analysis)
 hypno_up_s01 = yasa.hypno_upsample_to_data(hypno_s01, sf_hypno=1/30, data=raw_s01_EEG)
@@ -376,7 +376,7 @@ SSVEP_curves_exp.to_csv(path_exp_curves_SSVEP)
 
 ## Sleep metrics
 
-# Path to output sleep variables, control condition
+# Path to output sleep variables, experimental condition
 sleep_data_exp.to_csv(path_exp_sleep, header=False)
 
 

@@ -4,7 +4,7 @@ Author: Laura Hainke
 Date: 07.2023
 Functionality: Script to import and process EEG data; Gamma-Sleep study, control condition
 Assumptions: Files as defined in section %% Paths to files
-Notes: In progress
+Notes: V1
 
 """
 

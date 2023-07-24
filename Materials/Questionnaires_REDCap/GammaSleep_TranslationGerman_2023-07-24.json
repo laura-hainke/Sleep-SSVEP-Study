@@ -1,7 +1,7 @@
 {
     "creator": "REDCap MLM",
-    "version": "v12.2.10",
-    "timestamp": "2023-04-21 16:00:02",
+    "version": "v13.4.13",
+    "timestamp": "2023-07-24 13:46:49",
     "instructions": "How to use this file: The essential elements are all 'id' and 'translation' items and the paths leading to them, as well as the root elements 'creator' (must be left as is), 'key', 'display', and 'rtl'. All other items, including this text, are non-essential and will not be regarded during an import operation. Furthermore, subsets of this file can be created and used at will, as long as it remains valid JSON. The 'hash' items are not essential, but assist in tracking if a default value has changed since the file was created, and thus a translation may be out of date. During an import operation, a best-effort approach is taken. Any paths and/or ids that do not match the target will be silently ignored. Thus, a cross-project import of field translations would only work for fields of the same name.",
     "key": "de",
     "display": "Deutsch",
@@ -24,6 +24,11 @@
             "hash": "789b14"
         },
         {
+            "id": "multilang_647",
+            "translation": "",
+            "hash": "d7982d"
+        },
+        {
             "id": "data_entry_540",
             "translation": "",
             "hash": "2a9fc8"
@@ -37,6 +42,11 @@
             "id": "survey_1347",
             "translation": "",
             "hash": "c10e74"
+        },
+        {
+            "id": "survey_1559",
+            "translation": "",
+            "hash": "5d2715"
         },
         {
             "id": "data_entry_536",
@@ -67,6 +77,11 @@
             "id": "data_entry_39",
             "translation": "Antwort erforderlich",
             "hash": "569a50"
+        },
+        {
+            "id": "form_renderer_66",
+            "translation": "",
+            "hash": "f0e255"
         },
         {
             "id": "calendar_popup_01",
@@ -139,9 +154,9 @@
             "hash": "98e2bd"
         },
         {
-            "id": "data_entry_568",
+            "id": "data_entry_602",
             "translation": "",
-            "hash": "d20ea9"
+            "hash": "fcca92"
         },
         {
             "id": "survey_1140",
@@ -162,6 +177,16 @@
             "id": "data_entry_260",
             "translation": "",
             "hash": "c525db"
+        },
+        {
+            "id": "data_entry_404",
+            "translation": "",
+            "hash": "86eeda"
+        },
+        {
+            "id": "data_entry_403",
+            "translation": "",
+            "hash": "9a6e34"
         },
         {
             "id": "data_entry_518",
@@ -1414,6 +1439,11 @@
             "hash": "8f3edd"
         },
         {
+            "id": "survey_732",
+            "translation": "",
+            "hash": "b02d11"
+        },
+        {
             "id": "survey_167",
             "translation": "",
             "hash": "2d5451"
@@ -1929,6 +1959,11 @@
             "hash": "5548ae"
         },
         {
+            "id": "data_entry_601",
+            "translation": "",
+            "hash": "b444ad"
+        },
+        {
             "id": "bottom_47",
             "translation": "",
             "hash": "0a60a9"
@@ -2237,6 +2272,31 @@
             "id": "data_entry_235",
             "translation": "",
             "hash": "eecd25"
+        },
+        {
+            "id": "data_entry_603",
+            "translation": "",
+            "hash": "e89d61"
+        },
+        {
+            "id": "data_entry_68",
+            "translation": "",
+            "hash": "0115ea"
+        },
+        {
+            "id": "data_entry_69",
+            "translation": "",
+            "hash": "3b49f3"
+        },
+        {
+            "id": "data_entry_70",
+            "translation": "",
+            "hash": "66fe12"
+        },
+        {
+            "id": "report_builder_28",
+            "translation": "",
+            "hash": "fa2984"
         },
         {
             "id": "data_entry_507",
@@ -2735,7 +2795,7 @@
             "form": "exclusion_criteria",
             "label": {
                 "hash": "530b42",
-                "translation": "<p>Hast Du Schwierigkeiten, zwischen rot und gr&uuml;n zu unterscheiden (Rot-Gr&uuml;n-Schw&auml;che)?</p>"
+                "translation": "<p>Hast Du Schwierigkeiten, zwischen rot und grün zu unterscheiden (Rot-Grün-Schwäche)?</p>"
             }
         },
         {
@@ -2743,7 +2803,7 @@
             "form": "exclusion_criteria",
             "label": {
                 "hash": "924f46",
-                "translation": "<p>Hast Du <span style=\"text-decoration: underline;\">jemals in Deinem Leben</span> eine dieser Erfahrungen gemacht:</p> <ul> <li>Unkontrollierte sch&uuml;ttelnde Bewegungen des ganzen K&ouml;rpers oder von K&ouml;rperteilen, mit vollst&auml;ndigem oder teilweisem Bewusstseinsverlust (<em>Epilepsie, Anfall</em>)</li> <li>Pulsierende Kopfschmerzen, m&ouml;glicherweise begleitet von &Uuml;belkeit, Empfindlichkeit gegen&uuml;ber Licht / Ger&auml;uschen / Ger&uuml;chen, visuellen St&ouml;rungen (<em>Migr&auml;ne</em>)</li> <li>Gehirn-Operation (z.B. um einen Tumor zu entfernen, um ein Implantat durchzuf&uuml;hren...)</li> <li>Schwere Gehirnersch&uuml;tterung</li> <li>Schlaganfall</li> <li>Andere neurologische St&ouml;rungen</li> </ul>"
+                "translation": "<p>Hast Du jemals in Deinem Leben eine dieser Erfahrungen gemacht:</p> <ul> <li>Unkontrollierte schüttelnde Bewegungen des ganzen Körpers oder von Körperteilen, mit vollständigem oder teilweisem Bewusstseinsverlust (<em>Epilepsie, Anfall</em>)</li> <li>Pulsierende Kopfschmerzen, möglicherweise begleitet von Übelkeit, Empfindlichkeit gegenüber Licht / Geräuschen / Gerüchen, visuellen Störungen (<em>Migräne</em>)</li> <li>Gehirn-Operation (z.B. um einen Tumor zu entfernen, um ein Implantat durchzuführen...)</li> <li>Schwere Gehirnerschütterung</li> <li>Schlaganfall</li> <li>Andere neurologische Störungen</li> </ul>"
             },
             "enum": [
                 {
@@ -2775,8 +2835,8 @@
             "id": "epilepsy_family",
             "form": "exclusion_criteria",
             "label": {
-                "hash": "d7712f",
-                "translation": "<p>Unter Deinen Verwandten ersten Grades: Wurde jemand mit Epilepsie diagostiziert, oder hat jemand Anf&auml;lle gehabt?</p>"
+                "hash": "7f7f65",
+                "translation": "<p><span style=\"text-decoration: underline;\">Unter Deinen biologischen Verwandten ersten Grades</span>: Wurde jemand mit Epilepsie diagnostiziert, oder hat jemand Anfälle gehabt?</p>"
             },
             "note": {
                 "hash": "79ce79",
@@ -2787,8 +2847,8 @@
             "id": "cutoff_substances",
             "form": "exclusion_criteria",
             "label": {
-                "hash": "8de7ed",
-                "translation": "<p>Hast Du <span style=\"text-decoration: underline;\">in den letzten 2 Monaten</span> irgendeine dieser Substanzen konsumiert?</p> <ul> <li>Nikotin</li> <li>Cannabis</li> <li>Psychopharmaka</li> <li>Andere Drogen</li> </ul>"
+                "hash": "221911",
+                "translation": "<p>Hast Du <span style=\"text-decoration: underline;\">im letzten Monat</span> irgendeine dieser Substanzen konsumiert?</p> <ul> <li>Nikotin</li> <li>Cannabis</li> <li>Psychopharmaka</li> <li>Andere Drogen</li> </ul>"
             },
             "enum": [
                 {
@@ -3325,8 +3385,8 @@
                 "translation": "<p>1. Wann sind Sie w&auml;hrend der letzten vier Wochen gew&ouml;hnlich abends zu Bett gegangen?</p>"
             },
             "note": {
-                "hash": "3cf25d",
-                "translation": "<p>&uuml;bliche Uhrzeit:</p>"
+                "hash": "a1e737",
+                "translation": "<p>BETTZEIT (Benutzen Sie das 24-Stunden Format, z.B. 23:00 statt 11 Uhr)</p>"
             }
         },
         {
@@ -3338,7 +3398,7 @@
             },
             "note": {
                 "hash": "7b9a30",
-                "translation": "in Minuten:"
+                "translation": "<p>ANZAHL AN MINUTEN</p>"
             }
         },
         {
@@ -3349,8 +3409,8 @@
                 "translation": "<p>3. Wann sind Sie w&auml;hrend der letzten vier Wochen gew&ouml;hnlich morgens aufgestanden?</p>"
             },
             "note": {
-                "hash": "13aefd",
-                "translation": "übliche Uhrzeit:"
+                "hash": "b036e0",
+                "translation": "<p>AUFSTEHZEIT (Benutzen Sie das 24-Stunden Format, z.B. 23:00 statt 11 Uhr)</p>"
             }
         },
         {
@@ -3361,8 +3421,8 @@
                 "translation": "<p>4. Wieviele Stunden haben Sie w&auml;hrend der letzten vier Wochen pro Nacht tats&auml;chlich geschlafen? (Das muss nicht mit der Anzahl der Stunden, die Sie im Bett verbracht haben, &uuml;bereinstimmen.)</p>"
             },
             "note": {
-                "hash": "3c3844",
-                "translation": "Effektive Schlafzeit (Stunden) pro Nacht:"
+                "hash": "ea65f0",
+                "translation": "<p>STUNDEN AN SCHLAF PRO NACHT (z.B., um eineinhalb Stunden anzugeben, schreiben Sie 1.5)</p>"
             }
         },
         {
@@ -3370,7 +3430,7 @@
             "form": "psqi",
             "header": {
                 "hash": "c7a734",
-                "translation": "<p>Kreuzen Sie bitte f&uuml;r jede der folgenden Fragen die f&uuml;r Sie zutreffende Antwort an. Beantworten Sie bitte alle Fragen.</p> <p>5. Wie oft haben Sie w&auml;hrend der letzten vier Wochen schlecht geschlafen, ...</p>"
+                "translation": "<p>Wählen Sie bitte für jede der folgenden Fragen die für Sie zutreffende Antwort. Beantworten Sie bitte alle Fragen.</p> <p>5. Wie oft haben Sie während der letzten vier Wochen schlecht geschlafen, ...</p>"
             },
             "label": {
                 "hash": "8b369a",
@@ -4073,7 +4133,7 @@
             "form": "mumctq",
             "header": {
                 "hash": "d8672b",
-                "translation": "<p>Bitte beantworte alle folgenden Fragen selbst wenn Du nicht arbeitest, oder an 7 Tagen / Woche arbeitest. Benutze das 24-Stunden Format (z.B. 23:00 statt 11 PM).</p>"
+                "translation": "<p>Bitte beantworte alle folgenden Fragen selbst wenn Du nicht arbeitest, oder an 7 Tagen / Woche arbeitest. Benutze das 24-Stunden Format (z.B. 23:00 statt 11 Uhr).</p>"
             },
             "label": {
                 "hash": "126bb4",
@@ -4177,8 +4237,8 @@
             "id": "sex",
             "form": "demographics",
             "label": {
-                "hash": "5bfd5e",
-                "translation": "Dein biologisches Geschlecht"
+                "hash": "394b2b",
+                "translation": "Das Geschlecht, das Dir bei der Geburt zugewiesen wurde"
             },
             "enum": [
                 {
@@ -4207,8 +4267,8 @@
             "id": "gender",
             "form": "demographics",
             "label": {
-                "hash": "b847e5",
-                "translation": "Deine Geschlechtsidentität"
+                "hash": "2ea88f",
+                "translation": "Das Geschlecht, mit dem Du Dich identifizierst"
             },
             "enum": [
                 {
@@ -4267,8 +4327,8 @@
             "id": "education",
             "form": "demographics",
             "label": {
-                "hash": "508e57",
-                "translation": "<div class=\"rich-text-field-label\"> <p>Dein Bildungsniveau</p> <ol> <li>Elementarbereich: Kindergarten, Vorschule</li> <li>Primarbereich: Grundschule</li> <li>Sekundarbereich I: Mittelschule / Realschule / andere Schule bis zur 10. Klasse</li> <li>Sekundarbereich II: Oberstufe bis zur (Fach)Hochschulreife, Erstausbildung Berufsschule</li> <li>Postsekundarer nicht-terti&auml;rer Bereich: Zweitausbildung Berufsschule nach Erwerb einer Studienberechtigung</li> <li>Kurzes terti&auml;res Bildungsprogramm: Meisterausbildung&nbsp;</li> <li>Bachelor- bzw. gleichwertiges Bildungsprogramm</li> <li>Master- bzw. gleichwertiges Bildungsprogramm</li> <li>Promotion bzw. gleichwertiges Bildungsprogramm</li> </ol> </div>"
+                "hash": "02b119",
+                "translation": "<div class=\"rich-text-field-label\"> <p>Dein h&ouml;chstes erreichtes Bildungsniveau</p> </div>"
             },
             "note": {
                 "hash": "274c7c",
@@ -4277,48 +4337,43 @@
             "enum": [
                 {
                     "id": 0,
-                    "hash": "70b638",
-                    "translation": "Elementarbereich"
+                    "hash": "2a05d6",
+                    "translation": "Weniger als Sekundarstufe (kein Abschluss oder bis zur 7. Klasse)"
                 },
                 {
                     "id": 1,
-                    "hash": "0b1053",
-                    "translation": "Primarbereich"
+                    "hash": "dbbba2",
+                    "translation": "Sekundarstufe I: Förderschulabschluss, Mittelschulabschluss (bis zur 8./9. Klasse)"
                 },
                 {
                     "id": 2,
-                    "hash": "eeeb8b",
-                    "translation": "Sekundarbereich I"
+                    "hash": "f43e38",
+                    "translation": "Sekundarstufe II: Mittlere Reife, Realschulabschluss (bis zur 10. Klasse)"
                 },
                 {
                     "id": 3,
-                    "hash": "4bcf4f",
-                    "translation": "Sekundarbereich II"
+                    "hash": "c88814",
+                    "translation": "Allgemeine oder fachgebundene Hochschulreife (bis zur 12./13. Klasse)"
                 },
                 {
                     "id": 4,
-                    "hash": "8400e7",
-                    "translation": "Postsekundarer nicht-tertiärer Bereich"
+                    "hash": "cdf24e",
+                    "translation": "Berufsausbildung oder äquivalent"
                 },
                 {
                     "id": 5,
-                    "hash": "d64451",
-                    "translation": "Kurzes tertiäres Bildungsprogramm"
+                    "hash": "d4228d",
+                    "translation": "Bachelorabschluss oder äquivalent"
                 },
                 {
                     "id": 6,
-                    "hash": "03f563",
-                    "translation": "Bachelor- bzw. gleichwertiges Bildungsprogramm"
+                    "hash": "b2674a",
+                    "translation": "Masterabschluss oder äquivalent"
                 },
                 {
                     "id": 7,
-                    "hash": "f6838c",
-                    "translation": "Master- bzw. gleichwertiges Bildungsprogramm"
-                },
-                {
-                    "id": 8,
-                    "hash": "eef45e",
-                    "translation": "Promotion"
+                    "hash": "fd9251",
+                    "translation": "Promotion oder äquivalent"
                 }
             ]
         },
@@ -4691,13 +4746,13 @@
                 },
                 {
                     "id": "survey-instructions",
-                    "hash": "d25a79",
-                    "translation": "<h5 style=\"text-align: right;\"><span style=\"color: #e03e2d;\"><strong><em>DEUTSCH / ENGLISH</em></strong></span></h5> <hr /> <h5>Willkommen!</h5> <p>Danke f&uuml;r Dein Interesse an meiner Studie.</p> <p>Bevor ich Dich zu uns ins Labor einlade, w&uuml;rde ich gerne <strong>&uuml;berpr&uuml;fen, ob Du zur Teilnahme geeignet bist</strong>. Daf&uuml;r ist dieser Fragebogen gedacht. Ich werde Dir <strong>einige Fragen zu Deiner Gesundheit und Deinem Schlaf </strong>stellen.</p> <p>Am Ende des Fragebogens, falls Du zur Teilnahme berechtigt und bereit bist, wirst Du um pers&ouml;nliche Informationen gebeten (Name, Email), sodass wir die erste Studiensitzung ausmachen k&ouml;nnen. Erst in dieser Sitzung entscheidest Du, ob Du der Teilnahme zustimmst oder nicht. Dein Einverst&auml;ndnis wird nicht automatisch erteilt, indem Du diesen Fragebogen ausf&uuml;llst.</p> <p>Fragebogendaten werden sicher auf der Plattform REDCap f&uuml;r die Dauer der Studie (Juni - Dezember 2023) gespeichert, dennoch kannst Du die L&ouml;schung Deiner Daten jederzeit verlangen.</p> <p><span style=\"color: #34495e;\">Dauer des Fragebogens: ~ 10 min</span></p> <h5>Worum geht es in der Studie?</h5> <p>Im Rahmen meines Promotionsprojekts an der TU M&uuml;nchen untersuche ich die <strong>Effekte von schnell flackerndem Licht</strong> auf <strong>Gehirnaktivit&auml;t im Schlaf</strong>. Das Ziel ist es, eine gewisse Form von Gehirnaktivit&auml;t zu verst&auml;rken, die in Erkrankungen wie Alzheimer-Demenz beeintr&auml;chtigt ist: neue Forschungsergebnisse zeigen, dass schnell flackerndes Licht dazu in der Lage ist. Ich m&ouml;chte testen, ob eine Anwendung w&auml;hrend des Schlafs machbar und effektiv bei jungen, gesunden Menschen ist. Wenn ja, k&ouml;nnen wir es als N&auml;chstes an &auml;lteren Menschen mit Demenzrisiko untersuchen.</p> <p>Auf lange Sicht m&ouml;chte ich zur Demenzpr&auml;vention bzw. -verz&ouml;gerung beitragen, mit einer Intervention, die f&uuml;r Betroffene m&ouml;glichst nicht invasiv, preiswert und praktisch ist. <em>Das geht nur mit der Hilfe von Menschen wie Dir!</em></p> <p>Das Experiment beinhaltet die folgenden Sitzungen:</p> <ol> <li>Eine 1-st&uuml;ndige Sitzung an einem Tag Deiner Wahl, bei der Du Dein Einverst&auml;ndnis erteilst und eine Messung im Wachzustand durchgef&uuml;hrt wird.</li> <li>Eine Nacht im Schlaflabor an einem Wochenende, in der nur Deine Gehirnaktivit&auml;t gemessen wird, sodass wir deinen \"gew&ouml;hnlichen\" Schlaf abbilden k&ouml;nnen.</li> <li>Eine weitere Nacht im Schlaflabor (die direkt darauffolgende Nacht), in der Deine Gehirnaktivit&auml;t gemessen wird und zus&auml;tzlich die Stimulation aktiviert wird, w&auml;hrend Du schl&auml;fst.</li> </ol> <p>In der ersten Sitzung erkl&auml;re ich gerne mehr dazu und beantworte alle Fragen. Versuchsteilnehmende bekommen eine Aufwandsentsch&auml;digung von 100 &euro;, zudem biete ich individualisierte Schlafberichte an.</p>"
+                    "hash": "a7e0d0",
+                    "translation": "<h5 style=\"text-align: right;\"><span style=\"color: #e03e2d;\"><strong><em>DEUTSCH / ENGLISH</em></strong></span></h5> <hr /> <h5>Willkommen!</h5> <p><span style=\"font-weight: normal;\">Danke für Dein Interesse an unserer Studie.</span></p> <p><span style=\"font-weight: normal;\">Bevor ich Dich zu uns ins Labor einlade, würde ich gerne <strong>überprüfen, ob Du zur Teilnahme geeignet bist</strong>. Dafür ist dieser Fragebogen gedacht. Ich werde Dir <strong>einige Fragen zu Deiner Gesundheit und Deinem Schlaf </strong>stellen.</span></p> <p><span style=\"font-weight: normal;\">Am Ende des Fragebogens, falls Du zur Teilnahme berechtigt und bereit bist, wirst Du um persönliche Informationen gebeten (Name, Email), sodass wir die erste Studiensitzung ausmachen können. Erst in dieser Sitzung entscheidest Du, ob Du der Teilnahme zustimmst oder nicht. Dein Einverständnis wird nicht automatisch erteilt, indem Du diesen Fragebogen ausfüllst.</span></p> <p><span style=\"font-weight: normal;\">Fragebogendaten werden sicher auf der Plattform REDCap für die Dauer der Studie gespeichert, dennoch kannst Du die Löschung Deiner Daten jederzeit verlangen.</span></p> <p><span style=\"color: #34495e; font-weight: normal;\">Dauer des Fragebogens: ~ 10 min</span></p> <h5><span style=\"font-weight: normal;\">Worum geht es in der Studie?</span></h5> <p><span style=\"font-weight: normal;\">Im Rahmen meines Promotionsprojekts an der TU München untersuche ich die <strong>Effekte von schnell flackerndem Licht</strong> auf <strong>Gehirnaktivität im Schlaf</strong>. Das Ziel ist es, eine gewisse Form von Gehirnaktivität zu verstärken, die in Erkrankungen wie Alzheimer-Demenz beeinträchtigt ist: neue Forschungsergebnisse zeigen, dass schnell flackerndes Licht dazu in der Lage ist. Ich möchte testen, ob eine Anwendung während des Schlafs machbar und effektiv bei jungen, gesunden Menschen ist. Wenn ja, können wir es als Nächstes an älteren Menschen mit Demenzrisiko untersuchen.</span></p> <p><span style=\"font-weight: normal;\">Auf lange Sicht möchte ich zur Demenzprävention bzw. -verzögerung beitragen, mit einer Intervention, die für Betroffene möglichst nicht invasiv, preiswert und praktisch ist. <em>Das geht nur mit der Hilfe von Menschen wie Dir!</em></span></p> <p><span style=\"font-weight: normal;\">Das Experiment beinhaltet die folgenden Sitzungen:</span></p> <ol> <li><span style=\"font-weight: normal;\">Eine 1,5-stündige Sitzung an einem Tag Deiner Wahl, bei der Du Dein Einverständnis erteilst und eine Messung im Wachzustand durchgeführt wird.</span></li> <li><span style=\"font-weight: normal;\">Eine Nacht im Schlaflabor an einem Wochenende, in der nur Deine Gehirnaktivität gemessen wird, sodass wir deinen \"gewöhnlichen\" Schlaf abbilden können.</span></li> <li><span style=\"font-weight: normal;\">Eine weitere Nacht im Schlaflabor (am gleichen Wochenende), in der Deine Gehirnaktivität gemessen wird und zusätzlich die Stimulation aktiviert wird, während Du schläfst.</span></li> </ol> <p><span style=\"font-weight: normal;\">In der ersten Sitzung erkläre ich gerne mehr dazu und beantworte alle Fragen. Versuchsteilnehmende bekommen eine Aufwandsentschädigung von 100 €.</span></p>"
                 },
                 {
                     "id": "survey-acknowledgement",
-                    "hash": "9a42b3",
-                    "translation": "<p>Vielen Dank, Du hast den Fragebogen erfolgreich ausgef&uuml;llt!</p> <p>Du wirst sehr bald eine Email von mir bekommen.</p> <p>Ich w&uuml;nsche Dir einen sch&ouml;nen Tag :)</p> <p>&nbsp;</p> <hr /> <p>&nbsp;</p> <p>Laura Hainke<br />(Doktorandin)</p> <p>Technische Universit&auml;t M&uuml;nchen<br />Fakult&auml;t f&uuml;r Sport- und Gesundheitswissenschaften<br />Assistant Professorship of Chronobiology &amp; Health<br /><a href=\"mailto:laura.hainke@tum.de\">laura.hainke@tum.de</a></p>"
+                    "hash": "332005",
+                    "translation": "<p>Vielen Dank, Du hast den Fragebogen erfolgreich ausgefüllt!</p> <p>Du wirst sehr bald eine Email von mir bekommen.</p> <p>Ich wünsche Dir einen schönen Tag :)</p> <p> </p> <hr /> <p> </p> <p>Laura Hainke<br />(Doktorandin)</p> <p>Technische Universität München<br />Fakultät für Sport- und Gesundheitswissenschaften<br />Assistant Professorship of Chronobiology &amp; Health<br /><a href=\"mailto:laura.hainke@tum.de\">laura.hainke@tum.de</a></p>"
                 },
                 {
                     "id": "survey-logo_alt_text",
@@ -4706,8 +4761,8 @@
                 },
                 {
                     "id": "survey-stop_action_acknowledgement",
-                    "hash": "20abdf",
-                    "translation": "<p>Danke f&uuml;r das Ausf&uuml;llen des Fragebogens. Leider k&ouml;nnen wir Dich zurzeit nicht in die Studie aufnehmen, da mindestens ein Exklusionskriterium m&ouml;glicherweise auf Dich zutrifft. Wir bitten um Verst&auml;ndnis, dies ist zu Deiner Sicherheit - wir wollen niemanden mit unserem Experiment gef&auml;hrden. Dein Interesse wird trotzdem sehr gesch&auml;tzt.</p> <p>Falls Du Fragen hast, stehe ich gerne zur Verf&uuml;gung.</p> <p>Ich w&uuml;nsche Dir einen sch&ouml;nen Tag!</p> <p>&nbsp;</p> <hr /> <p>&nbsp;</p> <p>Laura Hainke<br />(Doktorandin)</p> <p>Technische Universit&auml;t M&uuml;nchen<br />Fakult&auml;t f&uuml;r Sport- und Gesundheitswissenschaften<br />Assistant Professorship of Chronobiology &amp; Health<br /><a href=\"mailto:laura.hainke@tum.de\">laura.hainke@tum.de</a></p>"
+                    "hash": "c87569",
+                    "translation": "<p>Danke für das Ausfüllen des Fragebogens. Leider können wir Dich zurzeit nicht in die Studie aufnehmen, da mindestens ein Exklusionskriterium möglicherweise auf Dich zutrifft. Wir bitten um Verständnis, dies ist zu Deiner Sicherheit - wir wollen niemanden mit unserem Experiment gefährden. Dein Interesse wird trotzdem sehr geschätzt.</p> <p>Falls Du Fragen hast, stehe ich gerne zur Verfügung.</p> <p>Ich wünsche Dir einen schönen Tag!</p> <p> </p> <hr /> <p> </p> <p>Laura Hainke<br />(Doktorandin)</p> <p>Technische Universität München<br />Fakultät für Sport- und Gesundheitswissenschaften<br />Assistant Professorship of Chronobiology &amp; Health<br /><a href=\"mailto:laura.hainke@tum.de\">laura.hainke@tum.de</a></p>"
                 },
                 {
                     "id": "survey-response_limit_custom_text",
@@ -4729,7 +4784,6 @@
                     "hash": "4150a2",
                     "translation": "de-DE_BirgitV3Voice",
                     "valid-translation-values": [
-                        "ar-AR_OmarVoice = Arabic (Male)",
                         "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
                         "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
                         "en-GB_JamesV3Voice = English - United Kingdom (Male)",
@@ -4761,7 +4815,7 @@
                 {
                     "id": "survey-instructions",
                     "hash": "cc023c",
-                    "translation": "<p>&nbsp;Alkoholkonsum kann Ihre Gesundheit beeinflussen und bestimmte Medikamente und Behandlungen beeintr&auml;chtigen. Daher ist es wichtig, dass wir Sie zu Ihrem Alkoholkonsum befragen. Ihre Angaben werden vertraulich behandelt, bitte antworten Sie ehrlich.</p> <p>W&auml;hlen Sie bitte jeweils die Option, die Ihre Antwort am besten beschreibt.</p>"
+                    "translation": "<p>Alkoholkonsum kann Ihre Gesundheit beeinflussen und bestimmte Medikamente und Behandlungen beeinträchtigen. Daher ist es wichtig, dass wir Sie zu Ihrem Alkoholkonsum befragen. Ihre Angaben werden vertraulich behandelt, bitte antworten Sie ehrlich.</p> <p>Wählen Sie bitte jeweils die Option, die Ihre Antwort am besten beschreibt.</p>"
                 },
                 {
                     "id": "survey-acknowledgement",
@@ -4793,7 +4847,6 @@
                     "hash": "094b0f",
                     "translation": "",
                     "valid-translation-values": [
-                        "ar-AR_OmarVoice = Arabic (Male)",
                         "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
                         "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
                         "en-GB_JamesV3Voice = English - United Kingdom (Male)",
@@ -4857,7 +4910,6 @@
                     "hash": "094b0f",
                     "translation": "",
                     "valid-translation-values": [
-                        "ar-AR_OmarVoice = Arabic (Male)",
                         "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
                         "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
                         "en-GB_JamesV3Voice = English - United Kingdom (Male)",
@@ -4921,7 +4973,6 @@
                     "hash": "094b0f",
                     "translation": "",
                     "valid-translation-values": [
-                        "ar-AR_OmarVoice = Arabic (Male)",
                         "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
                         "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
                         "en-GB_JamesV3Voice = English - United Kingdom (Male)",
@@ -4985,7 +5036,6 @@
                     "hash": "094b0f",
                     "translation": "",
                     "valid-translation-values": [
-                        "ar-AR_OmarVoice = Arabic (Male)",
                         "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
                         "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
                         "en-GB_JamesV3Voice = English - United Kingdom (Male)",
@@ -5044,7 +5094,6 @@
                     "hash": "094b0f",
                     "translation": "",
                     "valid-translation-values": [
-                        "ar-AR_OmarVoice = Arabic (Male)",
                         "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
                         "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
                         "en-GB_JamesV3Voice = English - United Kingdom (Male)",
@@ -5103,7 +5152,6 @@
                     "hash": "094b0f",
                     "translation": "",
                     "valid-translation-values": [
-                        "ar-AR_OmarVoice = Arabic (Male)",
                         "pt-BR_IsabelaV3Voice = Brazilian Portuguese (Female)",
                         "en-GB_CharlotteV3Voice = English - United Kingdom (Female)",
                         "en-GB_JamesV3Voice = English - United Kingdom (Male)",

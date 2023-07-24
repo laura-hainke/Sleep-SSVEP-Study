@@ -10,6 +10,7 @@ library(Hmisc)
 library(mctq)
 library(data.table)
 library(lubridate)
+library(labelled)
 
 
 # Function: load_redcap -------------------------------------------------------------------------------------------
@@ -392,16 +393,19 @@ score_PSQI <- function(data) {
   
   
   ## Sleep efficiency
-  # Difference in seconds between getting in and out of bed
-  diffsec = strptime(data_PSQI$psqi_3, format = "%H:%M") - strptime(data_PSQI$psqi_1, format = "%H:%M")
-  # Absolute value of diffsec / 3600
-  diffhour = as.integer(diffsec[1]) / 3600
+  # Difference in HM between getting in and out of bed
+  diffhour = hm(data_PSQI$psqi_3) - hm(data_PSQI$psqi_1)
+  
+  # Convert to numeric
+  diffhour = period_to_seconds(diffhour) / 60 / 60
+  
   # Correct for day transition, as in scoring instructions
-  if (diffhour > 24) {
-    newtib = diffhour - 24
+  if (diffhour < 0) {
+    newtib = diffhour + 24
   } else {
     newtib = diffhour
   }
+  
   # Calculate sleep efficiency
   tmphse = (data_PSQI$psqi_4 / newtib) * 100
   
@@ -429,6 +433,9 @@ score_PSQI <- function(data) {
   
   ## Total score
   PSQI_score = data_PSQI$durat + data_PSQI$distb + data_PSQI$laten + data_PSQI$daydis + data_PSQI$hse + data_PSQI$slpqual + data_PSQI$meds
+  
+  # Remove label
+  PSQI_score = remove_labels(PSQI_score)
   
   return(PSQI_score)
 }

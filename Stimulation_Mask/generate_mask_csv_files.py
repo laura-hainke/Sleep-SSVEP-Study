@@ -33,7 +33,7 @@ min_analog = 0
 
 # Analog value corresponding to stim target illuminance of 20 lux
 # NOTE: change to exact value!
-max_analog = 800
+max_analog = 1740
     
 # Frequency at which the Arduino reads CSV rows, in Hz
 sample_rate = flicker_freq * 2 # For 40 Hz square-wave flicker, 40x ON + 40x OFF

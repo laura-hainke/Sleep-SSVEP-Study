@@ -13,7 +13,6 @@ Notes: V1
 
 # Libraries
 import mne
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 import yasa
@@ -49,12 +48,8 @@ import random
 def load_raw(filename,bad_ch):
 
     ## Load raw file    
-
-    # Go to directory containing files (necessary for read_raw_nihon)
-    os.chdir(filename[0:55])
     
-    # Load metadata of full raw file in EDF format
-    # Note: not yet preloading data to save memory
+    # Load metadata of full raw file in EDF format; not yet preloading data to save memory
     raw = mne.io.read_raw_edf(filename, preload=False)
     
     # Rename channels whose original names needed to match Neurofax headbox
@@ -72,9 +67,6 @@ def load_raw(filename,bad_ch):
         # Make a copy of the raw object
         raw_PSG = raw.copy()
         
-        # Get the channel subset for PSG
-        raw_PSG.pick(['C3','C4','LEOG','REOG','LEMG','REMG','A1','A2'])
-        
         # Load data into memory
         raw_PSG.load_data()
         
@@ -84,8 +76,16 @@ def load_raw(filename,bad_ch):
         # Apply band-pass filter
         raw_PSG.filter(l_freq=0.1, h_freq=45)
         
-        # Re-reference channels to mastoid average
-        raw_PSG.set_eeg_reference(ref_channels=['A1','A2'])
+        # Re-reference channels to mastoid average, unless one of the 2 channels is marked as bad
+        if 'A1' in bad_ch:
+            raw_PSG.set_eeg_reference(ref_channels=['A2'])
+        elif 'A2' in bad_ch:
+            raw_PSG.set_eeg_reference(ref_channels=['A1'])
+        else:
+            raw_PSG.set_eeg_reference(ref_channels=['A1','A2'])
+        
+        # Get the channel subset for PSG
+        raw_PSG.pick(['C3','C4','LEOG','REOG','LEMG','REMG'])
         
         # Correctly label EOG and EMG channels
         raw_PSG.set_channel_types({'LEOG':'eog', 'REOG':'eog', 'LEMG':'emg', 'REMG':'emg'})
@@ -104,24 +104,25 @@ def load_raw(filename,bad_ch):
         # Make a copy of the raw object
         raw_EEG = raw.copy()
         
-        # Get the channel subset for EEG
-        raw_EEG.pick(['PO3','PO4','POz','O1','O2','Oz','A1','A2'])
-        
         # Load data into memory
         raw_EEG.load_data()
         
-        # Re-reference channels to mastoid average
-        raw_EEG.set_eeg_reference(ref_channels=['A1','A2'])
+        # Re-reference channels to mastoid average, unless one of the 2 channels is marked as bad
+        if 'A1' in bad_ch:
+            raw_EEG.set_eeg_reference(ref_channels=['A2'])
+        elif 'A2' in bad_ch:
+            raw_EEG.set_eeg_reference(ref_channels=['A1'])
+        else:
+            raw_EEG.set_eeg_reference(ref_channels=['A1','A2'])
+        
+        # Get channel subset for EEG
+        raw_EEG.pick(['PO3','PO4','POz','O1','O2','Oz'])
     
     except:
         
         print('Raw EEG object could not be created properly!')
         raw_EEG = None
             
-        
-    # Move back to main directory
-    os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
-        
 
     return raw_PSG, raw_EEG
 
@@ -179,6 +180,19 @@ def import_triggers(filename1, filename2, raw_EEG, condition):
     triggers_s01 = events_s01[:,0]
     
     
+    ## Display percentage of triggers that are not 25 ms apart
+    
+    # Compute differential of trigger list
+    trig_diff = np.diff(triggers_s01)
+
+    # Get triggers not 25 ms apart
+    errors = trig_diff[trig_diff != 25]
+
+    # Compute & display error rate
+    error_rate = len(errors) / len(triggers_s01) * 100
+    print("Trigger error rate, wake:", round(error_rate, 2), "%")
+    
+    
     ## Access triggers from session 03: sleep exp
     
     # Import annotations from EDF file, session 03
@@ -192,6 +206,19 @@ def import_triggers(filename1, filename2, raw_EEG, condition):
 
     # Access data points containing triggers
     triggers_s03 = events_s03[:,0]
+    
+    
+    ## Display percentage of triggers that are not 25 ms apart
+    
+    # Compute differential of trigger list
+    trig_diff = np.diff(triggers_s03)
+
+    # Get triggers not 25 ms apart
+    errors = trig_diff[trig_diff != 25]
+
+    # Compute & display error rate
+    error_rate = len(errors) / len(triggers_s03) * 100
+    print("Trigger error rate, sleep:", round(error_rate, 2), "%")
     
 
     ## Return correct set of triggers
@@ -394,7 +421,7 @@ def select_annotations(raw_EEG, hypnogram, uncertain_epochs):
     # Remove uncertain epochs
     clean_stages = np.delete(all_stages,uncertain_epochs,axis=0)
     
-    # Create anotations with scored stages as markers
+    # Create annotations with scored stages as markers
     annotations = mne.Annotations(onset=clean_stages[:,0], duration=30, description=clean_stages[:,1])  
     
     # Add to raw object

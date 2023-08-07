@@ -95,7 +95,6 @@ print(raw_s02_EEG.info)
 all_triggers = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s02_EEG, 'con')
 
 
-
 # %% Score sleep, get epochs, store metrics
 
 ## Session 02: full night
@@ -135,6 +134,8 @@ PSD_metrics_con = dict()
 
 # Initialize array for spectra
 PSD_spectra_con = []
+
+# Make a copy 
 
 # Loop
 for stage in [0,2,3,4]:
@@ -229,7 +230,8 @@ roi_ch = ['PO3', 'PO4', 'POz', 'O1', 'O2', 'Oz']
 # Remove any bad channels from selection
 if len(bad_ch_con) > 0:
     for ch in range(len(bad_ch_con)): # loop over list of bad channels
-        roi_ch.remove(bad_ch_con[ch]) # remove given element from ROI selection
+        if bad_ch_con[ch] in roi_ch:
+            roi_ch.remove(bad_ch_con[ch]) # remove given element from ROI selection
 
 # Access raw ROI data as array, convert from Volts to microVolts
 data_s02 = raw_s02_EEG.get_data(picks=roi_ch) * 1e6

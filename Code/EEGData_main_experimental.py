@@ -258,7 +258,8 @@ roi_ch = ['PO3', 'PO4', 'POz', 'O1', 'O2', 'Oz']
 # Remove any bad channels from selection
 if len(bad_ch_exp) > 0:
     for ch in range(len(bad_ch_exp)): # loop over list of bad channels
-        roi_ch.remove(bad_ch_exp[ch]) # remove given element from ROI selection
+        if bad_ch_exp[ch] in roi_ch:
+            roi_ch.remove(bad_ch_exp[ch]) # remove given element from ROI selection
 
 # Access raw ROI data as array, convert from Volts to microVolts
 data_s01 = raw_s01_EEG.get_data(picks=roi_ch) * 1e6

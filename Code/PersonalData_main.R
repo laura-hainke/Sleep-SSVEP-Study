@@ -70,7 +70,7 @@ check_score(psqi_score,"PSQI")
 ## Time to schedule arrival at sleep lab, 1.5 hours before usual bedtime on free days
 lab_arrival = strptime(data$mumctq_fall_sleep_free[2], format = "%H:%M") - minutes(90)
 lab_arrival = format(lab_arrival, "%H:%M") # format to include only hours and minutes
-
+print(paste("Lab arrival:", lab_arrival))
 
 
 # Export outputs --------------------------------------------------------------------------------------------------

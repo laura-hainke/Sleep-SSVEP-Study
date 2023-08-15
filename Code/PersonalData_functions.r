@@ -286,7 +286,12 @@ score_uMCTQ <- function(data) {
   }
   
   # Chronotype (or: corrected local time of mid-sleep on work-free days)
-  data_uMCTQ$msf_sc = mctq::msf_sc(data_uMCTQ$ms_f, data_uMCTQ$sd_w, data_uMCTQ$sd_f, data_uMCTQ$sd_week, data_uMCTQ$mumctq_alarm_free_days)
+  if (data_uMCTQ$mumctq_alarm_free_days == FALSE) {
+    data_uMCTQ$msf_sc = mctq::msf_sc(data_uMCTQ$ms_f, data_uMCTQ$sd_w, data_uMCTQ$sd_f, data_uMCTQ$sd_week, data_uMCTQ$mumctq_alarm_free_days)
+  } else {
+    data_uMCTQ$msf_sc = data_uMCTQ$ms_f
+    print("Note: MSF computed, not corrected")
+  }
   
   
   ## Return output variable: MSF_SC

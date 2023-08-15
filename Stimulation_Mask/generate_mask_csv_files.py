@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Author: LH
-Date: 06.2023
+Date: 08.2023
 Functionality: Generate CSV files fot stimulation mask (GammaSleep study)
 Assumptions:
 Notes: Adapted from https://github.com/tscnlab/LiDuSleep/blob/main/07_LightMask/csv/CSVGenerator.ipynb
@@ -32,8 +32,7 @@ flicker_freq = 40
 min_analog = 0
 
 # Analog value corresponding to stim target illuminance of 20 lux
-# NOTE: change to exact value!
-max_analog = 1740
+max_analog = 2000
     
 # Frequency at which the Arduino reads CSV rows, in Hz
 sample_rate = flicker_freq * 2 # For 40 Hz square-wave flicker, 40x ON + 40x OFF
@@ -252,14 +251,14 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
     # Max. stim time in sec (8 hours)
     max_stim_time = int(8 * 60 * 60)
     
-    # Duration of data file in sec (1 flicker cycle, 25 ms)
-    data_file_time = 0.025
+    # Duration of data file in sec
+    data_file_time = 1
     
-    # Nr. of samples for defined file duration (now hardcoded due to buffer; on & off)
-    nsamples = 2
+    # Nr. of samples for defined file duration
+    nsamples = data_file_time * sample_rate
 
-    # Nr. of repetitions for 8 hours of total stim time
-    nrepeat = flicker_freq * max_stim_time # flicker cycles in 1 sec, multiplied by total nr. of seconds
+    # Nr. of repetitions for total stim time
+    nrepeat = max_stim_time / data_file_time
     
 
     ## Required CSV format elements
@@ -276,11 +275,17 @@ def create_data_flicker(flicker_freq,max_analog,sample_rate):
 
     ## Generate data
     
-    # Data for 1 flicker cycle
-    data_1_cycle = np.array([[max_analog,max_analog,1,1,1,1,1], [0,0,0,0,0,0,0]])
+    # Data for 1st flicker cycle (includes trigger)
+    data_1st_cycle = np.array([[max_analog,max_analog,1,1,1,1,1], [0,0,0,0,0,0,0]])
+    
+    # Data for one cycle without trigger
+    data_1_cycle_notrig = np.array([[max_analog,max_analog,0,0,0,0,0], [0,0,0,0,0,0,0]])
 
-    # Data for full file (currently, same)
-    data_all_cycles = np.tile(data_1_cycle, (flicker_freq*data_file_time, 1))
+    # Data for 39 flicker cycles
+    data_39_cycles = np.tile(data_1_cycle_notrig, (flicker_freq-1,1))
+    
+    # Combine 1st cycle with trigger with remaining 39 cycles without trigger
+    data_all_cycles = np.vstack([data_1st_cycle,data_39_cycles])
     
     
     ## Combine arrays

@@ -99,7 +99,7 @@ print('\nInfos - S03 EEG dataset:\n')
 print(raw_s03_EEG.info)
 
 # Import triggers from both experimental sessions
-triggers_s01, triggers_s03 = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s03_EEG, 'exp')
+triggers_s01, triggers_s03 = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s03_EEG)
 
 
 

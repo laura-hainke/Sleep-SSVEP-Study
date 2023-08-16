@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Author: Laura Hainke
-Date: 07.2023
+Date: 08.2023
 Functionality: Script to import and process EEG data; Gamma-Sleep study, control condition
 Assumptions: Files as defined in section %% Paths to files
-Notes: V1
+Notes: V2
 
 """
 
@@ -47,9 +47,8 @@ path_gsqs = str(path_in + "/REDCap/" + subject_nr + "_sleep-quality.csv")
 # Path to session 02 EEG data
 path_ses02_EEG = str(path_in + "/Session02/" + subject_nr + "_session02_raw-EEG.edf")
 
-# Path to annotations, sessions 01 & 03
-path_ses01_annotations = str(path_in + "/Session01/" + subject_nr + "_session01_annotations.edf")
-path_ses03_annotations = str(path_in + "/Session03/" + subject_nr + "_session03_annotations.edf")
+# Path to annotations, session 02
+path_ses02_annotations = str(path_in + "/Session02/" + subject_nr + "_session02_annotations.edf")
 
 
 ## Output data
@@ -91,8 +90,8 @@ print(raw_s02_PSG.info)
 print('\nInfos - EEG dataset:\n')
 print(raw_s02_EEG.info)
 
-# Import triggers from experimental sessions
-all_triggers = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s02_EEG, 'con')
+# Import triggers
+all_triggers = import_triggers(None, path_ses02_annotations, raw_s02_EEG)
 
 
 # %% Score sleep, get epochs, store metrics

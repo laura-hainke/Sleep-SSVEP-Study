@@ -127,132 +127,119 @@ def load_raw(filename,bad_ch):
     return raw_PSG, raw_EEG
 
 
+
 # %% Function: import_triggers
 
 """
-    Access triggers from experimental sessions, optionally merge into one trigger set (control condition).
+    Import 1 Hz triggers from 1 - 2 sessions, digitally upsample to 40 Hz.
     
     Input
     ----------
-    filename1 : str
-    Path to annotations of experimental session 01
+    file_wake : str
+    Path to annotations of experimental session 01 (for exp only)
     
-    filename2 : str
-    Path to annotations of experimental session 03
+    file_sleep : str
+    Path to annotations of experimental session 02 or 03 
     
     raw_EEG : MNE raw object
     Output of load_raw()
     
-    condition : str
-    Specify if currently analyzing control ('con') or experimental ('exp') data
-
     Output
     -------
-    all_triggers : array
-    Array containing trigger data points from both exp sessions
     
     triggers_s01 : array
     Array containing trigger data points from session 01
+    
+    triggers_s02 : array
+    Array containing trigger data points from session 02
     
     triggers_s03 : array
     Array containing trigger data points from session 03
 
 """
 
-def import_triggers(filename1, filename2, raw_EEG, condition):
+def import_triggers(file_wake, file_sleep, raw_EEG):
     
     # Clone raw object, just a placeholder to access annotations
     raw_copy = raw_EEG.copy()
     
-    
-    ## Access triggers from session 01: wake exp
-    
-    # Import annotations from EDF file, session 01
-    annotations_s01 = mne.read_annotations(filename1, sfreq=1000)
-
-    # Add to raw object (necessary for next step)
-    raw_copy.set_annotations(annotations_s01, emit_warning=True)  
-
-    # Create events from trigger annotations only
-    events_s01, _ = mne.events_from_annotations(raw_copy, event_id={'DC trigger 12':1}) 
-
-    # Access data points containing triggers
-    triggers_s01 = events_s01[:,0]
+    # Get list of conditions (1 for control, 2 for experimental)
+    if file_wake == None:
+        conditions = [file_sleep]
+    else:
+        conditions = [file_wake, file_sleep]
     
     
-    ## Display percentage of triggers that are not 25 ms apart
+    ## Loop over conditions
     
-    # Compute differential of trigger list
-    trig_diff = np.diff(triggers_s01)
-
-    # Get triggers not 25 ms apart
-    errors = trig_diff[trig_diff != 25]
-
-    # Compute & display error rate
-    error_rate = len(errors) / len(triggers_s01) * 100
-    print("Trigger error rate, wake:", round(error_rate, 2), "%")
-    
-    
-    ## Access triggers from session 03: sleep exp
-    
-    # Import annotations from EDF file, session 03
-    annotations_s03 = mne.read_annotations(filename2, sfreq=1000)
-    
-    # Add to raw object (necessary for next step); overwrites s01 annotations
-    raw_copy.set_annotations(annotations_s03, emit_warning=True)
-    
-    # Create events from trigger annotations only
-    events_s03, _ = mne.events_from_annotations(raw_copy, event_id={'DC trigger 12':1}) 
-
-    # Access data points containing triggers
-    triggers_s03 = events_s03[:,0]
-    
-    
-    ## Display percentage of triggers that are not 25 ms apart
-    
-    # Compute differential of trigger list
-    trig_diff = np.diff(triggers_s03)
-
-    # Get triggers not 25 ms apart
-    errors = trig_diff[trig_diff != 25]
-
-    # Compute & display error rate
-    error_rate = len(errors) / len(triggers_s03) * 100
-    print("Trigger error rate, sleep:", round(error_rate, 2), "%")
-    
-
-    ## Return correct set of triggers
-    
-    # For control condition only: merge two trigger sets
-    if condition == 'con':
-
-        # Shift triggers from s03 by length of s01 (last trigger)
-        triggers_s03_shift = triggers_s03 + triggers_s01[-1] + 25 # add length of one segment (25 ms), to prevent any overlap
+    for cond in range(len(conditions)):
         
-        # Stack both trigger arrays
-        all_triggers = np.hstack((triggers_s01, triggers_s03_shift))
-    
-        # Get length of control data file
-        len_data_con = raw_EEG.__len__()
-    
-        # Keep only triggers that fit within file, ensuring last segment is not cropped
-        all_triggers = np.asarray([trig for trig in all_triggers if trig < len_data_con - 25])
-        
-        # Print nr. of triggers included
-        print('\nNr. of triggers found:', len(all_triggers))
-    
-        return all_triggers
+        # Import annotations from EDF file
+        annotations = mne.read_annotations(conditions[cond], sfreq=1000)
 
-    # Experimental condition: return trigger sets separately
-    elif condition == 'exp':
+        # Add to raw object (necessary for next step)
+        raw_copy.set_annotations(annotations, emit_warning=True)  
+
+        # Create events from trigger annotations only
+        events, _ = mne.events_from_annotations(raw_copy, event_id={'DC trigger 9':1}) 
+
+        # Access data points containing triggers; ignoring first few triggers, could be caused by turning mask on, movement, etc
+        triggers_1Hz = events[5:,0]
+
+        # Initialize trigger array
+        triggers = np.zeros((len(triggers_1Hz) * 40 + 1), dtype=int)
+
+        for i in range(len(triggers_1Hz)):
+            
+            # Add "real" trigger
+            triggers[i*40] = triggers_1Hz[i]
+            
+            # Add 39 following triggers
+            for j in range(1,41):
+                
+                triggers[i*40+j] = triggers_1Hz[i] + j*25
+                
+                
+        ## Display percentage of triggers that are not 25 ms apart
+        
+        # Compute differential of trigger list
+        trig_diff = np.diff(triggers)
+
+        # Get triggers not 25 ms apart
+        errors = trig_diff[trig_diff != 25]
+
+        # Compute & display error rate
+        error_rate = len(errors) / len(triggers) * 100
+        print("Trigger error rate:", round(error_rate, 2), "%")
+    
+        
+        ## Store triggers per condition
+        
+        # Store triggers for session 01
+        if len(conditions) > 1 and cond == 0:
+            
+            triggers_s01 = triggers
+            
+        # Store triggers for session 03
+        elif len(conditions) > 1 and cond == 1:
+            
+            triggers_s03 = triggers
+            
+        # Store triggers for session 02
+        else: 
+            
+            triggers_s02 = triggers
+            
+        
+    ## Return triggers
+    if len(conditions) > 1:
         
         return triggers_s01, triggers_s03
     
-    # Any other input is wrong
-    else: 
+    else:
         
-        print('Condition must be con or exp')
-
+        return triggers_s02
+        
 
 
 # %% Function: score_sleep

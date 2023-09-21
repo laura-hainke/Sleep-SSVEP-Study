@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Author: Laura Hainke
-Date: 07.2023
+Date: 08.2023
 Functionality: Functions for EEG data processing (Gamma-Sleep Study).
-Assumptions: - 
-Notes: V1
 
 """
 
@@ -183,8 +181,9 @@ def import_triggers(file_wake, file_sleep, raw_EEG):
         # Create events from trigger annotations only
         events, _ = mne.events_from_annotations(raw_copy, event_id={'DC trigger 9':1}) 
 
-        # Access data points containing triggers; ignoring first few triggers, could be caused by turning mask on, movement, etc
-        triggers_1Hz = events[5:,0]
+        # Access data points containing triggers
+        # Ignoring first few triggers & last trigger
+        triggers_1Hz = events[5:-1,0]
 
         # Initialize trigger array
         triggers = np.zeros((len(triggers_1Hz) * 40 + 1), dtype=int)

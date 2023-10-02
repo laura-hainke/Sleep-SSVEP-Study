@@ -10,17 +10,31 @@
 # Working directory
 setwd("C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Code\\Statistics")
 
+# Source functions, files in current directory
+source("Statistics_functions.r")
+source("Plots_functions.r")
+
+
+# Libraries
+library("pastecs")
+
 # Path to folders with derivative data
 path_derivatives = "C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Data\\Derivatives\\"
 
 # List of folder names in directory, corresponding to participant numbers
 list_IDs = list.dirs(path = path_derivatives, full.names = FALSE, recursive = FALSE)
 
-# Eliminate "00" (template folder), "03" (rejected dataset)
-list_IDs = list_IDs[list_IDs != c("00","03")]
+# Eliminate template folder & rejected datasets
+# 
+# For debugging: only complete datasets
+list_IDs = list_IDs[c(2,3,5,7,10)]
 
 # Get number of participants
 n_IDs = length(list_IDs)
+
+
+
+# Initialize dataframes ---------------------------------------------------
 
 # Initialize dataframe with demographic data from all participants
 data_demo = data.frame(ID = list_IDs, # Participant numbers
@@ -131,7 +145,7 @@ data_SSVEP = data.frame(ID = list_IDs,
 
 # Load all derivative participant data ------------------------------------------------------------------------------------------------------------
 
-for (i in list_IDs) {
+for (i in list_IDs) { 
   
   ## Load demographic data
   
@@ -225,3 +239,52 @@ rm(list = ls(pattern = "file_"))
 rm(list = ls(pattern = "_i"))
 
 
+
+# Descriptives ------------------------------------------------------------
+
+# Sample characteristics
+stat.desc(data_demo$age)
+stat.desc(data_demo$sex)
+stat.desc(data_demo$gender_match)
+stat.desc(data_demo$handedness)
+stat.desc(data_demo$education)
+stat.desc(data_demo$PSQI_score)
+stat.desc(data_demo$uMCTQ_score)
+
+
+
+# Analysis: GSQS ----------------------------------------------------------
+
+# Violin plot
+plot_violin(data=data_sleep[,c(1,9,17)], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
+
+
+
+# Analysis: TST ----------------------------------------------------------
+
+# Violin plot
+plot_violin(data=data_sleep[,c(1,3,11)], title_plot="Total Sleep Time", title_y="TST (min)")
+
+
+
+# Analysis: WASO ----------------------------------------------------------
+
+# Violin plot
+plot_violin(data=data_sleep[,c(1,4,12)], title_plot="Wake After Sleep Onset", title_y="WASO (min)")
+
+
+
+# Descriptive: SOL, % of time per stage --------------------------------------------------------
+
+# Violin plot of SOL
+plot_violin(data=data_sleep[,c(1,2,10)], title_plot="Sleep Onset Latency", title_y="SOL (min)")
+
+# Stacked bar graph of % time per stage
+plot_bar_stack(data_sleep[,c(1,5,6,7,8,13,14,15,16)])
+
+
+
+# Analysis: PSD_40Hz ------------------------------------------------------
+
+# Bar plot
+plot_bar_anova(data_PSD[,c(1,3,6,9,12,15,18,21,24)], title_plot="40 Hz Power", title_y = "PSD (- dB)")

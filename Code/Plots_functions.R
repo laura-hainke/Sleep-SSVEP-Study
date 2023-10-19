@@ -15,8 +15,8 @@ library(reshape2)
 library(scales)
 
 # Colour schemes
-col_con = "#2b8cbe" # control
-col_exp = "#2ca25f" # experimental
+col_con = "#666666" # control
+col_exp = "#CC3333" # experimental
 col_W = "grey"
 col_N1 = "#ece2f0"
 col_N2 = "#a6bddb"
@@ -57,10 +57,51 @@ plot_violin <- function(data, title_plot, title_y) {
   ggplot(data_long, aes(x=condition, y=value)) + 
     geom_violin(aes(fill=condition), width=0.5) + # Violin plot shape
     geom_point(color="black", size=2, position = position_jitter(w=0.05, h=0)) + # Data points, jittered
-    stat_summary(fun = "mean", geom = "crossbar", color = "black", width=0.3) + # Add mean as line
+    stat_summary(fun = "mean", geom = "crossbar", color = "black", width=0.5) + # Add mean as line
     labs(title=title_plot, x="Condition", y=title_y) + # Labels
     scale_fill_manual(values=c(col_con, col_exp), guide="none") + # Condition colours, remove legend
     scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
+    theme_minimal() + # Background
+    theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+          axis.title.y = element_text(size=rel(2), vjust=2),
+          axis.text = element_text(size=rel(1.5)), 
+          plot.title = element_text(size=rel(3)),
+          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+  
+}
+
+
+
+# Function: plot_scatter -------------------------------------------------------------------------------------------
+# Create a connected scatterplot.
+
+## INPUT
+
+# data : dataframe
+# Dataframe containing 3 columns: ID, variable 1, variable 2
+
+# title_plot : str
+# Plot title
+
+# title_y : str
+# Y-axis title
+
+## OUTPUT
+
+# No values, just plot
+
+plot_scatter <- function(data, title_plot, title_y) {
+  
+  # Convert data into long format
+  data_long = melt(data, id.vars="ID", variable.name="condition", value.name="value")
+  
+  # Create figure
+  ggplot(data_long, aes(x=condition, y=value, color=ID)) + 
+    geom_point(size=4, position=position_dodge(0.03)) +
+    geom_line(aes(group = ID), position=position_dodge(0.03), linewidth=1.2) +
+    scale_colour_grey(start=0, end=0.8, guide="none") +
+    labs(title=title_plot, x="Condition", y=title_y) + # Labels
+    scale_x_discrete(labels=c("Control","Experimental"), expand=c(0.15, 0.15)) + # X-tick labels
     theme_minimal() + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
@@ -146,7 +187,7 @@ plot_bar_anova <- function(data, title_plot, title_y) {
   ggplot(data_long, aes(x=stage, y=value, fill=condition)) +
     geom_bar(stat="identity", position = "dodge", width=0.5) + # Show condition pairs per stage
     scale_x_discrete(limits=c("W","N2","N3","REM")) +
-    # scale_fill_manual(values=c(col_W, col_N2, col_N3, col_REM)) +
+    scale_fill_manual(values=c(col_con, col_exp), labels=c("Control","Experimental")) +
     labs(title=title_plot, x="Stage", y=title_y, fill="Condition") + # Labels
     theme_minimal() + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
@@ -159,3 +200,106 @@ plot_bar_anova <- function(data, title_plot, title_y) {
   
   
 }
+
+
+
+# Function: plot_scatter_SNR -------------------------------------------------------------------------------------------
+# Create a connected scatterplot for 2 conditions X 4 stages, SNR variables.
+
+## INPUT
+
+# data : dataframe
+# Dataframe containing 9 columns: ID, variables 1 - 8
+
+# title_plot : str
+# Plot title
+
+# title_y : str
+# Y-axis title
+
+## OUTPUT
+
+# No values, just plot
+
+plot_scatter_SNR <- function(data, title_plot, title_y) {
+  
+  # Convert data into long format
+  data_long = melt(data, id.vars="ID", variable.name="condition", value.name="value")
+  
+  # Split condition column into stage & condition
+  data_long = separate_wider_delim(data_long, cols = condition, delim = "_", names = c("stage","variable","condition"))
+  
+  # Create figure
+  ggplot(data_long, aes(x=condition, y=value, color=ID)) + 
+    geom_point(size=4, position=position_dodge(0.03)) +
+    geom_line(aes(group = ID), position=position_dodge(0.03), linewidth=1.2) +
+    facet_grid(. ~ factor(stage,levels=c("W","N2","N3","REM"))) +
+    scale_colour_grey(start=0, end=0.8, guide="none") +
+    labs(title=title_plot, x="Condition", y=title_y) + # Labels
+    scale_x_discrete(expand=c(0.15, 0.15)) + # X-tick labels
+    geom_hline(yintercept=1, linetype='dashed') + # Line at SNR=1
+    theme_minimal() + # Background
+    theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+          axis.title.y = element_text(size=rel(2), vjust=2),
+          axis.text = element_text(size=rel(1.5)), 
+          axis.text.x = element_text(colour="grey"),
+          strip.text = element_text(face="bold", size=rel(2)), # Facet test
+          plot.title = element_text(size=rel(3)),
+          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+  
+}
+  
+  
+
+# Function: plot_scatter_main -------------------------------------------------------------------------------------------
+# Create a connected scatterplot for 2 conditions X 4 stages, main variables.
+
+## INPUT
+
+# data : dataframe
+# Dataframe containing 9 columns: ID, variables 1 - 8
+
+# title_plot : str
+# Plot title
+
+# title_y : str
+# Y-axis title
+
+# ymin : int
+# Start of y-axis
+
+# ymax : int
+# End of y-axis
+
+## OUTPUT
+
+# No values, just plot
+
+plot_scatter_main <- function(data, title_plot, title_y, ymin, ymax) {
+  
+  # Convert data into long format
+  data_long = melt(data, id.vars="ID", variable.name="condition", value.name="value")
+  
+  # Split condition column into stage & condition
+  data_long = separate_wider_delim(data_long, cols = condition, delim = "_", names = c("stage","variable","condition"))
+  
+  # Create figure
+  ggplot(data_long, aes(x=condition, y=value, color=ID)) + 
+    geom_point(size=4, position=position_dodge(0.03)) +
+    geom_line(aes(group = ID), position=position_dodge(0.03), linewidth=1.2) +
+    facet_grid(. ~ factor(stage,levels=c("W","N2","N3","REM"))) +
+    scale_colour_grey(start=0, end=0.8, guide="none") +
+    labs(title=title_plot, x="Condition", y=title_y) + # Labels
+    scale_x_discrete(expand=c(0.15, 0.15)) + # X-tick labels
+    ylim(ymin, ymax) + # Change y-axis limits
+    theme_minimal() + # Background
+    theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+          axis.title.y = element_text(size=rel(2), vjust=2),
+          axis.text = element_text(size=rel(1.5)), 
+          axis.text.x = element_text(colour="grey"),
+          strip.text = element_text(face="bold", size=rel(2)), # Facet test
+          plot.title = element_text(size=rel(3)),
+          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+  
+}
+  

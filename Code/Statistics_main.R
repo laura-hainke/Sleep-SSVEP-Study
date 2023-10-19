@@ -27,7 +27,7 @@ list_IDs = list.dirs(path = path_derivatives, full.names = FALSE, recursive = FA
 # Eliminate template folder & rejected datasets
 # 
 # For debugging: only complete datasets
-list_IDs = list_IDs[c(2,3,5,7,10)]
+list_IDs = list_IDs[c(2,3,5,6,7,10,12,13,15,19)]
 
 # Get number of participants
 n_IDs = length(list_IDs)
@@ -249,42 +249,79 @@ stat.desc(data_demo$gender_match)
 stat.desc(data_demo$handedness)
 stat.desc(data_demo$education)
 stat.desc(data_demo$PSQI_score)
-stat.desc(data_demo$uMCTQ_score)
+stat.desc(data_demo$uMCTQ_score) # not working yet
 
 
 
 # Analysis: GSQS ----------------------------------------------------------
 
 # Violin plot
-plot_violin(data=data_sleep[,c(1,9,17)], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
+plot_violin(data=data_sleep[,c("ID","GSQS_sum_con","GSQS_sum_exp")], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
+
+# Connected scatterplot
+plot_scatter(data=data_sleep[,c("ID","GSQS_sum_con","GSQS_sum_exp")], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
 
 
 
 # Analysis: TST ----------------------------------------------------------
 
 # Violin plot
-plot_violin(data=data_sleep[,c(1,3,11)], title_plot="Total Sleep Time", title_y="TST (min)")
+plot_violin(data=data_sleep[,c("ID","TST_con","TST_exp")], title_plot="Total Sleep Time", title_y="TST (min)")
+
+# Connected scatterplot
+plot_scatter(data=data_sleep[,c("ID","TST_con","TST_exp")], title_plot="Total Sleep Time", title_y="TST (min)")
 
 
 
 # Analysis: WASO ----------------------------------------------------------
 
 # Violin plot
-plot_violin(data=data_sleep[,c(1,4,12)], title_plot="Wake After Sleep Onset", title_y="WASO (min)")
+plot_violin(data=data_sleep[,c("ID","WASO_con","WASO_exp")], title_plot="Wake After Sleep Onset", title_y="WASO (min)")
+
+# Connected scatterplot
+plot_scatter(data=data_sleep[,c("ID","WASO_con","WASO_exp")], title_plot="Wake After Sleep Onset", title_y="WASO (min)")
 
 
 
 # Descriptive: SOL, % of time per stage --------------------------------------------------------
 
 # Violin plot of SOL
-plot_violin(data=data_sleep[,c(1,2,10)], title_plot="Sleep Onset Latency", title_y="SOL (min)")
+plot_violin(data=data_sleep[,c("ID","SOL_con","SOL_exp")], title_plot="Sleep Onset Latency", title_y="SOL (min)")
+
+# Connected scatterplot
+plot_scatter(data=data_sleep[,c("ID","SOL_con","SOL_exp")], title_plot="Sleep Onset Latency", title_y="SOL (min)")
 
 # Stacked bar graph of % time per stage
-plot_bar_stack(data_sleep[,c(1,5,6,7,8,13,14,15,16)])
+plot_bar_stack(data_sleep[,c("ID","perN1_con","perN2_con","perN3_con","perREM_con","perN1_exp","perN2_exp","perN3_exp","perREM_exp")])
 
 
 
-# Analysis: PSD_40Hz ------------------------------------------------------
+# Analysis: PSD ------------------------------------------------------
 
 # Bar plot
-plot_bar_anova(data_PSD[,c(1,3,6,9,12,15,18,21,24)], title_plot="40 Hz Power", title_y = "PSD (- dB)")
+# plot_bar_anova(data_PSD[,c(1,3,6,9,12,15,18,21,24)], title_plot="40 Hz Power", title_y = "PSD (- dB)")
+
+# Connected scatterplot: PSD 40 Hz value
+plot_scatter_main(data=data_PSD[,c("ID","W_PSD40_con","N2_PSD40_con","N3_PSD40_con","REM_PSD40_con","W_PSD40_exp","N2_PSD40_exp","N3_PSD40_exp","REM_PSD40_exp")],
+                    title_plot="PSD 40 Hz Value", title_y="Power (dB)", ymin=-100, ymax=-150)
+
+
+# Connected scatterplot: SNR
+plot_scatter_SNR(data=data_PSD[,c("ID","W_SNR40_con","N2_SNR40_con","N3_SNR40_con","REM_SNR40_con","W_SNR40_exp","N2_SNR40_exp","N3_SNR40_exp","REM_SNR40_exp")],
+                    title_plot="PSD 40 Hz Value - SNR", title_y="SNR")
+
+
+
+# Analysis: SSVEP ------------------------------------------------------
+
+# Connected scatterplot: SSVEP peak-to-peak amplitude
+plot_scatter_main(data=data_SSVEP[,c("ID","W_PTA_con","N2_PTA_con","N3_PTA_con","REM_PTA_con","W_PTA_exp","N2_PTA_exp","N3_PTA_exp","REM_PTA_exp")],
+                  title_plot="SSVEP Amplitude", title_y="Amplitude (uV)", ymin=0, ymax=2.3)
+
+# Connected scatterplot: SNR
+plot_scatter_SNR(data=data_SSVEP[,c("ID","W_SNR_con","N2_SNR_con","N3_SNR_con","REM_SNR_con","W_SNR_exp","N2_SNR_exp","N3_SNR_exp","REM_SNR_exp")],
+                    title_plot="SSVEP Amplitude - SNR", title_y="SNR")
+
+
+
+

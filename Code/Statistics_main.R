@@ -58,7 +58,7 @@ data_sleep = data.frame(ID = list_IDs,
                         perN3_con = rep(NA, n_IDs), # N3
                         perREM_con = rep(NA, n_IDs), # REM
                         # Subjective sleep quality, condition CON
-                        GSQS_sum_con = rep(NA, n_IDs), # Groeningen Sleep Quality Scale sum score
+                        GSQS_con = rep(NA, n_IDs), # Groeningen Sleep Quality Scale sum score
                         # PSG metrics, condition EXP 
                         SOL_exp = rep(NA, n_IDs), 
                         TST_exp = rep(NA, n_IDs),
@@ -69,7 +69,7 @@ data_sleep = data.frame(ID = list_IDs,
                         perN3_exp = rep(NA, n_IDs),
                         perREM_exp = rep(NA, n_IDs),
                         # Subjective sleep quality, condition EXP
-                        GSQS_sum_exp = rep(NA, n_IDs))
+                        GSQS_exp = rep(NA, n_IDs))
 
 # Initialize dataframe with PSD data from all participants
 data_PSD = data.frame(ID = list_IDs, 
@@ -256,11 +256,13 @@ stat.desc(data_demo$uMCTQ_score) # not working yet
 # Analysis: GSQS ----------------------------------------------------------
 
 # Violin plot
-plot_violin(data=data_sleep[,c("ID","GSQS_sum_con","GSQS_sum_exp")], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
+plot_violin(data=data_sleep[,c("ID","GSQS_con","GSQS_exp")], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
 
 # Connected scatterplot
-plot_scatter(data=data_sleep[,c("ID","GSQS_sum_con","GSQS_sum_exp")], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
+plot_scatter(data=data_sleep[,c("ID","GSQS_con","GSQS_exp")], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
 
+# Violin plots of paired values
+plot_violin_paired(data=data_sleep[,c("ID","GSQS_con","GSQS_exp")], title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
 
 
 # Analysis: TST ----------------------------------------------------------
@@ -298,8 +300,8 @@ plot_bar_stack(data_sleep[,c("ID","perN1_con","perN2_con","perN3_con","perREM_co
 
 # Analysis: PSD ------------------------------------------------------
 
-# Bar plot
-# plot_bar_anova(data_PSD[,c(1,3,6,9,12,15,18,21,24)], title_plot="40 Hz Power", title_y = "PSD (- dB)")
+# Boxplots
+plot_box_anova(data_PSD[,c(1,3,6,9,12,15,18,21,24)], title_plot="40 Hz Power", title_y = "PSD (dB)")
 
 # Connected scatterplot: PSD 40 Hz value
 plot_scatter_main(data=data_PSD[,c("ID","W_PSD40_con","N2_PSD40_con","N3_PSD40_con","REM_PSD40_con","W_PSD40_exp","N2_PSD40_exp","N3_PSD40_exp","REM_PSD40_exp")],
@@ -313,6 +315,10 @@ plot_scatter_SNR(data=data_PSD[,c("ID","W_SNR40_con","N2_SNR40_con","N3_SNR40_co
 
 
 # Analysis: SSVEP ------------------------------------------------------
+
+# Boxplots
+plot_box_anova(data_SSVEP[,c(1,3,6,9,12,15,18,21,24)], title_plot="SSVEP Amplitude", title_y = "Amplitude (uV)")
+
 
 # Connected scatterplot: SSVEP peak-to-peak amplitude
 plot_scatter_main(data=data_SSVEP[,c("ID","W_PTA_con","N2_PTA_con","N3_PTA_con","REM_PTA_con","W_PTA_exp","N2_PTA_exp","N3_PTA_exp","REM_PTA_exp")],

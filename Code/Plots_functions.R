@@ -13,6 +13,7 @@ library(tidyr)
 library(dplyr)
 library(reshape2)
 library(scales)
+library(see)
 
 # Colour schemes
 col_con = "#666666" # control
@@ -154,8 +155,51 @@ plot_bar_stack <- function(data) {
 
 
 
-# Function: plot_bar_anova -------------------------------------------------------------------------------------------
-# Create a bar plot for a 4X2 ANOVA.
+# Function: plot_violin_paired -------------------------------------------------------------------------------------------
+# Create violin plots with connected dots.
+
+## INPUT
+
+# data : dataframe
+# Dataframe containing 3 columns: ID, variable 1, variable 2
+
+# title_plot : str
+# Plot title
+
+# title_y : str
+# Y-axis title
+
+## OUTPUT
+
+# No values, just plot
+
+plot_violin_paired <- function(data, title_plot, title_y) {
+  
+  # Convert data into long format
+  data_long = melt(data, id.vars="ID", variable.name="condition", value.name="value")
+  
+  # Create figure
+  ggplot(data_long, aes(x=condition, y=value)) + 
+    geom_violinhalf(aes(fill=condition), flip=1) + # Violin plot shape
+    geom_point(color="grey", size=2) + # Data points, jittered
+    geom_line(aes(group = ID), color="grey", linewidth=1, linetype="twodash") + # connect paired dots
+    stat_summary(fun = "mean", geom="point", shape=18, color = "black", size=5) + # Add mean as line
+    labs(title=title_plot, x="Condition", y=title_y) + # Labels
+    scale_fill_manual(values=c(col_con, col_exp), guide="none") + # Condition colours, remove legend
+    scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
+    theme_minimal() + # Background
+    theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+          axis.title.y = element_text(size=rel(2), vjust=2),
+          axis.text = element_text(size=rel(1.5)), 
+          plot.title = element_text(size=rel(3)),
+          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+  
+}
+
+
+
+# Function: plot_box_anova -------------------------------------------------------------------------------------------
+# Create a set of boxplots for a 4X2 ANOVA.
 
 ## INPUT
 
@@ -172,7 +216,7 @@ plot_bar_stack <- function(data) {
 
 # No values, just plot
 
-plot_bar_anova <- function(data, title_plot, title_y) {
+plot_box_anova <- function(data, title_plot, title_y) {
   
   # Convert data into long format
   data_long = melt(data, id.vars="ID", variable.name="condition", value.name="value")
@@ -180,12 +224,11 @@ plot_bar_anova <- function(data, title_plot, title_y) {
   # Split condition column into stage & condition
   data_long = separate_wider_delim(data_long, cols = condition, delim = "_", names = c("stage","variable","condition"))
   
-  # Invert value variable polarity
-  data_long$value = data_long$value * -1
-  
   # Create figure
   ggplot(data_long, aes(x=stage, y=value, fill=condition)) +
-    geom_bar(stat="identity", position = "dodge", width=0.5) + # Show condition pairs per stage
+    geom_boxplot() + # Show condition pairs per stage
+    geom_point(size=1, position=position_dodge(0.75)) + # add individual data points
+    stat_summary(fun = "mean", geom = "point", size = 2, color = "white", position = position_dodge(0.75)) + # add mean
     scale_x_discrete(limits=c("W","N2","N3","REM")) +
     scale_fill_manual(values=c(col_con, col_exp), labels=c("Control","Experimental")) +
     labs(title=title_plot, x="Stage", y=title_y, fill="Condition") + # Labels

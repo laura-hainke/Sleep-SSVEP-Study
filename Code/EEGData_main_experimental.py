@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Author: Laura Hainke
-Date: 07.2023
+Date: 08.2023
 Functionality: Script to import and process EEG data; Gamma-Sleep study, experimental condition
-Assumptions: Files as defined in section %% Paths to files
-Notes: V1
+Assumptions: Files as defined in section %% Paths to files; EEGData_functions.py in same directory
 
 """
 
@@ -21,7 +20,7 @@ import yasa
 os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
 
 # Import custom functions
-from EEGData_functions import load_raw, import_triggers, score_sleep, select_annotations, create_epochs, compute_PSD, compute_SSVEP
+from EEGData_functions import load_raw, import_triggers, score_sleep, linear_interpolation, select_annotations, create_epochs, compute_PSD, compute_SSVEP
 
 
 
@@ -50,8 +49,8 @@ path_ses01_EEG = str(path_in + "/Session01/" + subject_nr + "_session01_raw-EEG.
 path_ses03_EEG = str(path_in + "/Session03/" + subject_nr + "_session03_raw-EEG.edf")
 
 # Path to annotations, sessions 01 & 03
-path_ses01_annotations = str(path_in + "/Session01/" + subject_nr + "_session01_annotations.edf")
-path_ses03_annotations = str(path_in + "/Session03/" + subject_nr + "_session03_annotations.edf")
+path_ses01_annotations = str(path_in + "/Session01/" + subject_nr + "_session01_raw-EEG_annotations.edf")
+path_ses03_annotations = str(path_in + "/Session03/" + subject_nr + "_session03_raw-EEG_annotations.edf")
 
 
 ## Output data: experimental condition (sessions 01 + 03 merged)
@@ -102,6 +101,26 @@ print(raw_s03_EEG.info)
 triggers_s01, triggers_s03 = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s03_EEG)
 
 
+## For SSVEP computations
+
+# Define ROI channels
+roi_ch = ['PO3', 'PO4', 'POz', 'O1', 'O2', 'Oz']
+
+# Remove any bad channels from selection
+if len(bad_ch_exp) > 0:
+    for ch in range(len(bad_ch_exp)): # loop over list of bad channels
+        if bad_ch_exp[ch] in roi_ch:
+            roi_ch.remove(bad_ch_exp[ch]) # remove given element from ROI selection
+
+# Access raw ROI data as array, convert from Volts to microVolts
+data_s01 = raw_s01_EEG.get_data(picks=roi_ch) * 1e6
+data_s03 = raw_s03_EEG.get_data(picks=roi_ch) * 1e6
+
+# Get average of the ROI channels
+data_s01 = np.mean(data_s01, axis=0)
+data_s03 = np.mean(data_s03, axis=0)
+
+
 
 # %% Score sleep, get epochs, store metrics
 
@@ -145,6 +164,29 @@ sleep_data_exp['GSQS_sum'] = gsqs_sum_exp
 sleep_data_exp = pd.DataFrame.from_dict(sleep_data_exp, orient='index')
 
 
+
+# %% Optional: apply linear interpolation
+
+# Plot SSVEPs per sleep stage
+for stage in [2,3,4]:
+    
+    _, _, _, _ = compute_SSVEP(data_s03, triggers_s03, hypno_up_s03, stage, computeSNR=False)
+    
+# Run linear interpolation, S01
+raw_s01_EEG = linear_interpolation(raw_s01_EEG, triggers_s01, time_start_1=-1, time_start_2=11, art_len=4)
+
+# Run linear interpolation, S03
+raw_s03_EEG = linear_interpolation(raw_s03_EEG, triggers_s03, time_start_1=-1, time_start_2=11, art_len=4)
+    
+# Access raw ROI data as array, convert from Volts to microVolts
+data_s01 = raw_s01_EEG.get_data(picks=roi_ch) * 1e6
+data_s03 = raw_s03_EEG.get_data(picks=roi_ch) * 1e6
+
+# Get average of the ROI channels
+data_s01 = np.mean(data_s01, axis=0)
+data_s03 = np.mean(data_s03, axis=0)
+
+    
 
 # %% Loop over stages to compute PSD & SNR
 
@@ -251,23 +293,6 @@ PSD_metrics_exp = pd.DataFrame.from_dict(PSD_metrics_exp, orient='index')
 
 
 # %% Loop over stages to compute SSVEP & SNR
-
-# Define ROI channels
-roi_ch = ['PO3', 'PO4', 'POz', 'O1', 'O2', 'Oz']
-
-# Remove any bad channels from selection
-if len(bad_ch_exp) > 0:
-    for ch in range(len(bad_ch_exp)): # loop over list of bad channels
-        if bad_ch_exp[ch] in roi_ch:
-            roi_ch.remove(bad_ch_exp[ch]) # remove given element from ROI selection
-
-# Access raw ROI data as array, convert from Volts to microVolts
-data_s01 = raw_s01_EEG.get_data(picks=roi_ch) * 1e6
-data_s03 = raw_s03_EEG.get_data(picks=roi_ch) * 1e6
-
-# Get average of the ROI channels
-data_s01 = np.mean(data_s01, axis=0)
-data_s03 = np.mean(data_s03, axis=0)
 
 # Initialize dict for output metrics
 SSVEP_metrics_exp = dict()

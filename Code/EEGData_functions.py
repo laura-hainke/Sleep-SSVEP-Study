@@ -370,6 +370,73 @@ def score_sleep(raw_PSG, raw_EEG, bad_ch, path_demographics):
 
 
     
+# %% Function: linear_interpolation
+
+"""
+    Source code: https://github.com/JamesDowsettNeuroscience/flicker_analysis_code
+    
+    Remove electric artifacts from EEG data caused by LED on-off via linear interpolation.
+    
+    Input
+    ----------
+    raw_EEG : MNE raw object
+    Output of load_raw() for EEG channels
+    
+    triggers : array
+    1 row of triggers, i.e., data points at which a trigger occurred
+    
+    time_start_1 : int
+    First timepoint in the averaged 25 ms segment affected by the artifact (0-24), due to LED ON
+    
+    time_start_2 : int
+    Second timepoint in the averaged 25 ms segment affected by the artifact (0-24), due to LED OFF
+
+    art_len : int
+    Length of the artifact in data points (1-24)
+    
+    Output
+    -------
+    data : array
+    	Data that was input into the function, now cleaned of the electric artifact
+
+"""
+
+def linear_interpolation(raw_EEG, triggers, time_start_1, time_start_2, art_len):
+        
+    # Access data from all channels in raw
+    data_interpolated = raw_EEG.get_data()
+
+    # Run interpolation on all channels
+    for i in range(len(data_interpolated)):
+    
+        # Loop through triggers
+        for trigger in triggers:
+            
+            # Define starting point 1 for interpolation of current segment
+            start_1 = trigger + time_start_1
+            
+            # Define end point 1 for interpolation of current segment
+            end_1 = trigger + time_start_1 + art_len
+            
+            # Replace real data points between start and end points of artifact with straight line (artifact 1)
+            data_interpolated[i,start_1:end_1+1] = np.linspace(data_interpolated[i,start_1], data_interpolated[i,end_1], num = art_len+1)
+            
+            # Define starting point 2 for interpolation of current segment
+            start_2 = trigger + time_start_2
+            
+            # Define end point 1 for interpolation of current segment
+            end_2 = trigger + time_start_2 + art_len
+            
+            # Replace real data points between start and end points of artifact with straight line (artifact 1)
+            data_interpolated[i,start_2:end_2+1] = np.linspace(data_interpolated[i,start_2], data_interpolated[i,end_2], num = art_len+1)
+        
+    # Replace data from all channels in raw object with cleaned data
+    raw_EEG._data = data_interpolated
+    
+    return raw_EEG
+    
+
+
 # %% Function: select_annotations
    
 """

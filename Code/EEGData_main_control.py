@@ -3,8 +3,7 @@
 Author: Laura Hainke
 Date: 08.2023
 Functionality: Script to import and process EEG data; Gamma-Sleep study, control condition
-Assumptions: Files as defined in section %% Paths to files
-Notes: V2
+Assumptions: Files as defined in section %% Paths to files; EEGData_functions.py in same directory
 
 """
 
@@ -20,7 +19,7 @@ import os
 os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
 
 # Import custom functions
-from EEGData_functions import load_raw, import_triggers, score_sleep, select_annotations, create_epochs, compute_PSD, compute_SSVEP
+from EEGData_functions import load_raw, import_triggers, score_sleep, linear_interpolation, select_annotations, create_epochs, compute_PSD, compute_SSVEP
 
 
 
@@ -48,7 +47,7 @@ path_gsqs = str(path_in + "/REDCap/" + subject_nr + "_sleep-quality.csv")
 path_ses02_EEG = str(path_in + "/Session02/" + subject_nr + "_session02_raw-EEG.edf")
 
 # Path to annotations, session 02
-path_ses02_annotations = str(path_in + "/Session02/" + subject_nr + "_session02_annotations.edf")
+path_ses02_annotations = str(path_in + "/Session02/" + subject_nr + "_session02_raw-EEG_annotations.edf")
 
 
 ## Output data
@@ -91,7 +90,26 @@ print('\nInfos - EEG dataset:\n')
 print(raw_s02_EEG.info)
 
 # Import triggers
-all_triggers = import_triggers(None, path_ses02_annotations, raw_s02_EEG)
+triggers_s02 = import_triggers(None, path_ses02_annotations, raw_s02_EEG)
+
+
+## For SSVEP computations
+
+# Define ROI channels
+roi_ch = ['PO3', 'PO4', 'POz', 'O1', 'O2', 'Oz']
+
+# Remove any bad channels from selection
+if len(bad_ch_con) > 0:
+    for ch in range(len(bad_ch_con)): # loop over list of bad channels
+        if bad_ch_con[ch] in roi_ch:
+            roi_ch.remove(bad_ch_con[ch]) # remove given element from ROI selection
+
+# Access raw ROI data as array, convert from Volts to microVolts
+data_s02 = raw_s02_EEG.get_data(picks=roi_ch) * 1e6
+
+# Get average of the ROI channels
+data_s02 = np.mean(data_s02, axis=0)
+
 
 
 # %% Score sleep, get epochs, store metrics
@@ -109,7 +127,12 @@ raw_s02_EEG = select_annotations(raw_s02_EEG, hypno_s02, uncertain_epochs_s02)
 
 # Control condition: subtract 10 min from sleep onset latency (10 min W by design)
 sol_orig = sleep_stats_s02['SOL']
-sleep_stats_s02['SOL'] = sol_orig - 10
+
+# Set to 0 if negative
+if sol_orig - 10 < 0:
+    sleep_stats_s02['SOL'] = 0
+else: 
+    sleep_stats_s02['SOL'] = sol_orig - 10
 
 # Get subset of sleep metrics of interest 
 sleep_data_con = {k: sleep_stats_s02[k] for k in ('SOL','TST','WASO','%N1','%N2','%N3','%REM')}
@@ -123,6 +146,24 @@ sleep_data_con['GSQS_sum'] = gsqs_sum_con
 
 # Convert metrics dict into pandas as well
 sleep_data_con = pd.DataFrame.from_dict(sleep_data_con, orient='index')
+
+
+
+# %% Optional: apply linear interpolation
+
+# Plot SSVEPs per sleep stage, to decide if procedure is needed
+for stage in [2,3,4]:
+    
+    _, _, _, _ = compute_SSVEP(data_s02, triggers_s02, hypno_up_s02, stage, computeSNR=False)
+    
+# Run linear interpolation
+raw_s02_EEG = linear_interpolation(raw_s02_EEG, triggers_s02, time_start_1=-1, time_start_2=11, art_len=4)
+
+# Access raw ROI data as array, convert from Volts to microVolts (overwrite previous array)
+data_s02 = raw_s02_EEG.get_data(picks=roi_ch) * 1e6
+
+# Get average of the ROI channels
+data_s02 = np.mean(data_s02, axis=0)
 
 
 
@@ -143,7 +184,7 @@ for stage in [0,2,3,4]:
     try:
     
         # Create and select epochs (=30 sec trials) for PSD analyses of current stage
-        epochs_stage = create_epochs(raw_s02_EEG, all_triggers, event_id=stage)
+        epochs_stage = create_epochs(raw_s02_EEG, triggers_s02, event_id=stage)
         
         # Print nr. of epochs recorded at this stage
         print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_stage.events)))
@@ -223,21 +264,6 @@ PSD_metrics_con = pd.DataFrame.from_dict(PSD_metrics_con, orient='index')
 
 # %% Loop over stages to compute SSVEP & SNR
 
-# Define ROI channels
-roi_ch = ['PO3', 'PO4', 'POz', 'O1', 'O2', 'Oz']
-
-# Remove any bad channels from selection
-if len(bad_ch_con) > 0:
-    for ch in range(len(bad_ch_con)): # loop over list of bad channels
-        if bad_ch_con[ch] in roi_ch:
-            roi_ch.remove(bad_ch_con[ch]) # remove given element from ROI selection
-
-# Access raw ROI data as array, convert from Volts to microVolts
-data_s02 = raw_s02_EEG.get_data(picks=roi_ch) * 1e6
-
-# Get average of the ROI channels
-data_s02 = np.mean(data_s02, axis=0)
-
 # Initialize dict for output metrics
 SSVEP_metrics_con = dict()
 
@@ -251,7 +277,7 @@ for stage in [0,2,3,4]:
     try:
         
         # Compute SSVEP and SNR for current stage + metrics
-        SSVEP_amp, SSVEP_SNR, SSVEP_ntrials, SSVEP_curve = compute_SSVEP(data_s02, all_triggers, hypno_up_s02, stage, computeSNR=True)
+        SSVEP_amp, SSVEP_SNR, SSVEP_ntrials, SSVEP_curve = compute_SSVEP(data_s02, triggers_s02, hypno_up_s02, stage, computeSNR=True)
 
     # Alternative
     except:

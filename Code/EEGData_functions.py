@@ -239,7 +239,97 @@ def import_triggers(file_wake, file_sleep, raw_EEG):
         
         return triggers_s02
         
+    
 
+# %% Function: import_triggers_DC
+
+"""
+    Import 1 Hz triggers from 1 session based on DC channel, digitally upsample to 40 Hz.
+    
+    Input
+    ----------
+    filename : str
+    Path to the EEG data file in EDF format
+    
+    threshold : int
+    Amplitude threshold at which a trigger should be detected, in mV
+    
+    Output
+    -------
+    triggers : array
+    Array containing trigger data points from 1 session, extracted from DC input channel
+
+"""
+
+def import_triggers_DC(filename, threshold_mV):
+    
+    # Access raw object
+    raw = mne.io.read_raw_edf(filename, preload=False)
+    
+    # Access data from DC03 channel, convert from Volts to milliVolts
+    data_dc03 = raw.get_data(['DC03']) * 1e3
+    
+
+    ## Generate 1 Hz triggers based on DC03
+
+    # Initialize trigger array: at max. full night
+    triggers_1Hz = np.zeros(60*60*9, dtype=int)
+
+    i = 0
+    ctr = 0
+
+    while i < np.shape(data_dc03)[1]:
+        
+        # If DC03 > threshold, add a trigger to array
+        if data_dc03[0,i] > threshold_mV:
+            
+            # Get index of data point with max. amplitude within range of 5 ms
+            max_amp_idx = np.argmax(data_dc03[0,i:i+5])
+                
+            triggers_1Hz[ctr] = int(i+max_amp_idx) # add index of relevant datapoint
+
+            # Increase counters
+            i += 900 # move 900 ms forward, so the same trigger is not included twice
+            ctr += 1
+            
+        # If no trigger was found, move to next data point
+        else:
+            
+            i += 1
+            
+    # Trim trigger array to include only triggers, not zeros
+    triggers_1Hz = triggers_1Hz[0:ctr]
+
+    # Initialize full trigger array
+    triggers = np.zeros((len(triggers_1Hz) * 40 + 1), dtype=int)
+
+    for i in range(len(triggers_1Hz)):
+        
+        # Add "real" trigger
+        triggers[i*40] = triggers_1Hz[i]
+        
+        # Add 39 following triggers
+        for j in range(1,41):
+            
+            triggers[i*40+j] = triggers_1Hz[i] + j*25
+            
+            
+    ## Display percentage of triggers that are not 25 ms apart
+    
+    # Compute differential of trigger list
+    trig_diff = np.diff(triggers)
+
+    # Get triggers not 25 ms apart
+    errors = trig_diff[trig_diff != 25]
+
+    # Compute & display error rate
+    error_rate = len(errors) / len(triggers) * 100
+    print("Trigger error rate:", round(error_rate, 2), "%")
+
+
+    return triggers
+    
+        
 
 # %% Function: score_sleep
 

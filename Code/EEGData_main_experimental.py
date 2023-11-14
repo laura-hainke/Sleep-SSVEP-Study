@@ -20,7 +20,7 @@ import yasa
 os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
 
 # Import custom functions
-from EEGData_functions import load_raw, import_triggers, score_sleep, linear_interpolation, select_annotations, create_epochs, compute_PSD, compute_SSVEP
+from EEGData_functions import load_raw, import_triggers, import_triggers_DC, score_sleep, linear_interpolation, select_annotations, create_epochs, compute_PSD, compute_SSVEP
 
 
 
@@ -68,7 +68,7 @@ path_exp_sleep = str(path_out + "/Experimental/" + subject_nr + "_experimental_s
 
 
 
-# %% Load raw EEG file & triggers
+# %% Load raw EEG file
 
 # Initialize empty bad channel list
 bad_ch_exp = []
@@ -97,11 +97,25 @@ print(raw_s03_PSG.info)
 print('\nInfos - S03 EEG dataset:\n')
 print(raw_s03_EEG.info)
 
-# Import triggers from both experimental sessions
-triggers_s01, triggers_s03 = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s03_EEG)
 
 
-## For SSVEP computations
+# %% Load triggers
+
+# Prompt user on procedure to access triggers
+# An exception applies to datasets in which the DC input channel of the EEG system showed a lower amplitude than intended; unclear why
+trigger_prompt = input("EXCEPTION: should triggers should be retreived from the DC input channel instead of annotations (y/n)? ")
+
+if trigger_prompt == "y":
+    # Import triggers from DC channel (exception)
+    triggers_s01 = import_triggers_DC(path_ses01_EEG, 730)
+    triggers_s03 = import_triggers_DC(path_ses03_EEG, 730)
+else:
+    # Import triggers from both experimental sessions (default)
+    triggers_s01, triggers_s03 = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s03_EEG)
+
+
+
+# %% Access raw data for SSVEP computations
 
 # Define ROI channels
 roi_ch = ['PO3', 'PO4', 'POz', 'O1', 'O2', 'Oz']
@@ -165,26 +179,34 @@ sleep_data_exp = pd.DataFrame.from_dict(sleep_data_exp, orient='index')
 
 
 
-# %% Optional: apply linear interpolation
+# %% Apply linear interpolation (exception)
 
-# Plot SSVEPs per sleep stage
+# Plot SSVEPs per sleep stage, to decide if exception is needed
 for stage in [2,3,4]:
     
     _, _, _, _ = compute_SSVEP(data_s03, triggers_s03, hypno_up_s03, stage, computeSNR=False)
     
-# Run linear interpolation, S01
-raw_s01_EEG = linear_interpolation(raw_s01_EEG, triggers_s01, time_start_1=-1, time_start_2=11, art_len=4)
+# Prompt user on whether exception is needed
+lin_int_apply = input("EXCEPTION: should linear interpolation be applied to this dataset (y/n)? ")
 
-# Run linear interpolation, S03
-raw_s03_EEG = linear_interpolation(raw_s03_EEG, triggers_s03, time_start_1=-1, time_start_2=11, art_len=4)
+# Apply only if answer was yes
+if lin_int_apply == "y":
     
-# Access raw ROI data as array, convert from Volts to microVolts
-data_s01 = raw_s01_EEG.get_data(picks=roi_ch) * 1e6
-data_s03 = raw_s03_EEG.get_data(picks=roi_ch) * 1e6
-
-# Get average of the ROI channels
-data_s01 = np.mean(data_s01, axis=0)
-data_s03 = np.mean(data_s03, axis=0)
+    # Run linear interpolation, S01
+    print("Applying linear interpolation to S01...")
+    raw_s01_EEG = linear_interpolation(raw_s01_EEG, triggers_s01, time_start_1=-1, time_start_2=11, art_len=4)
+    
+    # Run linear interpolation, S03
+    print("Applying linear interpolation to S03...")
+    raw_s03_EEG = linear_interpolation(raw_s03_EEG, triggers_s03, time_start_1=-1, time_start_2=11, art_len=4)
+        
+    # Access raw ROI data as array, convert from Volts to microVolts
+    data_s01 = raw_s01_EEG.get_data(picks=roi_ch) * 1e6
+    data_s03 = raw_s03_EEG.get_data(picks=roi_ch) * 1e6
+    
+    # Get average of the ROI channels
+    data_s01 = np.mean(data_s01, axis=0)
+    data_s03 = np.mean(data_s03, axis=0)
 
     
 

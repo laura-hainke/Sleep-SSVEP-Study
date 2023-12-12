@@ -95,14 +95,37 @@ print(raw_s02_EEG.info)
 
 # Prompt user on procedure to access triggers
 # This exception applies to datasets in which the DC input channel of the EEG system showed a lower amplitude than intended; unclear why
-trigger_prompt = input("EXCEPTION: should triggers should be retreived from the DC input channel instead of annotations (y/n)? ")
+trigger_source_prompt = input("Should triggers should be retreived from the DC input channel instead of annotations (y/n)? ")
 
-if trigger_prompt == "y":
+if trigger_source_prompt == "y":
     # Import triggers from DC channel (exception)
     triggers_s02 = import_triggers_DC(path_ses02_EEG, 730)
 else:
     # Import triggers from annotations (default)
     triggers_s02 = import_triggers(None, path_ses02_annotations, raw_s02_EEG)
+
+
+## Exclude triggers
+
+# An exception applies to datasets in which a portion of the triggers cannot be used for analysis
+trigger_exclusion_prompt = input("Should any triggers be excluded (y/n)?")
+
+if trigger_exclusion_prompt == "y":
+    
+    # Get start and end points of period to be excluded
+    exclusion_start_min = input("Enter the start of the period to be excluded, in minutes:")
+    exclusion_end_min = input("Enter the end of the period to be excluded, in minutes:")
+    
+    # Transform into data points
+    exclusion_start_point = int(exclusion_start_min)*60*1000
+    exclusion_end_point = int(exclusion_end_min)*60*1000
+    
+    # Find triggers closest to indicated data points
+    exclusion_start = (abs(triggers_s02 - exclusion_start_point)).argmin()
+    exclusion_end = (abs(triggers_s02 - exclusion_end_point)).argmin()
+    
+    # Keep only intended triggers
+    triggers_s02 = np.concatenate((triggers_s02[0:exclusion_start], triggers_s02[exclusion_end:]))
 
 
 
@@ -162,14 +185,14 @@ sleep_data_con = pd.DataFrame.from_dict(sleep_data_con, orient='index')
 
 
 
-# %% Apply linear interpolation (exception)
+# %% Apply linear interpolation (option)
     
-# Plot SSVEPs per sleep stage, to decide if exception is needed
+# Plot SSVEPs per sleep stage, to decide if needed
 for stage in [2,3,4]:
     _, _, _, _ = compute_SSVEP(data_s02, triggers_s02, hypno_up_s02, stage, computeSNR=False)
     
 # Prompt user on whether exception is needed
-lin_int_apply = input("EXCEPTION: should linear interpolation be applied to this dataset (y/n)? ")
+lin_int_apply = input("Should linear interpolation be applied to this dataset (y/n)? ")
 
 # Apply only if answer was yes
 if lin_int_apply == "y":

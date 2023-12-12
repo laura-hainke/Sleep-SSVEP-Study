@@ -101,17 +101,41 @@ print(raw_s03_EEG.info)
 
 # %% Load triggers
 
-# Prompt user on procedure to access triggers
-# An exception applies to datasets in which the DC input channel of the EEG system showed a lower amplitude than intended; unclear why
-trigger_prompt = input("EXCEPTION: should triggers should be retreived from the DC input channel instead of annotations (y/n)? ")
+## Access triggers
 
-if trigger_prompt == "y":
+# An exception applies to datasets in which the DC input channel of the EEG system showed a lower amplitude than intended
+trigger_source_prompt = input("Should triggers should be retreived from the DC input channel instead of annotations (y/n)? ")
+
+if trigger_source_prompt == "y":
     # Import triggers from DC channel (exception)
     triggers_s01 = import_triggers_DC(path_ses01_EEG, 730)
     triggers_s03 = import_triggers_DC(path_ses03_EEG, 730)
 else:
     # Import triggers from both experimental sessions (default)
     triggers_s01, triggers_s03 = import_triggers(path_ses01_annotations, path_ses03_annotations, raw_s03_EEG)
+
+
+## Exclude triggers
+
+# An exception applies to datasets in which a portion of the triggers cannot be used for analysis
+trigger_exclusion_prompt = input("Should any triggers be excluded (y/n)?")
+
+if trigger_exclusion_prompt == "y":
+    
+    # Get start and end points of period to be excluded
+    exclusion_start_min = input("Enter the start of the period to be excluded, in minutes:")
+    exclusion_end_min = input("Enter the end of the period to be excluded, in minutes:")
+    
+    # Transform into data points
+    exclusion_start_point = int(exclusion_start_min)*60*1000
+    exclusion_end_point = int(exclusion_end_min)*60*1000
+    
+    # Find triggers closest to indicated data points
+    exclusion_start = (abs(triggers_s03 - exclusion_start_point)).argmin()
+    exclusion_end = (abs(triggers_s03 - exclusion_end_point)).argmin()
+    
+    # Keep only intended triggers
+    triggers_s03 = np.concatenate((triggers_s03[0:exclusion_start], triggers_s03[exclusion_end:]))
 
 
 
@@ -187,7 +211,7 @@ for stage in [2,3,4]:
     _, _, _, _ = compute_SSVEP(data_s03, triggers_s03, hypno_up_s03, stage, computeSNR=False)
     
 # Prompt user on whether exception is needed
-lin_int_apply = input("EXCEPTION: should linear interpolation be applied to this dataset (y/n)? ")
+lin_int_apply = input("Should linear interpolation be applied to this dataset (y/n)? ")
 
 # Apply only if answer was yes
 if lin_int_apply == "y":

@@ -1,5 +1,5 @@
 # Author: LH
-# Date: 06.2023
+# Date: 08.2023
 # Functionality: Script to import, process and evaluate personal data (Gamma-Sleep study).
 # Notes:
 
@@ -15,7 +15,7 @@ library(lubridate)
 setwd("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing")
 
 # Source functions, file in current directory
-source("PersonalData_functions.r")
+source("GammaSleep_personal-data_functions.r")
 
 # Get participant number from user
 subject_nr = readline(prompt="Subject number: ")
@@ -26,45 +26,21 @@ path_in = paste("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Raw/", subject_
 # Path to file with output data
 path_out = paste("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Derivatives/", subject_nr, "/REDCap/", subject_nr, "_personal-data.csv", sep="")
 
-
-
-# Data & exclusion criteria check ------------------------------------------------------------------------------------------------------------
-
-## Load data file and format it
+# Load data file and format it
 data = load_redcap(path_in)
-
-
-## Check: are there any columns with unintended NA values?
-check_data(data,"NA_values")
-
-
-## Check: consent granted?
-check_data(data,"consent")
-
-
-## Check: any cutoff questions answered with "maybe"?
-check_data(data,"cutoff_extra")
 
 
 
 # Questionnaires --------------------------------------------------------------------------------------------------
 
-## Extract & check AUDIT score
+# Extract AUDIT score
 audit_score = as.integer(data$audit_score[2])
 
-check_score(audit_score,"AUDIT")
-
-
-## Compute & check uMCTQ score
+# Compute uMCTQ score
 MSF_sc = score_uMCTQ(data)
 
-check_score(MSF_sc,"uMCTQ")
-
-
-## Compute & check PSQI score
+## Compute PSQI score
 psqi_score = score_PSQI(data)
-
-check_score(psqi_score,"PSQI")
 
 
 ## Time to schedule arrival at sleep lab, 1.5 hours before usual bedtime on free days

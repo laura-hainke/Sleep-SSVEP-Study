@@ -3,7 +3,7 @@
 Author: Laura Hainke
 Date: 08.2023
 Functionality: Script to import and process EEG data; Gamma-Sleep study, experimental condition
-Assumptions: Files as defined in section %% Paths to files; EEGData_functions.py in same directory
+Assumptions: Files as defined in section %% Paths to files; GammaSleep_EEG-processing_functions.py in same directory
 
 """
 
@@ -20,7 +20,7 @@ import yasa
 os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
 
 # Import custom functions
-from EEGData_functions import load_raw, import_triggers, import_triggers_DC, score_sleep, linear_interpolation, select_annotations, create_epochs, compute_PSD, compute_SSVEP
+from GammaSleep_EEG-processing_functions import load_raw, import_triggers, import_triggers_DC, score_sleep, linear_interpolation, select_annotations, create_epochs, compute_PSD, compute_SSVEP
 
 
 

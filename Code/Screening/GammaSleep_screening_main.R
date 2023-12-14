@@ -13,16 +13,16 @@ library(lubridate)
 setwd("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Screening")
 
 # Source functions, file in current directory
-source("Screening_functions.r")
+source("GammaSleep_screening_functions.r")
 
 # Path to file with all input data
-path_in = "C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Study_Enrolment/Screening/REDCap_screening_data.csv"
+path_in = "C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Study_Enrolment/Screening/Screening_raw_data/REDCap_screening_batch3.csv"
 
 # Load full data file and format it
 data = load_redcap(path_in)
 
 # Get record subset of interest
-data = data[56:110,]
+data = data[46:90,]
 
 # Select current record
 record_id = as.numeric(readline(prompt="Record ID:"))
@@ -53,5 +53,5 @@ check_score(MSF_sc,"uMCTQ")
 # Compute & check PSQI score
 psqi_score = score_PSQI(data_id)
 check_score(psqi_score,"PSQI")
-
+    
 

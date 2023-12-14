@@ -1,0 +1,209 @@
+# Author: LH
+# Date: 2023-09-26
+# Functionality: Functions for statistics_main.R, creating plots
+# Notes:
+
+
+
+# Environment Setup ----------------------------------------------------------------------------------------------------
+
+# Packages
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(scales)
+library(see)
+
+# Colour schemes
+col_con = "#666666" # control
+col_exp = "#CC3333" # experimental
+col_W = "grey"
+col_N1 = "#ece2f0"
+col_N2 = "#a6bddb"
+col_N3 = "#1c9099"
+col_REM = "#756bb1"
+
+# Constants
+nr_datapoints_SSVEP = 25 # 25 ms segments
+nr_conditions = 2 # control, experimental
+nr_stages = 4 # W, N2, N3, REM (N1 not included)
+
+
+
+# Function: plot_bar_stack -------------------------------------------------------------------------------------------
+# Create a stacked bar plot, for % of stages.
+
+## INPUT
+
+# data_long : dataframe
+# Dataframe in long format
+
+## OUTPUT
+
+# No values, just plot
+
+plot_bar_stack <- function(data_long) {
+  
+  # Create figure
+  ggplot(data_long, aes(x=condition, y=value, fill=stage)) +
+    geom_bar(stat="identity", position = position_fill(reverse = TRUE), width=0.5) + # Start with N1
+    labs(title="Sleep Stage Distribution", x="Condition", y="Time per Stage (% of TST)", fill="Stage") + # Labels
+    scale_fill_manual(values=c(col_N1, col_N2, col_N3, col_REM), labels=c("N1","N2","N3","REM")) + # Stage colours & labels
+    scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
+    scale_y_continuous(labels = percent) + # Y-tick values
+    theme_minimal() + # Background
+    coord_flip() + # Flip x & y axes
+    theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+          axis.title.y = element_text(size=rel(2), vjust=2),
+          axis.text = element_text(size=rel(1.5)), 
+          plot.title = element_text(size=rel(3)),
+          legend.text = element_text(size=15),
+          legend.title = element_text(size=15),
+          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+  
+}
+
+
+
+# Function: plot_box_2X4 -------------------------------------------------------------------------------------------
+# Create a set of boxplots for 2 conditions X 4 stages.
+
+## INPUT
+
+# data_long : dataframe
+# Dataframe in long format
+
+# title_plot : str
+# Plot title
+
+# title_y : str
+# Y-axis title
+
+# ymin : int
+# Start of y-axis
+
+# ymax : int
+# End of y-axis
+
+## OUTPUT
+
+# No values, just plot
+
+plot_box_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
+  
+  ggplot(data_long, aes(x=stage, y=value, fill=condition)) +
+    geom_boxplot() + # Show condition pairs per stage
+    geom_point(size=1, position=position_dodge(0.75)) + # add individual data points
+    stat_summary(fun = "mean", geom = "point", size = 2, color = "white", position = position_dodge(0.75)) + # add mean
+    scale_x_discrete(limits=c("W","N2","N3","REM")) +
+    scale_fill_manual(values=c(col_con, col_exp), labels=c("Control","Experimental")) +
+    labs(title=title_plot, x="Stage", y=title_y, fill="Condition") + # Labels
+    ylim(ymin, ymax) + # Change y-axis limits
+    theme_minimal() + # Background
+    theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+          axis.title.y = element_text(size=rel(2), vjust=2),
+          axis.text = element_text(size=rel(1.5)), 
+          plot.title = element_text(size=rel(3)),
+          legend.text = element_text(size=15),
+          legend.title = element_text(size=15),
+          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+  
+}
+
+
+
+# Function: plot_scatter_2X4 -------------------------------------------------------------------------------------------
+# Create a connected scatterplot for 2 conditions X 4 stages.
+
+## INPUT
+
+# data_long : dataframe
+# Dataframe in long format
+
+# title_plot : str
+# Plot title
+
+# title_y : str
+# Y-axis title
+
+# ymin : int
+# Start of y-axis
+
+# ymax : int
+# End of y-axis
+
+## OUTPUT
+
+# No values, just plot
+
+plot_scatter_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
+  
+  # If it's an SNR plot, a dashed line should be shown at y=1
+  if (grepl("SNR", data_long$variable[1]) == TRUE) {
+    line_dash_y = 1
+  } else {
+    line_dash_y = 0
+  }
+  
+  ggplot(data_long, aes(x=condition, y=value, color=ID)) + 
+    geom_point(size=4, position=position_dodge(0.03)) +
+    geom_line(aes(group = ID), position=position_dodge(0.03), linewidth=1.2) +
+    facet_grid(. ~ factor(stage,levels=c("W","N2","N3","REM"))) +
+    scale_colour_grey(start=0, end=0.8, guide="none") +
+    labs(title=title_plot, x="Condition", y=title_y) + # Labels
+    scale_x_discrete(expand=c(0.15, 0.15)) + # X-tick labels
+    geom_hline(yintercept=line_dash_y, linetype='dashed') + # Line at meaningful point of no effect
+    ylim(ymin, ymax) + # Change y-axis limits
+    theme_minimal() + # Background
+    theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+          axis.title.y = element_text(size=rel(2), vjust=2),
+          axis.text = element_text(size=rel(1.5)), 
+          axis.text.x = element_text(colour="grey"),
+          strip.text = element_text(face="bold", size=rel(2)), # Facet test
+          plot.title = element_text(size=rel(3)),
+          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+  
+}
+
+
+
+# Function: plot_violin_paired -------------------------------------------------------------------------------------------
+# Create violin plots with connected dots.
+
+## INPUT
+
+# data_long : dataframe
+# Dataframe in long format
+
+# title_plot : str
+# Plot title
+
+# title_y : str
+# Y-axis title
+
+## OUTPUT
+
+# No values, just plot
+
+plot_violin_paired <- function(data_long, title_plot, title_y) {
+  
+  # Create figure
+  ggplot(data_long, aes(x=condition, y=value)) + 
+    geom_violinhalf(aes(fill=condition), flip=1) + # Violin plot shape
+    geom_point(color="grey", size=2) + # Data points, jittered
+    geom_line(aes(group = ID), color="grey", linewidth=1, linetype="twodash") + # connect paired dots
+    stat_summary(fun = "mean", geom="point", shape=18, color = "black", size=5) + # Add mean as point
+    labs(title=title_plot, x="Condition", y=title_y) + # Labels
+    scale_fill_manual(values=c(col_con, col_exp), guide="none") + # Condition colours, remove legend
+    scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
+    theme_minimal() + # Background
+    theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+          axis.title.y = element_text(size=rel(2), vjust=2),
+          axis.text = element_text(size=rel(1.5)), 
+          plot.title = element_text(size=rel(3)),
+          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+  
+}
+
+

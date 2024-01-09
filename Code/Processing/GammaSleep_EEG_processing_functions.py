@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Author: Laura Hainke
-Date: 08.2023
+Date: 12.2023
 Functionality: Functions for EEG data processing (Gamma-Sleep Study).
+Note: Plotting funcitonalities commented out, could overwork PC when looping over all subjects. Useful to check single subjects.
 
 """
 
@@ -129,7 +130,7 @@ def load_raw(filename,bad_ch):
 # %% Function: import_triggers
 
 """
-    Import 1 Hz triggers from 1 - 2 sessions, digitally upsample to 40 Hz.
+    Import 1 Hz triggers from 1-2 sessions, from annotations files; digitally upsample to 40 Hz.
     
     Input
     ----------
@@ -144,7 +145,6 @@ def load_raw(filename,bad_ch):
     
     Output
     -------
-    
     triggers_s01 : array
     Array containing trigger data points from session 01
     
@@ -176,7 +176,7 @@ def import_triggers(file_wake, file_sleep, raw_EEG):
         annotations = mne.read_annotations(conditions[cond], sfreq=1000)
 
         # Add to raw object (necessary for next step)
-        raw_copy.set_annotations(annotations, emit_warning=True)  
+        raw_copy.set_annotations(annotations, emit_warning=False)  
 
         # Create events from trigger annotations only
         events, _ = mne.events_from_annotations(raw_copy, event_id={'DC trigger 9':1}) 
@@ -251,7 +251,7 @@ def import_triggers(file_wake, file_sleep, raw_EEG):
     filename : str
     Path to the EEG data file in EDF format
     
-    threshold : int
+    threshold_mV : int
     Amplitude threshold at which a trigger should be detected, in mV
     
     Output
@@ -453,7 +453,7 @@ def score_sleep(raw_PSG, raw_EEG, bad_ch, path_demographics):
     data_plot = raw_PSG.get_data(picks=eeg)
     
     # Plot spectrogram for chosen EEG channel
-    yasa.plot_spectrogram(data_plot[0], 100, hypno_plot, fmin=0.5, fmax=25)
+    # yasa.plot_spectrogram(data_plot[0], 100, hypno_plot, fmin=0.5, fmax=25)
 
 
     return hypnogram, hypno_up, uncertain_epochs, sleep_stats
@@ -475,26 +475,24 @@ def score_sleep(raw_PSG, raw_EEG, bad_ch, path_demographics):
     triggers : array
     1 row of triggers, i.e., data points at which a trigger occurred
     
-    time_start_1 : int
-    First timepoint in the averaged 25 ms segment affected by the artifact (0-24), due to LED ON
-    
-    time_start_2 : int
-    Second timepoint in the averaged 25 ms segment affected by the artifact (0-24), due to LED OFF
-
-    art_len : int
-    Length of the artifact in data points (1-24)
-    
     Output
     -------
-    data : array
-    	Data that was input into the function, now cleaned of the electric artifact
+    raw_EEG : MNE raw object
+    Raw object with data now cleaned of the electric artifact
 
 """
 
-def linear_interpolation(raw_EEG, triggers, time_start_1, time_start_2, art_len):
+def linear_interpolation(raw_EEG, triggers):
         
     # Access data from all channels in raw
     data_interpolated = raw_EEG.get_data()
+    
+    # First timepoint in the averaged 25 ms segment affected by the artifact (0-24), due to LED ON
+    time_start_1 = -1
+    # Second timepoint in the averaged 25 ms segment affected by the artifact (0-24), due to LED OFF
+    time_start_2 = 11
+    # Length of the artifact in data points (1-24)
+    art_len = 4
 
     # Run interpolation on all channels
     for i in range(len(data_interpolated)):
@@ -657,7 +655,7 @@ def create_epochs(raw_EEG, all_triggers, event_id):
 """
     Source code: https://mne.tools/stable/auto_tutorials/time-freq/50_ssvep.html
 
-    Compute PSD spectra and SNR values for current stage and plot.
+    Compute PSD spectra and SNR values for current stage.
     
     Input
     ----------
@@ -694,7 +692,7 @@ def compute_PSD(epochs, stage):
     # Note: only at this point do bad epochs get rejected
     spectrum = epochs.compute_psd(
         "welch",
-        n_fft=int(sfreq * 30), # length of FFT
+        n_fft=int(sfreq * 30), # length of FFT in seconds
         tmin=0,
         tmax=30,
         fmin=0, # min. frequency to include in spectra (Hz)
@@ -753,53 +751,43 @@ def compute_PSD(epochs, stage):
     snrs = psds / mean_noise
     
     
-    ## Plot spectra
+    ## Spectra
     
-    fig, axes = plt.subplots(2, 1, sharex='all', sharey='none', figsize=(8, 5))
     freq_range = range(np.where(np.floor(freqs) == 0)[0][0], np.where(np.ceil(freqs) == 100)[0][0])
     
     # PSD spectrum
     psds_plot = 10 * np.log10(psds) # in dB
     psds_mean = psds_plot.mean(axis=(0, 1))[freq_range] # across channels and epochs
     psds_std = psds_plot.std(axis=(0, 1))[freq_range] # add standard deviation
-    axes[0].plot(freqs[freq_range], psds_mean, color='b')
-    axes[0].fill_between(
-        freqs[freq_range], psds_mean - psds_std, psds_mean + psds_std,
-        color='b', alpha=.2)
-    axes[0].set(title="PSD spectrum, stage "+str(stage), ylabel='Power Spectral Density [dB]')
     
     # SNR spectrum
     snr_mean = snrs.mean(axis=(0, 1))[freq_range] # across channels and epochs
     snr_std = snrs.std(axis=(0, 1))[freq_range] # add standard deviation
     
-    axes[1].plot(freqs[freq_range], snr_mean, color='r')
-    axes[1].fill_between(
-        freqs[freq_range], snr_mean - snr_std, snr_mean + snr_std,
-        color='r', alpha=.2)
-    axes[1].set( title="SNR spectrum, stage "+str(stage), xlabel='Frequency [Hz]', ylabel='SNR', ylim=[-1, 50], xlim=[1, 100])
-    fig.show()
+    # Plot
+    # fig, axes = plt.subplots(2, 1, sharex='all', sharey='none', figsize=(8, 5))
+    
+    # axes[0].plot(freqs[freq_range], psds_mean, color='b')
+    # axes[0].fill_between(
+    #     freqs[freq_range], psds_mean - psds_std, psds_mean + psds_std,
+    #     color='b', alpha=.2)
+    # axes[0].set(title="PSD spectrum, stage "+str(stage), ylabel='Power Spectral Density [dB]')
+    
+    # axes[1].plot(freqs[freq_range], snr_mean, color='r')
+    # axes[1].fill_between(
+    #     freqs[freq_range], snr_mean - snr_std, snr_mean + snr_std,
+    #     color='r', alpha=.2)
+    # axes[1].set( title="SNR spectrum, stage "+str(stage), xlabel='Frequency [Hz]', ylabel='SNR', ylim=[-1, 50], xlim=[1, 100])
+    # fig.show()
     
     
     ## Get metrics
     
-    # Get SNRs in defined range around target frequency 
-    # (allowing for slightly different individual SSVEP frequencies / inconsistencies in flicker)
-    snrs_40Hz = snrs[:,:,(idx_bin_40Hz-bin_len):(idx_bin_40Hz+bin_len)]
-
-    # Average across epochs & channels
-    snrs_40Hz_avg = snrs_40Hz.mean(axis=(0, 1))
-
-    # Get maximum averaged SNR in that range
-    idx_max_SNR = np.argmax(snrs_40Hz_avg) # index in target frequency subset
-
-    # Get exact frequency corresponding to highest SNR (in case it's not exactly 40 Hz)
-    max_SNR_freq = freqs[idx_bin_40Hz - (bin_len - idx_max_SNR)]
-    
-    # Absolute PSD value at / near 40 Hz in dB
-    PSD_40Hz = psds_mean[idx_bin_40Hz - (bin_len - idx_max_SNR)]
+    # Absolute PSD value at 40 Hz in dB
+    PSD_40Hz = psds_mean[idx_bin_40Hz]
     
     # Absolute SNR value corresponding to PSD_40Hz
-    SNR_40Hz = snrs_40Hz_avg[idx_max_SNR]
+    SNR_40Hz = snr_mean[idx_bin_40Hz]
     
     # Average PSD spectrum across epochs and channels
     PSD_spectrum = psds_mean
@@ -810,9 +798,8 @@ def compute_PSD(epochs, stage):
     
     ## Print & return results
     
-    print('PSD SNR: ' + str(round(SNR_40Hz,2)))
-    print('Absolute PSD value (dB): ' + str(round(PSD_40Hz,2)))
-    print('Corresponding frequency (Hz): ' + str(round(max_SNR_freq,2)))
+    print('PSD SNR at 40 Hz: ' + str(round(SNR_40Hz,2)))
+    print('Absolute PSD value at 40 Hz (dB): ' + str(round(PSD_40Hz,2)))
     
     return PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum
     
@@ -823,7 +810,7 @@ def compute_PSD(epochs, stage):
 """
     Source code: https://github.com/JamesDowsettNeuroscience/flicker_analysis_code
     
-    Get SSVEP segments for current stage, plot average, compute SNR.
+    Get SSVEP segments for current stage, compute SNR.
 
     Input
     ----------
@@ -832,12 +819,12 @@ def compute_PSD(epochs, stage):
     
     all_triggers : array
     Output of import_triggers(); merged trigger set or from one session
+        
+    hypno_up : array
+    Output of score_sleep()
     
     condition : int
     Number of current condition: 0=wake, 1=N1, 2=N2, 3=N3, 4=REM
-    
-    hypno_up : array
-    Output of score_sleep()
         
     SNR : bool
     Optional calculation of SNR
@@ -919,21 +906,21 @@ def compute_SSVEP(data, all_triggers, hypno_up, condition, computeSNR=True):
     
     ## Plot
     
-    # Open figure
-    plt.figure() 
+    # # Open figure
+    # plt.figure() 
         
-    # Plot aesthetics
-    plt.title('Averaged Segments (SSVEP): stage ' + str(condition), size = 30, y=1.03)
-    plt.ylabel('Amplitude (' + u"\u03bcV)", size=20)
-    plt.yticks(size=20)
-    plt.xlabel('Time (ms)', size=20)
-    plt.xticks(size=20)
+    # # Plot aesthetics
+    # plt.title('Averaged Segments (SSVEP): stage ' + str(condition), size = 30, y=1.03)
+    # plt.ylabel('Amplitude (' + u"\u03bcV)", size=20)
+    # plt.yticks(size=20)
+    # plt.xlabel('Time (ms)', size=20)
+    # plt.xticks(size=20)
     
-    # Plot averaged SSVEP 
-    plt.plot(SSVEP, color = 'black') 
+    # # Plot averaged SSVEP 
+    # plt.plot(SSVEP, color = 'black') 
     
-    # Plot shaded error region
-    plt.fill_between(range(0,25), SSVEP-stand_errors, SSVEP+stand_errors, alpha = 0.3) 
+    # # Plot shaded error region
+    # plt.fill_between(range(0,25), SSVEP-stand_errors, SSVEP+stand_errors, alpha = 0.3) 
     
     
     ## Compute SNR (optional)

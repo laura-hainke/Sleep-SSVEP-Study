@@ -9,6 +9,7 @@
 
 library(reshape2)
 library(tidyr)
+library(dplyr)
 
 
 
@@ -136,9 +137,6 @@ initialize_dataframe <- function(df_type = c("demographic","sleep_quality","PSD_
                                   REM_PTA_exp = rep(NA, n_IDs),
                                   REM_SNR_exp = rep(NA, n_IDs))
   }
-  else {
-    warning("ERROR: Most likely, dataframe type not accepted")
-  }
   
   return(custom_dataframe)
 }
@@ -192,6 +190,10 @@ load_derivative_data <- function() {
       }
     }
   }
+  
+  # Convert demographic data into numeric format
+  data_demo <<- data_demo %>% mutate_at(c("age","sex","gender_match","handedness","education","PSQI_score"), as.numeric)
+  
 }
 
 
@@ -251,6 +253,9 @@ dataframe_wide_to_long <- function(data_wide) {
 
 import_SSVEPs_to_long_dataframe <- function() { 
   
+  # Number of datapoints of SSVEP with 25 ms period, at 1 kHz sampling rate
+  nr_datapoints_SSVEP = 25
+  
   # Initialize dataframe to import CSV data for one participant
   data_SSVEPs_individual = data.frame(ID = character(nr_datapoints_SSVEP),
                                       time = seq(1,nr_datapoints_SSVEP),
@@ -264,6 +269,8 @@ import_SSVEPs_to_long_dataframe <- function() {
                                       REM_exp = numeric(nr_datapoints_SSVEP))
   
   # Length of final data frame
+  nr_conditions = 2
+  nr_stages = 4
   length_dataframe_group = length(list_IDs) * nr_datapoints_SSVEP * nr_conditions * nr_stages
   
   # Initialize dataframe in long format, to store all participants' data

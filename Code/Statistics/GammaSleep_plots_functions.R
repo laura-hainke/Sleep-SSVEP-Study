@@ -51,15 +51,15 @@ plot_bar_stack <- function(data_long) {
     scale_fill_manual(values=c(colour_scheme$N1, colour_scheme$N2, colour_scheme$N3, colour_scheme$REM), labels=c("N1","N2","N3","REM")) + # Stage colours & labels
     scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
     scale_y_continuous(labels = percent) + # Y-tick values
-    theme_minimal() + # Background
+    theme_minimal(base_size = 15) + # Background
     coord_flip() + # Flip x & y axes
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
           plot.title = element_text(size=rel(3)),
-          legend.text = element_text(size=15),
-          legend.title = element_text(size=15),
-          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+          legend.text = element_text(size=rel(1.5)),
+          legend.title = element_text(size=rel(1.5)),
+          plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
   
 }
 
@@ -95,18 +95,17 @@ plot_box_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
     geom_boxplot() + # Show condition pairs per stage
     geom_point(size=1, position=position_dodge(0.75)) + # add individual data points
     stat_summary(fun = "mean", geom = "point", size = 2, color = "white", position = position_dodge(0.75)) + # add mean
-    scale_x_discrete(limits=c("W","N2","N3","REM")) +
     scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), labels=c("Control","Experimental")) +
     labs(title=title_plot, x="Stage", y=title_y, fill="Condition") + # Labels
     ylim(ymin, ymax) + # Change y-axis limits
-    theme_minimal() + # Background
+    theme_minimal(base_size = 15) + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
           plot.title = element_text(size=rel(3)),
-          legend.text = element_text(size=15),
-          legend.title = element_text(size=15),
-          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+          legend.text = element_text(size=rel(1.5)),
+          legend.title = element_text(size=rel(1.5)),
+          plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
   
 }
 
@@ -145,19 +144,18 @@ plot_box_1X4 <- function(data_long, title_plot, title_y, ymin, ymax, limits) {
     geom_boxplot(show.legend = FALSE) + 
     geom_point(size=1, position=position_dodge(0.75)) + # add individual data points
     stat_summary(fun = "mean", geom = "point", size = 2, color = "white", position = position_dodge(0.75)) + # add mean
-    annotate("segment", x=0.63, y=limits[1], xend=1.38, yend=limits[1], linetype="dashed", color="#333333", size=0.7) + # add max. expected stimulation time for N2
-    annotate("segment", x=1.63, y=limits[2], xend=2.38, yend=limits[2], linetype="dashed", color="#333333", size=0.7) + # add max. expected stimulation time for N3
-    annotate("segment", x=2.63, y=limits[3], xend=3.38, yend=limits[3], linetype="dashed", color="#333333", size=0.7) + # add max. expected stimulation time for REM
-    scale_x_discrete(limits=c("N2","N3","REM")) +
+    annotate("segment", x=0.63, y=limits[1], xend=1.38, yend=limits[1], linetype="dashed", color="#333333", linewidth=0.7) + # add max. expected stimulation time for N2
+    annotate("segment", x=1.63, y=limits[2], xend=2.38, yend=limits[2], linetype="dashed", color="#333333", linewidth=0.7) + # add max. expected stimulation time for N3
+    annotate("segment", x=2.63, y=limits[3], xend=3.38, yend=limits[3], linetype="dashed", color="#333333", linewidth=0.7) + # add max. expected stimulation time for REM
     scale_fill_manual(values=c(colour_scheme$N2, colour_scheme$N3, colour_scheme$REM)) +
     labs(title=title_plot, x="Stage", y=title_y) + # Labels
     ylim(ymin, ymax) + # Change y-axis limits
-    theme_minimal() + # Background
+    theme_minimal(base_size = 15) + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
           plot.title = element_text(size=rel(3)),
-          plot.margin = margin(1,1,1,1, "cm"), # Plot margins
+          plot.margin = margin(0.5,0.5,0.5,0.5, "cm"), # Plot margins
           legend.position = "none") 
   
 }
@@ -200,20 +198,20 @@ plot_scatter_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
   ggplot(data_long, aes(x=condition, y=value, color=ID)) + 
     geom_point(size=4, position=position_dodge(0.03)) +
     geom_line(aes(group = ID), position=position_dodge(0.03), linewidth=1.2) +
-    facet_grid(. ~ factor(stage,levels=c("W","N2","N3","REM"))) +
+    facet_grid(. ~ factor(stage)) + # levels=c("W","N2","N3","REM")
     scale_colour_grey(start=0, end=0.8, guide="none") +
     labs(title=title_plot, x="Condition", y=title_y) + # Labels
     scale_x_discrete(expand=c(0.15, 0.15)) + # X-tick labels
     geom_hline(yintercept=line_dash_y, linetype='dashed') + # Line at meaningful point of no effect
     ylim(ymin, ymax) + # Change y-axis limits
-    theme_minimal() + # Background
+    theme_minimal(base_size = 15) + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
           axis.text.x = element_text(colour="grey"),
           strip.text = element_text(face="bold", size=rel(2)), # Facet test
           plot.title = element_text(size=rel(3)),
-          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+          plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
   
 }
 
@@ -252,7 +250,7 @@ plot_violin_paired <- function(data_long, title_plot, title_y) {
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
           plot.title = element_text(size=rel(3)),
-          plot.margin = margin(1,1,1,1, "cm")) # Plot margins
+          plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
   
 }
 
@@ -307,19 +305,22 @@ plot_n_SSVEPs <- function(data_long, title_plot, colour, ymax) {
 # data_long : dataframe
 # Dataframe in long format, containing grand average data
 
+# title_plot : str
+# Plot title
+
 ## OUTPUT
 
 # No values, just plot
 
-plot_avg_SSVEPs_stage <- function(data_long) {
+plot_avg_SSVEPs_stage <- function(data_long, title_plot) {
 
   ggplot(data_long, aes(x=time, y=value, color=condition)) +
     geom_line(size=1) +
     facet_grid(~factor(stage)) + 
-    labs(title="Grand Average SSVEPs", y="Amplitude (uV)", x="Time (ms)") +
+    labs(title=title_plot, y="Amplitude (uV)", x="Time (ms)") +
     scale_x_continuous(limits=c(0,25), breaks=c(0,25)) +
     scale_color_manual(name="Condition", values=c(colour_scheme$con,colour_scheme$exp), labels=c("Control","Experimental")) +
-    theme_minimal() +
+    theme_minimal(base_size=15) +
     theme(panel.grid.minor = element_blank(), # remove background lines
           strip.text.x = element_text(size=rel(2), face="bold"),
           axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative

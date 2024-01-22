@@ -544,7 +544,7 @@ check_score <- function(score,check) {
   if (check == 'uMCTQ') {
     
     # If corrected midsleep time is below 01:30 or above 06:00, issue a warning
-    if (as.ITime(score) >= as.ITime("01:30:00") & as.ITime(score) <= as.ITime("06:00:00")) {
+    if (as.ITime(score) >= as.ITime("01:30:00") & as.ITime(score) <= as.ITime("06:30:00")) {
       cat("\nMidsleep time OK:", as.character(score))
     } else {
       cat("\nWARNING: Midsleep time outside normal range!", as.character(score))

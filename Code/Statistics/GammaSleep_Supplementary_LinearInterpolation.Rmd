@@ -1,0 +1,160 @@
+---
+title: "GammaSleep Supplementary Analysis: Linear Interpolation"
+author: "Hainke, Dowsett, Spitschan, Priller"
+date: '`r Sys.Date()`'
+output:
+  pdf_document: default
+  html_document:
+    code_folding: hide
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, fig.height=4.5, fig.width=7, fig.align="center")
+```
+
+```{r Environment Setup, warning=FALSE, message=FALSE}
+# Working directory
+setwd("C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Github_Repo\\Gamma-Sleep\\Code\\Statistics")
+
+# Function files in current directory
+source("GammaSleep_statistics_functions.r")
+source("GammaSleep_plots_functions.r")
+source("GammaSleep_data-handling_functions.r")
+
+# Libraries
+library(chron)
+
+
+## Global variables
+# Using global environment (<<- assignment) to avoid redundant function arguments
+
+# Path to folders with derivative data
+path_derivatives <<- "C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Data\\Derivatives_interpolated\\" 
+
+# List of folder names in directory, corresponding to participant numbers
+list_IDs <<- list.dirs(path = path_derivatives, full.names = FALSE, recursive = FALSE)
+
+# Remove rejected datasets
+list_IDs <<- list_IDs[! list_IDs %in% c("03","15")] # subjects 03 and 15 were drop-outs
+```
+
+```{r Dataframes for Derivative Data}
+## Initializing 
+data_demo <<- initialize_dataframe("demographic")
+
+data_sleep <<- initialize_dataframe("sleep_quality")
+
+data_PSD <<- initialize_dataframe("PSD_metrics")
+                        
+data_SSVEP <<- initialize_dataframe("SSVEP_metrics")
+
+## Loading data
+load_derivative_data()
+```
+
+# Rationale
+
+Linear interpolation refers to a data cleaning step employed to remove periodic artifacts. Here, such artifacts have been caused by the LEDs of the custom sleep mask placed directly over subjects' eyes, and therefore close to EEG electrodes. At the intended stimulation frequency of 40 Hz and a duty cycle of 50 %, the LEDs were programmed to go ON at timepoint 0 of each 25 ms segment, and OFF after 12.5 ms. The mask was built to be shielded as well as possible, however, SSVEPs were computed from a very high number of segments. While this is favourable to average out noise overall, any electric contamination by the LEDs would be very consistent in timing, and therefore visible in the averaged time series.  
+The image below shows an SSVEP particularly affected by this issue, with one downward and one upward peak distorting the underlying sinusiodal waveform. The red dashed lines simbolize the linear interpolation procedure: Essentially, data at the beginning (timepoints [-1;3]) and middle (timepoints [11;14]) of each segment is replaced with a straight line. Averaging across "cleaned" segments then results in a sinusoidal form, without residuals of LED ON/OFF artifacts.  
+
+![linear interpolation explanation](C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Github_Repo/Gamma-Sleep/Code/Statistics/linear_interpolation.png)
+This procedure was not defined in the preregistration, since pilot data were not affected by artifacts. In fact, neither was the majority of the datasets. Additionally, the presence or absence of artifacts seemed to be constant within participants, and comparisons between conditions were carried out within-subjects. For those reasons, linear interpolation was not applied to main analyses. Nevertheless, since some SSVEPs showed these characteristic peaks, here we report results with this processing step applied. In short, **the results of confirmatory analyses do not change**.  
+
+# Confirmatory Analysis [EEG Power Spectral Density]
+
+## H1: W_exp > W_con
+
+During wakefulness, 40 Hz power was expected to be higher in the experimental condition (session 01) than in the control condition (session 02). This hypothesis was **confirmed**, with a **large effect** size:  
+
+```{r H1}
+test_two_levels(data_PSD$W_PSD40_exp, data_PSD$W_PSD40_con, parametric=TRUE, alternative="greater")
+```
+
+## H2: N2_exp > N2_con
+
+During sleep stage N2, 40 Hz power was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **medium effect** size:  
+
+```{r H2}
+test_two_levels(data_PSD$N2_PSD40_exp, data_PSD$N2_PSD40_con, parametric=TRUE, alternative="greater")
+```
+
+## H3: N3_exp > N3_con
+
+During sleep stage N3, 40 Hz power was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **medium effect** size:  
+
+```{r H3}
+test_two_levels(data_PSD$N3_PSD40_exp, data_PSD$N3_PSD40_con, parametric=TRUE, alternative="greater")
+```
+
+## H4: REM_exp > REM_con
+
+During sleep stage REM, 40 Hz power was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **large effect** size:  
+
+```{r REM}
+test_two_levels(data_PSD$REM_PSD40_exp, data_PSD$REM_PSD40_con, parametric=FALSE, alternative="greater")
+```
+
+## H5: W_exp =/= N2_exp =/= N3_exp =/= REM_exp
+
+In the experimental condition, 40 Hz power was expected to differ between stages. This hypothesis was **confirmed**, with a **large effect** size. However, post-hoc tests reveal that **only stage W differs** from all other stages, i.e., the stimulation effect is largest in W. There is no significant difference between the sleep stages N2, N3, and REM.
+
+```{r H5}
+# Get data subset
+data_anova_PSD_dB = subset(data_PSD_dB_long, condition=="exp", select=c(ID,stage,value))
+
+# Run statistical test
+test_multiple_levels(data_anova_PSD_dB, parametric=TRUE, sphericity_correction="greenhouse-geisser")
+```
+
+## Signal-to-Noise Ratio
+
+Here are the **median SNR values**. Consistent with confirmatory analyses, all SNR values in the control condition are ~1, and all SNR values in the experimental condition are >1, with a markedly higher value in W~exp~. 
+
+```{r SNR PSD medians}
+# Conversion to long format
+data_PSD_SNR_long = dataframe_wide_to_long(data_PSD[,c("ID","W_SNR40_con","N2_SNR40_con","N3_SNR40_con","REM_SNR40_con","W_SNR40_exp","N2_SNR40_exp","N3_SNR40_exp","REM_SNR40_exp")])
+
+# Median SNR values per condition
+medians_PSD_SNR = aggregate(value ~ stage * condition, data_PSD_SNR_long, median) # mean likely biased by outliers
+print(medians_PSD_SNR, row.names=FALSE)
+```
+
+# SSVEPs
+
+The following plots depict the **SSVEPs averaged** across all subjects, by stage and condition.
+
+```{r SSVEP avg}
+# All SSVEP time series data in long format
+timeseries_SSVEPs = import_SSVEPs_to_long_dataframe()
+
+# Collapse data over subjects
+data_SSVEPs_avg = timeseries_SSVEPs %>% group_by(time,stage,condition) %>% summarise_at(vars("value"), mean)
+
+# Separate stage W
+data_SSVEPs_avg_wake = data_SSVEPs_avg[data_SSVEPs_avg$stage=="W",]
+data_SSVEPs_avg_sleep = data_SSVEPs_avg[data_SSVEPs_avg$stage!="W",]
+```
+  
+```{r SSVEP avg W}
+plot_avg_SSVEPs_stage(data_SSVEPs_avg_wake, title_plot="Average SSVEPs - Wake")
+```
+  
+```{r SSVEP avg Sleep}
+plot_avg_SSVEPs_stage(data_SSVEPs_avg_sleep, title_plot="Average SSVEPs - Sleep")
+```
+
+Here are the **median SNR values**. Consistent with confirmatory analyses, all SNR values in the control condition are ~1, and all SNR values in the experimental condition are >1, with a markedly higher value in W_exp. 
+
+```{r SNR SSVEP medians}
+# Conversion to long format
+data_SSVEP_SNR_long = dataframe_wide_to_long(data_SSVEP[,c("ID","W_SNR_con","N2_SNR_con","N3_SNR_con","REM_SNR_con","W_SNR_exp","N2_SNR_exp","N3_SNR_exp","REM_SNR_exp")])
+
+# Median SNR values per condition
+medians_SSVEP_SNR = aggregate(value ~ stage * condition, data_SSVEP_SNR_long, median) # mean likely biased by outliers
+print(medians_SSVEP_SNR, row.names=FALSE)
+```
+
+
+
+
+

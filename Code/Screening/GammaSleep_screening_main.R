@@ -10,19 +10,19 @@ library(data.table)
 library(lubridate)
 
 # Set working directory
-setwd("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Screening")
+setwd("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Github_Repo/Gamma-Sleep/Code/Screening")
 
 # Source functions, file in current directory
 source("GammaSleep_screening_functions.r")
 
 # Path to file with all input data
-path_in = "C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Study_Enrolment/Screening/Screening_raw_data/REDCap_screening_batch3.csv"
+path_in = "C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Study_Enrolment/Screening/Screening_raw_data/REDCap_screening_batch1.csv"
 
 # Load full data file and format it
 data = load_redcap(path_in)
 
 # Get record subset of interest
-data = data[46:90,]
+data = data[(nrow(data)/2+1):(nrow(data)),]
 
 # Select current record
 record_id = as.numeric(readline(prompt="Record ID:"))

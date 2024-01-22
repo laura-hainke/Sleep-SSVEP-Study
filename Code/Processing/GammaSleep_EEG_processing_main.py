@@ -19,7 +19,7 @@ import mne
 import json
 
 # Define directory containing code
-os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing/')
+os.chdir('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Github_Repo/Gamma-Sleep/Code/Processing')
 
 # Import custom functions
 from GammaSleep_EEG_processing_functions import load_raw, import_triggers, import_triggers_DC, score_sleep, linear_interpolation, select_annotations, create_epochs, compute_PSD, compute_SSVEP
@@ -32,7 +32,7 @@ all_paths['path_raw'] = str('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Raw
 all_paths['path_derivatives'] = str('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Derivatives/')
 
 # Generate subject numbers as strings, to loop over
-subject_IDs = [str(i).zfill(2) for i in range(23,24)]
+subject_IDs = [str(i).zfill(2) for i in range(21,22)]
 
 # Mark datasets to remove
 datasets_to_exclude = ['03','15']
@@ -56,7 +56,7 @@ for subject_nr in subject_IDs:
 
 # %% Loop over both conditions
 
-    for condition in ['con','exp']: 
+    for condition in ['exp']:  # 'con',
          
         print('\nCONDITION:', condition)
          

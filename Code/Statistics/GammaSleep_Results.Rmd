@@ -1,0 +1,386 @@
+---
+title: "GammaSleep Results"
+author: "Hainke, Dowsett, Spitschan, Priller"
+date: '`r Sys.Date()`'
+output:
+  pdf_document: default
+  html_document:
+    code_folding: hide
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, fig.height=4.5, fig.width=7, fig.align="center")
+```
+
+```{r Environment Setup, warning=FALSE, message=FALSE}
+# Working directory
+setwd("C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Github_Repo\\Gamma-Sleep\\Code\\Statistics")
+
+# Function files in current directory
+source("GammaSleep_statistics_functions.r")
+source("GammaSleep_plots_functions.r")
+source("GammaSleep_data-handling_functions.r")
+
+# Libraries
+library(chron)
+
+
+## Global variables
+# Using global environment (<<- assignment) to avoid redundant function arguments
+
+# Path to folders with derivative data
+path_derivatives <<- "C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Data\\Derivatives_main\\" 
+
+# List of folder names in directory, corresponding to participant numbers
+list_IDs <<- list.dirs(path = path_derivatives, full.names = FALSE, recursive = FALSE)
+
+# Remove rejected datasets
+list_IDs <<- list_IDs[! list_IDs %in% c("03","15")] # subjects 03 and 15 were drop-outs
+```
+
+```{r Dataframes for Derivative Data}
+## Initializing 
+data_demo <<- initialize_dataframe("demographic")
+
+data_sleep <<- initialize_dataframe("sleep_quality")
+
+data_PSD <<- initialize_dataframe("PSD_metrics")
+                        
+data_SSVEP <<- initialize_dataframe("SSVEP_metrics")
+
+## Loading data
+load_derivative_data()
+```
+
+# Sample Description
+
+### Age
+
+Mean = `r round(mean(data_demo$age),2)` y  
+SD = `r round(sd(data_demo$age),2)` y  
+Range = `r min(data_demo$age)` -- `r max(data_demo$age)` y
+
+### Sex
+
+`r sum(data_demo$sex=="1")` females *[1]*, `r sum(data_demo$sex=="2")` males *[2]*  
+Mean = `r round(mean(data_demo$sex),2)`  
+SD = `r round(sd(data_demo$sex),2)`  
+
+### Gender
+
+Number of participants whose indicated gender did not match their sex assigned at birth: `r sum(data_demo$gender_match=="2")`
+
+### Handedness
+
+`r sum(data_demo$handedness=="1")` right-handed *[1]*, `r sum(data_demo$handedness=="2")` ambidextrous *[2]*, `r sum(data_demo$handedness=="3")` left-handed *[3]*  
+Mean = `r round(mean(data_demo$handedness),2)`  
+SD = `r round(sd(data_demo$handedness),2)`  
+
+### Education
+
+Minimal possible value: "Less than secondary education (no school degree or up to 7th grade)" *[0]*  
+Maximal possible value: "Doctorate or equivalent" *[7]*  
+  
+Mean = `r round(mean(data_demo$education),2)`  
+SD = `r round(sd(data_demo$education),2)`  
+Range = `r min(data_demo$education)` -- `r max(data_demo$education)`  
+
+### Baseline Sleep Quality
+
+PSQI questionnaire sum score at screening. Only values <6 were accepted for recruitment.  
+A score of 0 indicates perfect sleep quality in the prior month, a score of 21 indicates very disturbed sleep.  
+
+Mean = `r round(mean(data_demo$PSQI_score),2)`  
+SD = `r round(sd(data_demo$PSQI_score),2)`  
+Range = `r min(data_demo$PSQI_score)` -- `r max(data_demo$PSQI_score)`
+
+### Chronotype
+
+Midpoint between sleep onset and offset on work-free days, corrected for “oversleep” due to sleep debt accumulated over the workweek (MSFsc). Only values > 01:30 (“extremely early chronotype”) and < 06:30 (“extremely late chronotype”), as defined in Roenneberg et al. (2019), were accepted for recruitment.  
+
+Mean = `r as.character(mean(times(data_demo$uMCTQ_score)))`  
+Range = `r min(data_demo$uMCTQ_score)` -- `r max(data_demo$uMCTQ_score)`  
+
+
+
+# Confirmatory Analysis [EEG]
+
+## Main Outcome: EEG Power Spectral Density
+
+The power spectral density, or power spectrum, reflects the 'frequency content' of the EEG signal; in other words, how strongly each frequency contributes to the total signal. Our main variable was the power at 40 Hz, corresponding exactly to the visual stimulation frequency. Converted into the commonly employed dB scale, lower values closer to zero reflect a stronger power, and more negative values represent a weaker power.  
+
+## H1: W_exp > W_con
+
+During wakefulness, 40 Hz power was expected to be higher in the experimental condition (session 01) than in the control condition (session 02). This hypothesis was **confirmed**, with a **large effect** size:  
+
+```{r H1}
+test_two_levels(data_PSD$W_PSD40_exp, data_PSD$W_PSD40_con, parametric=TRUE, alternative="greater")
+```
+
+```{r PSD Plot W}
+# Conversion to long format
+data_PSD_dB_long = dataframe_wide_to_long(data_PSD[,c("ID","W_PSD40_con","N2_PSD40_con","N3_PSD40_con","REM_PSD40_con","W_PSD40_exp","N2_PSD40_exp","N3_PSD40_exp","REM_PSD40_exp")])
+
+# Boxplots
+plot_box_2X4(data=data_PSD_dB_long[data_PSD_dB_long$stage=="W",], title_plot="40 Hz Power - Wake", title_y="Power (dB)", ymin=-100, ymax=-150) 
+```
+
+## H2: N2_exp > N2_con
+
+During sleep stage N2, 40 Hz power was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **medium effect** size:  
+
+```{r H2}
+test_two_levels(data_PSD$N2_PSD40_exp, data_PSD$N2_PSD40_con, parametric=TRUE, alternative="greater")
+```
+
+## H3: N3_exp > N3_con
+
+During sleep stage N3, 40 Hz power was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **medium effect** size:  
+
+```{r H3}
+test_two_levels(data_PSD$N3_PSD40_exp, data_PSD$N3_PSD40_con, parametric=TRUE, alternative="greater")
+```
+
+## H4: REM_exp > REM_con
+
+During sleep stage REM, 40 Hz power was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **large effect** size:  
+
+```{r REM}
+test_two_levels(data_PSD$REM_PSD40_exp, data_PSD$REM_PSD40_con, parametric=FALSE, alternative="greater")
+```
+
+```{r PSD Plot Sleep}
+plot_box_2X4(data=data_PSD_dB_long[data_PSD_dB_long$stage!="W",], title_plot="40 Hz Power - Sleep", title_y="Power (dB)", ymin=-100, ymax=-150) 
+```
+
+## H5: W_exp =/= N2_exp =/= N3_exp =/= REM_exp
+
+In the experimental condition, 40 Hz power was expected to differ between stages. This hypothesis was **confirmed**, with a **large effect** size. However, post-hoc tests reveal that **only stage W differs** from all other stages, i.e., the stimulation effect is largest in W. There is no significant difference between the sleep stages N2, N3, and REM.
+
+```{r H5}
+# Get data subset
+data_anova_PSD_dB = subset(data_PSD_dB_long, condition=="exp", select=c(ID,stage,value))
+
+# Run statistical test
+test_multiple_levels(data_anova_PSD_dB, parametric=TRUE, sphericity_correction="greenhouse-geisser")
+```
+
+## Signal-to-Noise Ratio
+
+The Signal-to-Noise Ratio (SNR) for the variable 40 Hz power was computed as follows: for each condition and stage, take the single power value at 40 Hz in dB, and divide by the surrounding values ([38 Hz to 39.5 Hz] + [40.5 Hz to 42 Hz]). With this approach, individual 1/f distributions in the EEG are corrected for.   
+An SNR value =< 1 means that EEG activity levels at 40 Hz and at neighbouring frequencies are similar; a higher SNR value signifies that the 40 Hz visual stimulation effect is clearly distinguishable from other brain activity.  
+  
+Here are the **median SNR values**. Consistent with confirmatory analyses, all SNR values in the control condition are ~1, and all SNR values in the experimental condition are >1, with a markedly higher value in W~exp~. 
+
+```{r SNR PSD medians}
+# Conversion to long format
+data_PSD_SNR_long = dataframe_wide_to_long(data_PSD[,c("ID","W_SNR40_con","N2_SNR40_con","N3_SNR40_con","REM_SNR40_con","W_SNR40_exp","N2_SNR40_exp","N3_SNR40_exp","REM_SNR40_exp")])
+
+# Median SNR values per condition
+medians_PSD_SNR = aggregate(value ~ stage * condition, data_PSD_SNR_long, median) # mean likely biased by outliers
+print(medians_PSD_SNR, row.names=FALSE)
+```
+  
+```{r SNR PSD W}
+# Boxplots
+plot_box_2X4(data=data_PSD_SNR_long[data_PSD_SNR_long$stage=="W",], title_plot="SNR of 40 Hz Power - Wake", title_y="SNR", ymin=0, ymax=350)
+```
+  
+```{r SNR PSD Sleep}
+plot_box_2X4(data=data_PSD_SNR_long[data_PSD_SNR_long$stage!="W",], title_plot="SNR of 40 Hz Power - Sleep", title_y="SNR", ymin=0, ymax=18) 
+```
+  
+# Exploratory Analysis [EEG] 
+
+## Secondary Outcome: SSVEP Amplitude
+
+Steady-State Visually Evoked Potentials were obtained by taking every flicker onset as timepoint zero, and averaging across all 25 ms segments (1 second divided by 40 Hz), stratified by condition and stage. In the control condition, LEDs were covered, so flat lines were expected; in the experimental condition, sinusoidal waveforms with a period of 25 ms were expected. The peak-to-trough amplitude in microvolt can be used for analyses, with higher values representing a stronger stimulation effect.  
+  
+The following plots depict the **SSVEPs averaged** across all subjects, by stage and condition.
+
+```{r SSVEP avg}
+# All SSVEP time series data in long format
+timeseries_SSVEPs = import_SSVEPs_to_long_dataframe()
+
+# Collapse data over subjects
+data_SSVEPs_avg = timeseries_SSVEPs %>% group_by(time,stage,condition) %>% summarise_at(vars("value"), mean)
+
+# Separate stage W
+data_SSVEPs_avg_wake = data_SSVEPs_avg[data_SSVEPs_avg$stage=="W",]
+data_SSVEPs_avg_sleep = data_SSVEPs_avg[data_SSVEPs_avg$stage!="W",]
+```
+  
+```{r SSVEP avg W}
+plot_avg_SSVEPs_stage(data_SSVEPs_avg_wake, title_plot="Average SSVEPs - Wake")
+```
+  
+```{r SSVEP avg Sleep}
+plot_avg_SSVEPs_stage(data_SSVEPs_avg_sleep, title_plot="Average SSVEPs - Sleep")
+```
+  
+**Note:** This variable is of course highly correlated with PSD values, since both are computed from the same underlying data. However, inspecting SSVEP waveforms allows us to show that the results are really attributable to the stimulation, not to any high-frequency artifact such as muscle activity, since the latter would get averaged out. Moreover, any electric artifacts from the LEDs become visible. A slight artifact seems to be present in N3~con~ and REM~con~, though its amplitude is much smaller than the SSVEPs' of the corresponding experimental conditions.
+
+## H1: W_exp > W_con
+
+During wakefulness, SSVEP amplitude was expected to be higher in the experimental condition (session 01) than in the control condition (session 02). This hypothesis was **confirmed**, with a **large effect** size:  
+
+```{r H1 SSVEP}
+test_two_levels(data_SSVEP$W_PTA_exp, data_SSVEP$W_PTA_con, parametric=FALSE, alternative="greater")
+```
+
+```{r SSVEP W plot}
+# Conversion to long format
+data_SSVEP_uV_long = dataframe_wide_to_long(data_SSVEP[,c("ID","W_PTA_con","N2_PTA_con","N3_PTA_con","REM_PTA_con","W_PTA_exp","N2_PTA_exp","N3_PTA_exp","REM_PTA_exp")])
+
+# Boxplot
+plot_box_2X4(data=data_SSVEP_uV_long[data_SSVEP_uV_long$stage=="W",], title_plot="SSVEP Amplitude - Wake", title_y="Amplitude (uV)", ymin=0, ymax=4)
+```
+
+## H2: N2_exp > N2_con
+
+During sleep stage N2, SSVEP amplitude was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **large effect** size:  
+
+```{r H2 SSVEP}
+test_two_levels(data_SSVEP$N2_PTA_exp, data_SSVEP$N2_PTA_con, parametric=FALSE, alternative="greater")
+```
+
+## H3: N3_exp > N3_con
+
+During sleep stage N3, SSVEP amplitude was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **large effect** size:  
+
+```{r H3 SSVEP}
+test_two_levels(data_SSVEP$N3_PTA_exp, data_SSVEP$N3_PTA_con, parametric=TRUE, alternative="greater")
+```
+
+## H4: REM_exp > REM_con
+
+During sleep stage REM, SSVEP amplitude was expected to be higher in the experimental condition (session 03) than in the control condition (session 02). This hypothesis was **confirmed**, with a **large effect** size:  
+
+```{r H4 SSVEP}
+test_two_levels(data_SSVEP$REM_PTA_exp, data_SSVEP$REM_PTA_con, parametric=FALSE, alternative="greater")
+```
+
+```{r SSVEP Plot Sleep}
+plot_box_2X4(data=data_SSVEP_uV_long[data_SSVEP_uV_long$stage!="W",], title_plot="SSVEP Amplitude - Sleep", title_y="Amplitude (uV)", ymin=0, ymax=0.9)
+```
+
+## H5: W_exp =/= N2_exp =/= N3_exp =/= REM_exp
+
+In the experimental condition, SSVEP amplitude was expected to differ between stages. This hypothesis was **confirmed**, with a **large effect** size. However, post-hoc tests reveal that **only stage W differs** from all other stages, i.e., the stimulation effect is largest in W. There is no significant difference between the sleep stages N2, N3, and REM.
+
+```{r H5 SSVEP}
+# Get data subset
+data_anova_SSVEP_uV = subset(data_SSVEP_uV_long, condition=="exp", select=c(ID,stage,value))
+
+# Run statistical test
+test_multiple_levels(data_anova_SSVEP_uV, parametric=FALSE, sphericity_correction="none")
+```
+
+## Signal-to-Noise Ratio
+
+The Signal-to-Noise Ratio (SNR) for the variable SSVEP amplitude was computed as follows: for each condition and stage, take every 25 ms segment and shuffle the order of data points. Average over segments to create a "random" SSVEP and calculate its peak to trough amplitude. Repeat 100 times. The SNR is the ratio of the "true" SSVEP amplitude to the average of the "random" SSVEP amplitudes.  
+An SNR value =< 1 means that the averaged signal contains no clear temporal structure; a higher SNR value indicates that the EEG activity measured differs meaningfully from random activity.
+  
+Here are the **median SNR values**. Consistent with confirmatory analyses, all SNR values in the control condition are ~1, and all SNR values in the experimental condition are >1, with a markedly higher value in W_exp. 
+
+```{r SNR SSVEP medians}
+# Conversion to long format
+data_SSVEP_SNR_long = dataframe_wide_to_long(data_SSVEP[,c("ID","W_SNR_con","N2_SNR_con","N3_SNR_con","REM_SNR_con","W_SNR_exp","N2_SNR_exp","N3_SNR_exp","REM_SNR_exp")])
+
+# Median SNR values per condition
+medians_SSVEP_SNR = aggregate(value ~ stage * condition, data_SSVEP_SNR_long, median) # mean likely biased by outliers
+print(medians_SSVEP_SNR, row.names=FALSE)
+```
+
+
+```{r SNR SSVEP W}
+# Boxplots
+plot_box_2X4(data=data_SSVEP_SNR_long[data_SSVEP_SNR_long$stage=="W",], title_plot="SNR of SSVEP - Wake", title_y="SNR", ymin=0, ymax=30)
+```
+  
+```{r SNR SSVEP Sleep}
+plot_box_2X4(data=data_SSVEP_SNR_long[data_SSVEP_SNR_long$stage!="W",], title_plot="SNR of SSVEP - Sleep", title_y="SNR", ymin=0, ymax=18)
+```
+
+## Stimulation Time
+
+In the control night, the stimulation system was energized, with the LEDs covered, throughout the whole night. In the experimental night, however, the stimulation was only activated at the first signs of N3. A maximal stimulation duration was aimed for, with interruptions whenever the subject was judged to experience an arousal. The stimulation fade-in time, at the beginning and after every interruption, was 5 min.  
+The **stimulation duration** in the **experimental** condition by sleep stage is summarized here. The dotted lines represent the usual time spent per night in a given stage.  
+
+```{r Stim Time plot}
+# Conversion to long format
+data_nr_epochs_long = dataframe_wide_to_long(data_PSD[,c("ID","N2_nepochs_exp","N3_nepochs_exp","REM_nepochs_exp")])
+data_nr_epochs_long$value = data_nr_epochs_long$value/2 # convert nr. of epochs into minutes
+
+plot_box_1X4(data_nr_epochs_long, title_plot="Stimulation Duration per Stage (Exp)", title_y="Minutes", ymin=0, ymax=250, limits=c(240,96,120))
+```
+
+
+# Exploratory Analysis [Sleep]
+
+## Subjective Sleep Quality
+
+The Groningen Sleep Quality Questionnaire (Mejiman et al., 1988) measures the subjective quality of last night’s sleep, based on yes/no answers. A minimal score of 0 indicates perfect sleep quality, a maximal score of 14 reflects very poor sleep quality.  
+A two-sided test was **significant** with a **small effect** size, showing that on average, subjectively assessed sleep quality was better in the experimental than in the control night.  
+
+```{r GSQS test}
+test_two_levels(data_sleep$GSQS_con, data_sleep$GSQS_exp, parametric=TRUE, alternative="two.sided")
+```
+
+```{r GSQS plot}
+# Conversion to long format
+data_GSQS_long = dataframe_wide_to_long(data_sleep[,c("ID","GSQS_con","GSQS_exp")])
+
+# Plot
+plot_violin_paired(data=data_GSQS_long, title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
+```
+
+## Total Sleep Time
+
+Total Sleep Time (TST) quantifies the total duration of N1 + N2 + N3 + REM sleep in a night in minutes, as one marker of objective sleep quality. A minimal value of 0 would be equivalent to a night spent awake; its maximal value is 480 min, i.e., a full recording duration of 8 hours. It was calculated using the Python package YASA and its algorithm for automated sleep staging (Vallat & Walker, 2021).  
+A two-sided test was **not significant**, showing that on average, participants slept for a similarly long time in both the control and experimental nights.  
+
+```{r TST test}
+test_two_levels(data_sleep$TST_exp, data_sleep$TST_con, parametric=TRUE, alternative="two.sided")
+```
+
+```{r TST plot}
+# Conversion to long format
+data_TST_long = dataframe_wide_to_long(data_sleep[,c("ID","TST_con","TST_exp")])
+
+# Plot
+plot_violin_paired(data=data_TST_long, title_plot="Total Sleep Time", title_y="Minutes")
+```
+
+## Wake After Sleep Onset
+
+Wake After Sleep Onset (WASO) is another marker of objectively assessed sleep quality. It quantifies the summed duration of wake periods overnight in minutes, within the span from the first to the last period of sleep. A minimal value of 0 would mean that between falling asleep and waking up, the subject fully slept through. A higher value (max. 479 min) can point to a few longer periods awake, or multiple short awakenings. It was also calculated using the Python package YASA.  
+A two-sided test was **not significant**, showing that on average, participants spent a similar amount of time awake overnight in both the control and experimental nights. The relatively high values overall are likely due to sleeping in a foreign environment with electrodes and a mask on the head, and/or the visual stimulation, equally unfamiliar to subjects.  
+
+```{r WASO test}
+test_two_levels(data_sleep$WASO_exp, data_sleep$WASO_con, parametric=TRUE, alternative="two.sided")
+```
+
+```{r WASO plot}
+# Conversion to long format
+data_WASO_long = dataframe_wide_to_long(data_sleep[,c("ID","WASO_con","WASO_exp")])
+
+# Plot
+plot_violin_paired(data=data_WASO_long, title_plot="Wake After Sleep Onset", title_y="Minutes")
+```
+
+## Time per Stage
+
+Time per Stage specifies the duration of each sleep stage as a percentage of TST %(N1,…REM). No statistical tests were planned for this variable, so it is reported descriptively. The plot below shows a **sleep stage distribution common** for healthy, young sleepers on **both nights**, with values for N1 ~ 5 %, N2 ~ 50 %, N3 ~ 20 %, and REM ~ 25 %.  
+
+```{r Time per Stage plot}
+# Conversion to long format
+data_percent_stages_long = dataframe_wide_to_long(data_sleep[,c("ID","perN1_con","perN2_con","perN3_con","perREM_con","perN1_exp","perN2_exp","perN3_exp","perREM_exp")])
+
+# Stacked bar graph of % time per stage
+plot_bar_stack(data_percent_stages_long)
+```
+
+## Note on the Interpretation of Sleep Quality Results
+
+Since the order of control and experimental nights was held constant across participants, and no adaptation night was included in the design, a fair comparison between both conditions regarding sleep quality is not possible. However, summarizing the exploratory sleep variables analysed, we may conclude that the intervention (in night 2, experimental condition) affects subjective and objective sleep quality equally to or less than the First Night Effect (in night 1, control condition).  

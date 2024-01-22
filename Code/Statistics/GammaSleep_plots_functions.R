@@ -28,7 +28,7 @@ colour_scheme=data.frame(con="#666666",
 nr_datapoints_SSVEP = 25 # 25 ms segments
 nr_conditions = 2 # control, experimental
 nr_stages = 4 # W, N2, N3, REM (N1 not included)
-
+base_size = 7 # base size of plot text
 
 
 # Function: plot_bar_stack -------------------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ plot_bar_stack <- function(data_long) {
     scale_fill_manual(values=c(colour_scheme$N1, colour_scheme$N2, colour_scheme$N3, colour_scheme$REM), labels=c("N1","N2","N3","REM")) + # Stage colours & labels
     scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
     scale_y_continuous(labels = percent) + # Y-tick values
-    theme_minimal(base_size = 15) + # Background
+    theme_minimal(base_size = base_size) + # Background
     coord_flip() + # Flip x & y axes
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
@@ -98,7 +98,7 @@ plot_box_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
     scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), labels=c("Control","Experimental")) +
     labs(title=title_plot, x="Stage", y=title_y, fill="Condition") + # Labels
     ylim(ymin, ymax) + # Change y-axis limits
-    theme_minimal(base_size = 15) + # Background
+    theme_minimal(base_size = base_size) + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
@@ -150,7 +150,7 @@ plot_box_1X4 <- function(data_long, title_plot, title_y, ymin, ymax, limits) {
     scale_fill_manual(values=c(colour_scheme$N2, colour_scheme$N3, colour_scheme$REM)) +
     labs(title=title_plot, x="Stage", y=title_y) + # Labels
     ylim(ymin, ymax) + # Change y-axis limits
-    theme_minimal(base_size = 15) + # Background
+    theme_minimal(base_size = base_size) + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
@@ -204,7 +204,7 @@ plot_scatter_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
     scale_x_discrete(expand=c(0.15, 0.15)) + # X-tick labels
     geom_hline(yintercept=line_dash_y, linetype='dashed') + # Line at meaningful point of no effect
     ylim(ymin, ymax) + # Change y-axis limits
-    theme_minimal(base_size = 15) + # Background
+    theme_minimal(base_size = base_size) + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
@@ -245,7 +245,7 @@ plot_violin_paired <- function(data_long, title_plot, title_y) {
     labs(title=title_plot, x="Condition", y=title_y) + # Labels
     scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), guide="none") + # Condition colours, remove legend
     scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
-    theme_minimal() + # Background
+    theme_minimal(base_size=base_size) + # Background
     theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
@@ -285,13 +285,13 @@ plot_n_SSVEPs <- function(data_long, title_plot, colour, ymax) {
     labs(title=title_plot, y="Amplitude (uV)", x="Time (ms)") +
     scale_x_continuous(limits=c(0,25), breaks=c(0,25)) +
     scale_y_continuous(limits=c(-ymax,ymax), breaks=c(-ymax,0,ymax)) +
-    theme_minimal() +
+    theme_minimal(base_size=base_size) +
     theme(panel.grid.minor = element_blank(), # remove background lines
           strip.text.x = element_text(size=rel(1.5), face="bold"),
           axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=1.5),
           axis.text = element_text(size=rel(1.5)), 
-          plot.title = element_text(size=rel(3.5), vjust=1.5),
+          plot.title = element_text(size=rel(3), vjust=1.5),
           plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
 }
 
@@ -315,12 +315,12 @@ plot_n_SSVEPs <- function(data_long, title_plot, colour, ymax) {
 plot_avg_SSVEPs_stage <- function(data_long, title_plot) {
 
   ggplot(data_long, aes(x=time, y=value, color=condition)) +
-    geom_line(size=1) +
+    geom_line(linewidth=1) +
     facet_grid(~factor(stage)) + 
     labs(title=title_plot, y="Amplitude (uV)", x="Time (ms)") +
     scale_x_continuous(limits=c(0,25), breaks=c(0,25)) +
     scale_color_manual(name="Condition", values=c(colour_scheme$con,colour_scheme$exp), labels=c("Control","Experimental")) +
-    theme_minimal(base_size=15) +
+    theme_minimal(base_size=base_size) +
     theme(panel.grid.minor = element_blank(), # remove background lines
           strip.text.x = element_text(size=rel(2), face="bold"),
           axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
@@ -328,7 +328,7 @@ plot_avg_SSVEPs_stage <- function(data_long, title_plot) {
           axis.text = element_text(size=rel(1.5)), 
           legend.text = element_text(size=rel(1.5)),
           legend.title = element_text(size=rel(1.5)),
-          plot.title = element_text(size=rel(3.5), vjust=1.5),
+          plot.title = element_text(size=rel(3), vjust=1.5),
           plot.margin = margin(0.5,0.5,0.5,0.5,"cm"))
 
 }
@@ -361,13 +361,13 @@ plot_SSVEPs_n_avg <- function(data_timeseries, data_grand_average, title_plot) {
     facet_wrap(~factor(condition,labels=c("Control","Experimental")), ncol=2) +
     labs(title=title_plot, y="Amplitude (uV)", x="Time (ms)") +
     scale_x_continuous(limits=c(0,25), breaks=c(0,25)) +
-    theme_minimal() +
+    theme_minimal(base_size=base_size) +
     theme(panel.grid.minor = element_blank(), # remove background lines
           strip.text.x = element_text(size=rel(3), face="bold"),
           axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
           axis.title.y = element_text(size=rel(2), vjust=1.5),
           axis.text = element_text(size=rel(1.5)), 
-          plot.title = element_text(size=rel(3.5), vjust=1.5),
+          plot.title = element_text(size=rel(3), vjust=1.5),
           plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
 }
 

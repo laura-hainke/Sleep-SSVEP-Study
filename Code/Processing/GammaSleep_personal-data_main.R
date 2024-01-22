@@ -12,7 +12,7 @@ library(data.table)
 library(lubridate)
 
 # Set working directory
-setwd("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Code/Processing")
+setwd("C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Github_Repo/Gamma-Sleep/Code/Processing")
 
 # Source functions, file in current directory
 source("GammaSleep_personal-data_functions.r")

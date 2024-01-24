@@ -298,7 +298,7 @@ def import_triggers_DC(filename, threshold_mV):
             i += 1
             
     # Trim trigger array to include only triggers, not zeros
-    triggers_1Hz = triggers_1Hz[0:ctr]
+    triggers_1Hz = triggers_1Hz[0:ctr-1] # -1 to remove last trigger, may be too close to recording end
 
     # Initialize full trigger array
     triggers = np.zeros((len(triggers_1Hz) * 40 + 1), dtype=int)

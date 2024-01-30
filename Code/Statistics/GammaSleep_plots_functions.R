@@ -66,7 +66,7 @@ plot_bar_stack <- function(data_long) {
 
 
 # Function: plot_box_2X4 -------------------------------------------------------------------------------------------
-# Create a set of boxplots for 2 conditions X 4 stages.
+# Create a set of boxplots for max. 2 conditions X 4 stages.
 
 ## INPUT
 
@@ -112,7 +112,7 @@ plot_box_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
 
 
 # Function: plot_box_1X4 -------------------------------------------------------------------------------------------
-# Create a set of boxplots for 1 condition X 4 stages, for stimulation time.
+# Create a set of boxplots for max. 1 condition X 4 stages, for stimulation time.
 
 ## INPUT
 

@@ -783,3 +783,14 @@ plot_avg_SSVEPs_stage(data_SSVEPs_avg[data_SSVEPs_avg$stage!="W",], title_plot="
 ```
   
 _Figure: SSVEPs averaged across all subjects by condition, in the three sleep stages._
+
+# Extra Analyses
+
+## Correlations: Nr. of Epochs x PSD40
+
+_Post-hoc_, Pearson correlations were computed between the number of epochs stimulated and PSD40, in the experimental condition, stratified by sleep stage. Overall, correlations are small (positive for N2 and N3, negative for REM).  
+  
+_r~N2~_ = `r round(cor(data_PSD$N2_nepochs_exp, data_PSD$N2_PSD40_exp),2)`  
+_r~N3~_ = `r round(cor(data_PSD$N3_nepochs_exp, data_PSD$N3_PSD40_exp),2)`  
+_r~REM~_ = `r round(cor(data_PSD$REM_nepochs_exp, data_PSD$REM_PSD40_exp),2)`  
+

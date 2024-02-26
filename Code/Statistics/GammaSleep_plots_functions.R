@@ -16,13 +16,13 @@ library(scales)
 library(see)
 
 # Colours for plots
-colour_scheme=data.frame(con="#666666",
-                         exp="#CC3333",
-                         W="#CCCCCC",
-                         N1="#ece2f0",
-                         N2="#a6bddb",
-                         N3="#1c9099",
-                         REM="#756bb1")
+colour_scheme=data.frame(con="#708090",
+                         exp="#8f2d56",
+                         W="#C9CC00",
+                         N1="#97D1F4",
+                         N2="#74BBE8",
+                         N3="#2B8DCA",
+                         REM="#158774")
 
 # Constants
 nr_datapoints_SSVEP = 25 # 25 ms segments
@@ -91,11 +91,11 @@ plot_bar_stack <- function(data_long) {
 
 plot_box_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
   
-  ggplot(data_long, aes(x=stage, y=value, fill=condition)) +
+  ggplot(data_long, aes(x=factor(stage, level =c("W","N2","N3","REM")), y=value, fill=condition)) +
     geom_boxplot() + # Show condition pairs per stage
     geom_point(size=1, position=position_dodge(0.75)) + # add individual data points
     stat_summary(fun = "mean", geom = "point", size = 2, color = "white", position = position_dodge(0.75)) + # add mean
-    scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), labels=c("Control","Experimental")) +
+    scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp)) +
     labs(title=title_plot, x="Stage", y=title_y, fill="Condition") + # Labels
     ylim(ymin, ymax) + # Change y-axis limits
     theme_minimal(base_size = base_size) + # Background
@@ -103,8 +103,6 @@ plot_box_2X4 <- function(data_long, title_plot, title_y, ymin, ymax) {
           axis.title.y = element_text(size=rel(2), vjust=2),
           axis.text = element_text(size=rel(1.5)), 
           plot.title = element_text(size=rel(3)),
-          legend.text = element_text(size=rel(1.5)),
-          legend.title = element_text(size=rel(1.5)),
           plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
   
 }

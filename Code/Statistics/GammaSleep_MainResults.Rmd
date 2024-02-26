@@ -23,6 +23,26 @@ source("GammaSleep_data-handling_functions.r")
 
 # Libraries
 library(chron)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(scales)
+library(see)
+
+# For plots
+colour_scheme=data.frame(con="#708090",
+                         exp="#8f2d56",
+                         W="#C9CC00",
+                         N1="#97D1F4",
+                         N2="#74BBE8",
+                         N3="#2B8DCA",
+                         REM="#158774")
+
+nr_datapoints_SSVEP = 25 # 25 ms segments
+nr_conditions = 2 # control, experimental
+nr_stages = 4 # W, N2, N3, REM (N1 not included)
+base_size = 7 # base size of plot text
 
 
 ## Global variables
@@ -140,7 +160,23 @@ _Table: Descriptive statistics for PSD40 across all stages and conditions. Means
 data_nr_epochs_long = dataframe_wide_to_long(data_PSD[,c("ID","N2_nepochs_exp","N3_nepochs_exp","REM_nepochs_exp")])
 data_nr_epochs_long$value = data_nr_epochs_long$value/2 # convert nr. of epochs into minutes
 
-plot_box_1X4(data_nr_epochs_long, title_plot="Stimulation Duration per Stage (Experimental)", title_y="Minutes", ymin=0, ymax=250, limits=c(240,96,120))
+ggplot(data_nr_epochs_long, aes(x=stage, y=value, fill=stage)) +
+  geom_boxplot(show.legend = FALSE) + 
+  geom_point(size=1, position=position_dodge(0.75)) + # add individual data points
+  stat_summary(fun = "mean", geom = "point", size = 2, color = "white", position = position_dodge(0.75)) + # add mean
+  annotate("segment", x=0.63, y=240, xend=1.38, yend=240, linetype="dashed", color="#899499", linewidth=0.7) + # add max. expected stimulation time for N2
+  annotate("segment", x=1.63, y=96, xend=2.38, yend=96, linetype="dashed", color="#899499", linewidth=0.7) + # add max. expected stimulation time for N3
+  annotate("segment", x=2.63, y=120, xend=3.38, yend=120, linetype="dashed", color="#899499", linewidth=0.7) + # add max. expected stimulation time for REM
+  scale_fill_manual(values=c(colour_scheme$N2, colour_scheme$N3, colour_scheme$REM)) +
+  labs(title="Stimulation Duration per Stage (Experimental)", x="Stage", y="Minutes") + # Labels
+  theme_minimal(base_size = base_size) + # Background
+  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=2),
+        axis.text = element_text(size=rel(1.7)), 
+        panel.grid.major.x = element_blank(),
+        plot.title = element_text(size=rel(3)),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm"), # Plot margins
+        legend.position = "none") 
 ```
 
 _Figure: Stimulation duration per sleep stage across subjects, in the experimental condition. Dotted lines represent the usual time spent per night in a given stage. White dots mark mean values._
@@ -173,16 +209,6 @@ First, for stage W, we postulated that on average, the PSD40 value would be high
 The effect size was `r interpret_cohens_d(H1a_results[[2]])`, 
 with a Cohen’s _d~z~_ of `r round(H1a_results[[2]],2)` 
 (CI = [`r round(H1a_results[[3]],2)` ; `r round(H1a_results[[4]],2)`]).  
-
-```{r PSD Plot W}
-# Conversion to long format
-data_PSD_dB_long = dataframe_wide_to_long(data_PSD[,c("ID","W_PSD40_con","N2_PSD40_con","N3_PSD40_con","REM_PSD40_con","W_PSD40_exp","N2_PSD40_exp","N3_PSD40_exp","REM_PSD40_exp")])
-
-# Boxplots
-plot_box_2X4(data=data_PSD_dB_long[data_PSD_dB_long$stage=="W",], title_plot="40 Hz Power - Wake", title_y="Power (dB)", ymin=-100, ymax=-150) 
-```
-
-_Figure: Spectral power at 40 Hz in wakefulness. dB values closer to zero indicate higher spectral power. White dots mark mean values._
 
 ## H2a: N2~exp~ > N2~con~
 
@@ -271,8 +297,26 @@ The effect size was `r interpret_rank_biserial(H4a_results[[2]])`,
 with a rank biserial correlation _r_ of `r round(H4a_results[[2]],2)` 
 (CI = [`r round(H4a_results[[3]],2)` ; `r round(H4a_results[[4]],2)`]).
 
-```{r PSD Plot Sleep}
-plot_box_2X4(data=data_PSD_dB_long[data_PSD_dB_long$stage!="W",], title_plot="40 Hz Power - Sleep", title_y="Power (dB)", ymin=-100, ymax=-150) 
+```{r PSD Plot}
+# Conversion to long format
+data_PSD_dB_long = dataframe_wide_to_long(data_PSD[,c("ID","W_PSD40_con","N2_PSD40_con","N3_PSD40_con","REM_PSD40_con","W_PSD40_exp","N2_PSD40_exp","N3_PSD40_exp","REM_PSD40_exp")])
+
+ggplot(data_PSD_dB_long, aes(x=factor(stage, levels=c("W","N2","N3","REM")), y=value, fill=condition)) +
+  geom_boxplot() + # Show condition pairs per stage
+  geom_label(aes(x=stage, y=-147, label=condition), position=position_dodge(0.75), label.size=NA, alpha=0, colour="#818589") +
+  geom_point(size=1, position=position_dodge(0.75)) + # add individual data points
+  stat_summary(fun = "mean", geom = "point", size = 2, color = "white", position = position_dodge(0.75)) + # add mean
+  scale_fill_manual(values=c(colour_scheme$con,colour_scheme$exp)) +
+  labs(title="40 Hz Power", x="Stage", y="Power (dB)", fill="Condition") + # Labels
+  theme_minimal(base_size = base_size) + # Background
+  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=2),
+        axis.text.x = element_text(size=rel(1.7), face="bold"),
+        axis.text.y = element_text(size=rel(1.7)),
+        legend.position = 'none',
+        panel.grid.major.x = element_blank(),
+        plot.title = element_text(size=rel(3)),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
 
 _Figure: Spectral power at 40 Hz across sleep stages. dB values closer to zero indicate higher spectral power. White dots mark mean values._
@@ -351,21 +395,25 @@ data_PSD_SNR_long = dataframe_wide_to_long(data_PSD[,c("ID","W_SNR40_con","N2_SN
 # Median SNR values per condition
 medians_PSD_SNR = aggregate(value ~ stage * condition, data_PSD_SNR_long, median) # mean likely biased by outliers
 print(medians_PSD_SNR, row.names=FALSE)
+
+ggplot(medians_PSD_SNR, aes(x=condition,y=stage,fill=value)) +
+  geom_tile(color = "white",lwd = 1.5) +
+  geom_text(aes(label=round(value, 2)), color = "white", size = 4, fontface="bold") +
+  scale_fill_gradient(low="grey", high="#6082B6") +
+  labs(title="SNR of 40 Hz Power", x="Condition", y="Stage") + # Labels
+  coord_fixed(ratio=0.8) +
+  theme_minimal(base_size = base_size) + # Background
+  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=2),
+        axis.text = element_text(size=rel(1.7)),
+        legend.position = 'none',
+        panel.grid = element_blank(),
+        plot.title = element_text(size=rel(3)),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
+
 ```
 
 _Table: Median SNR values for PSD40. Medians were chosen over means due to outliers._
-
-```{r SNR PSD W}
-plot_box_2X4(data=data_PSD_SNR_long[data_PSD_SNR_long$stage=="W",], title_plot="SNR of 40 Hz Power - Wake", title_y="SNR", ymin=0, ymax=350)
-```
-
-_Figure: Signal-to-Noise ratio of spectral power at 40 Hz in wakefulness. White dots mark mean values._
-
-```{r SNR PSD Sleep}
-plot_box_2X4(data=data_PSD_SNR_long[data_PSD_SNR_long$stage!="W",], title_plot="SNR of 40 Hz Power - Sleep", title_y="SNR", ymin=0, ymax=18) 
-```
-
-_Figure: Signal-to-Noise ratio of spectral power at 40 Hz across sleep stages. White dots mark mean values._
 
 # Secondary Analyses (Sleep Quality)
 
@@ -404,8 +452,22 @@ with a Cohen’s _d~z~_ of `r round(H6_results[[2]],2)`
 # Conversion to long format
 data_GSQS_long = dataframe_wide_to_long(data_sleep[,c("ID","GSQS_con","GSQS_exp")])
 
-# Plot
-plot_violin_paired(data=data_GSQS_long, title_plot="Subjective Sleep Quality", title_y="GSQS Sum Score")
+ggplot(data_GSQS_long, aes(x=condition, y=value)) + 
+  geom_violinhalf(aes(fill=condition), flip=1) + # Violin plot shape
+  geom_point(color="grey", size=2) + # Data points, jittered
+  geom_line(aes(group = ID), color="grey", linewidth=0.5) + # connect paired dots
+  stat_summary(fun = "mean", geom="point", shape=18, color = "black", size=5) + # Add mean as point
+  labs(title="Groningen Sleep Quality Scale", x="Condition", y="GSQS Sum Score") + # Labels
+  scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), guide="none") + # Condition colours, remove legend
+  scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
+  coord_fixed(ratio=0.15) +
+  theme_minimal(base_size=base_size) + # Background
+  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=2),
+        axis.text = element_text(size=rel(1.7)), 
+        panel.grid.major = element_blank(),
+        plot.title = element_text(size=rel(3)),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
 
 _Figure: Distribution of GSQS sum scores. Lower scores indicate better sleep quality. Dashed lines connect values for the control and experimental night, per participant. Black squares mark mean values._
@@ -443,7 +505,23 @@ nights.
 data_TST_long = dataframe_wide_to_long(data_sleep[,c("ID","TST_con","TST_exp")])
 
 # Plot
-plot_violin_paired(data=data_TST_long, title_plot="Total Sleep Time", title_y="Minutes")
+ggplot(data_TST_long, aes(x=condition, y=value)) + 
+  geom_violinhalf(aes(fill=condition), flip=1) + # Violin plot shape
+  geom_point(color="grey", size=2) + # Data points, jittered
+  geom_line(aes(group = ID), color="grey", linewidth=0.5) + # connect paired dots
+  stat_summary(fun = "mean", geom="point", shape=18, color = "black", size=5) + # Add mean as point
+  labs(title="Total Sleep Time", x="Condition", y="Minutes") + # Labels
+  scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), guide="none") + # Condition colours, remove legend
+  scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
+  scale_y_continuous(limits=c(315,460),breaks=c(320,390,460)) +
+  coord_fixed(ratio=0.015) +
+  theme_minimal(base_size=base_size) + # Background
+  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=2),
+        axis.text = element_text(size=rel(1.7)), 
+        panel.grid.major.x = element_blank(),
+        plot.title = element_text(size=rel(3)),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
 
 _Figure: Distribution of Total Sleep Times per condition. Dashed lines connect values for the control and experimental night, per participant. Black squares mark mean values._
@@ -481,7 +559,23 @@ nights.
 data_WASO_long = dataframe_wide_to_long(data_sleep[,c("ID","WASO_con","WASO_exp")])
 
 # Plot
-plot_violin_paired(data=data_WASO_long, title_plot="Wake After Sleep Onset", title_y="Minutes")
+ggplot(data_WASO_long, aes(x=condition, y=value)) + 
+  geom_violinhalf(aes(fill=condition), flip=1) + # Violin plot shape
+  geom_point(color="grey", size=2) + # Data points, jittered
+  geom_line(aes(group = ID), color="grey", linewidth=0.5) + # connect paired dots
+  stat_summary(fun = "mean", geom="point", shape=18, color = "black", size=5) + # Add mean as point
+  labs(title="Wake After Sleep Onset", x="Condition", y="Minutes") + # Labels
+  scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), guide="none") + # Condition colours, remove legend
+  scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
+  scale_y_continuous(limits=c(10,140),breaks=c(10,70,130)) +
+  coord_fixed(ratio=0.015) +
+  theme_minimal(base_size=base_size) + # Background
+  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=2),
+        axis.text = element_text(size=rel(1.7)), 
+        panel.grid.major.x = element_blank(),
+        plot.title = element_text(size=rel(3)),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
 
 _Figure: Distribution of total Wake After Sleep Onset times per condition. Dashed lines connect values for the control and experimental night, per participant. Black squares mark mean values._
@@ -498,7 +592,24 @@ and REM (Mean~con~ = `r round(mean(data_sleep$perREM_con),2)` %, Mean~exp~ = `r 
 data_percent_stages_long = dataframe_wide_to_long(data_sleep[,c("ID","perN1_con","perN2_con","perN3_con","perREM_con","perN1_exp","perN2_exp","perN3_exp","perREM_exp")])
 
 # Stacked bar graph of % time per stage
-plot_bar_stack(data_percent_stages_long)
+ggplot(data_percent_stages_long, aes(x=condition, y=value, fill=variable)) +
+  geom_bar(stat="identity", position = position_fill(reverse = TRUE), width=0.5) + # Start with N1
+  labs(title="Sleep Stage Distribution", x="", y="Time per Stage (% of TST)", fill="Stage") + # Labels
+  annotate(geom="text", x=0.85, y=0.025, label="N1", colour="white", fontface="bold") +
+  annotate(geom="text", x=0.85, y=0.11, label="N2", colour="white", fontface="bold") +
+  annotate(geom="text", x=0.85, y=0.645, label="N3", colour="white", fontface="bold") +
+  annotate(geom="text", x=0.85, y=0.835, label="REM", colour="white", fontface="bold") +
+  scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
+  scale_fill_manual(values=c(colour_scheme$N1, colour_scheme$N2, colour_scheme$N3, colour_scheme$REM), labels=c("N1","N2","N3","REM")) + # Stage colours & labels
+  scale_y_continuous(labels = percent) + # Y-tick values
+  theme_minimal(base_size = base_size) + # Background
+  coord_flip() + # Flip x & y axes
+  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.text.x = element_text(size=rel(1.7)), 
+        axis.text.y = element_text(size=rel(1.7), face="bold"), 
+        plot.title = element_text(size=rel(3)),
+        legend.position = 'none',
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
 
 _Figure: Average time spent in each stage, as a percentage of the total time asleep, across participants._
@@ -570,14 +681,9 @@ The effect size was `r interpret_rank_biserial(H1b_results[[2]])`,
 with a rank biserial correlation _r_ of `r round(H1b_results[[2]],2)` 
 (CI = [`r round(H1b_results[[3]],2)` ; `r round(H1b_results[[4]],2)`]).  
 ```{r SSVEP W plot}
-# Conversion to long format
-data_SSVEP_uV_long = dataframe_wide_to_long(data_SSVEP[,c("ID","W_PTA_con","N2_PTA_con","N3_PTA_con","REM_PTA_con","W_PTA_exp","N2_PTA_exp","N3_PTA_exp","REM_PTA_exp")])
 
-# Boxplot
-plot_box_2X4(data=data_SSVEP_uV_long[data_SSVEP_uV_long$stage=="W",], title_plot="SSVEP Amplitude - Wake", title_y="Amplitude (uV)", ymin=0, ymax=4)
+
 ```
-
-_Figure: Steady-State Visually Evoked Potential amplitudes in wakefulness. White dots mark mean values._
 
 ## H2b: N2~exp~ > N2~con~ 
 
@@ -666,12 +772,6 @@ The effect size was `r interpret_rank_biserial(H4b_results[[2]])`,
 with a rank biserial correlation _r_ of `r round(H4b_results[[2]],2)` 
 (CI = [`r round(H4b_results[[3]],2)` ; `r round(H4b_results[[4]],2)`]).  
 
-```{r SSVEP Plot Sleep}
-plot_box_2X4(data=data_SSVEP_uV_long[data_SSVEP_uV_long$stage!="W",], title_plot="SSVEP Amplitude - Sleep", title_y="Amplitude (uV)", ymin=0, ymax=0.9)
-```
-
-_Figure: Steady-State Visually Evoked Potential amplitudes across sleep stages. White dots mark mean values._
-
 ## H5b: W~exp~ =/= N2~exp~ =/= N3~exp~ =/= REM~exp~
 
 ### Parametric test assumptions
@@ -716,6 +816,9 @@ check_sphericity(data_SSVEP[,c("W_PTA_exp","N2_PTA_exp","N3_PTA_exp","REM_PTA_ex
 ### Statistical test
 
 ```{r H5b}
+# Conversion to long format
+data_SSVEP_uV_long = dataframe_wide_to_long(data_SSVEP[,c("ID","W_PTA_con","N2_PTA_con","N3_PTA_con","REM_PTA_con","W_PTA_exp","N2_PTA_exp","N3_PTA_exp","REM_PTA_exp")])
+
 # Get data subset
 data_anova_SSVEP_uV = subset(data_SSVEP_uV_long, condition=="exp", select=c(ID,stage,value))
 
@@ -745,22 +848,24 @@ data_SSVEP_SNR_long = dataframe_wide_to_long(data_SSVEP[,c("ID","W_SNR_con","N2_
 # Median SNR values per condition
 medians_SSVEP_SNR = aggregate(value ~ stage * condition, data_SSVEP_SNR_long, median) # mean likely biased by outliers
 print(medians_SSVEP_SNR, row.names=FALSE)
+
+ggplot(medians_SSVEP_SNR, aes(x=condition,y=stage,fill=value)) +
+  geom_tile(color = "white",lwd = 1.5) +
+  geom_text(aes(label=round(value, 2)), color = "white", size = 4, fontface="bold") +
+  scale_fill_gradient(low="grey", high="#6082B6") +
+  labs(title="SNR of SSVEPs", x="Condition", y="Stage") + # Labels
+  coord_fixed(ratio=0.8) +
+  theme_minimal(base_size = base_size) + # Background
+  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=2),
+        axis.text = element_text(size=rel(1.7)),
+        legend.position = 'none',
+        panel.grid = element_blank(),
+        plot.title = element_text(size=rel(3)),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
 
 _Table: Median SNR values for SSVEPamp. Medians were chosen over means due to outliers._
-
-```{r SNR SSVEP W}
-# Boxplots
-plot_box_2X4(data=data_SSVEP_SNR_long[data_SSVEP_SNR_long$stage=="W",], title_plot="SNR of SSVEP - Wake", title_y="SNR", ymin=0, ymax=30)
-```
-  
-_Figure: Signal-to-Noise ratio of SSVEP amplitude in wakefulness. White dots mark mean values._
-  
-```{r SNR SSVEP Sleep}
-plot_box_2X4(data=data_SSVEP_SNR_long[data_SSVEP_SNR_long$stage!="W",], title_plot="SNR of SSVEP - Sleep", title_y="SNR", ymin=0, ymax=18)
-```
-
-_Figure: Signal-to-Noise ratio of SSVEP amplitude across sleep stages. White dots mark mean values._
 
 ## Time Series Plots
 
@@ -773,13 +878,44 @@ data_SSVEPs_avg = timeseries_SSVEPs %>% group_by(time,stage,condition) %>% summa
 ```
   
 ```{r SSVEP avg W}
-plot_avg_SSVEPs_stage(data_SSVEPs_avg[data_SSVEPs_avg$stage=="W",], title_plot="Average SSVEPs - Wake")
+ggplot(data_SSVEPs_avg[data_SSVEPs_avg$stage=="W",], aes(x=time, y=value, color=condition)) +
+  geom_line(linewidth=1.5) +
+  facet_wrap(~factor(stage), strip.position = "bottom") + 
+  labs(title="Average SSVEPs", y="Amplitude (uV)", x="Time (ms)") +
+  scale_x_continuous(limits=c(0,25), breaks=c(0,12.5,25)) +
+  scale_color_manual(name="Condition", values=c(colour_scheme$con,colour_scheme$W), labels=c("Control","Experimental")) +
+  ylim(-0.4,0.4) +
+  theme_minimal(base_size=base_size) +
+  theme(panel.grid.minor = element_blank(), # remove background lines
+        strip.text.x = element_text(size=rel(2), face="bold"),
+        axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=1.5),
+        axis.text = element_text(size=rel(1.7)), 
+        legend.position = 'none',
+        plot.title = element_text(size=rel(3), vjust=1.5),
+        plot.margin = margin(0.5,0.5,0.5,0.5,"cm"))
 ```
   
 _Figure: SSVEPs averaged across all subjects by condition, in wakefulness._
   
 ```{r SSVEP avg Sleep}
-plot_avg_SSVEPs_stage(data_SSVEPs_avg[data_SSVEPs_avg$stage!="W",], title_plot="Average SSVEPs - Sleep")
+ggplot(data_SSVEPs_avg[data_SSVEPs_avg$stage!="W",], aes(x=time, y=value, color=condition)) +
+  geom_line(linewidth=1.5) +
+  facet_wrap(~factor(stage), strip.position = "bottom") +  
+  labs(title="Average SSVEPs", y="Amplitude (uV)", x="Time (ms)") +
+  scale_x_continuous(limits=c(0,25), breaks=c(0,12.5,25)) +
+  scale_color_manual(name="Condition", values=c(colour_scheme$con,colour_scheme$exp), labels=c("Control","Experimental")) +
+  ylim(-0.05,0.05) +
+  theme_minimal(base_size=base_size) +
+  theme(panel.grid.minor = element_blank(), # remove background lines
+        strip.text.x = element_text(size=rel(2), face="bold"),
+        axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(size=rel(2), vjust=1.5),
+        axis.text = element_text(size=rel(1.7)), 
+        legend.text = element_text(size=rel(1.7)),
+        legend.title = element_text(size=rel(1.7)),
+        plot.title = element_text(size=rel(3), vjust=1.5),
+        plot.margin = margin(0.5,0.5,0.5,0.5,"cm"))
 ```
   
 _Figure: SSVEPs averaged across all subjects by condition, in the three sleep stages._

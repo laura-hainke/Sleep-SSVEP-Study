@@ -18,7 +18,6 @@ setwd("C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Github_Repo\\Gamma-Sleep\
 
 # Function files in current directory
 source("GammaSleep_statistics_functions.r")
-source("GammaSleep_plots_functions.r")
 source("GammaSleep_data-handling_functions.r")
 
 # Libraries

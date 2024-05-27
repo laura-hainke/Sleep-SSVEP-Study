@@ -18,7 +18,6 @@ setwd("C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Github_Repo\\Gamma-Sleep\
 
 # Function files in current directory
 source("GammaSleep_statistics_functions.r")
-source("GammaSleep_plots_functions.r")
 source("GammaSleep_data-handling_functions.r")
 
 # Libraries
@@ -71,16 +70,14 @@ ggplot(SSVEP, aes(x=X, y=N2_SSVEP)) +
   geom_line(linewidth=1) + # plot SSVEP
   geom_segment(x=interpolation_timepoints[1], y=-0.09, xend=interpolation_timepoints[2], yend=SSVEP$N2_SSVEP[SSVEP$X==interpolation_timepoints[2]], colour="red", linetype="dashed", size=1.2) + # First interpolation segment
   geom_segment(x=interpolation_timepoints[3], y=SSVEP$N2_SSVEP[SSVEP$X==interpolation_timepoints[3]], xend=interpolation_timepoints[4], yend=SSVEP$N2_SSVEP[SSVEP$X==interpolation_timepoints[4]], colour="red", linetype="dashed", size=1.2) + # Second interpolation segment
-  labs(title="Example SSVEP affected by artifacts", y="Amplitude (uV)", x="Time (ms)") +
+  labs(y="Amplitude (uV)", x="Time (ms)") +
   scale_x_continuous(limits=c(-1,24), breaks=c(0,5,10,15,20,25)) +
   ylim(-0.12,0.12) +
-  theme_minimal(base_size=7) +
+  theme_minimal(base_size=10) +
   theme(panel.grid.minor = element_blank(), # remove background lines
-        strip.text.x = element_text(size=rel(3), face="bold"),
-        axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
-        axis.title.y = element_text(size=rel(2), vjust=1.5),
-        axis.text = element_text(size=rel(1.5)), 
-        plot.title = element_text(size=rel(3), vjust=1.5),
+        axis.title.x = element_text(vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(vjust=1.5),
+        text = element_text(family="sans"),
         plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
 
 ```
@@ -149,18 +146,48 @@ timeseries_SSVEPs = import_SSVEPs_to_long_dataframe()
 
 # Collapse data over subjects
 data_SSVEPs_avg = timeseries_SSVEPs %>% group_by(time,stage,condition) %>% summarise_at(vars("value"), mean)
-
-# Separate stage W
-data_SSVEPs_avg_wake = data_SSVEPs_avg[data_SSVEPs_avg$stage=="W",]
-data_SSVEPs_avg_sleep = data_SSVEPs_avg[data_SSVEPs_avg$stage!="W",]
 ```
   
 ```{r SSVEP avg W}
-plot_avg_SSVEPs_stage(data_SSVEPs_avg_wake, title_plot="Average SSVEPs - Wake")
+colour_scheme=data.frame(con="#708090",
+                         exp="#8f2d56",
+                         W="#C9CC00",
+                         N1="#97D1F4",
+                         N2="#74BBE8",
+                         N3="#2B8DCA",
+                         REM="#158774")
+
+ggplot(data_SSVEPs_avg[data_SSVEPs_avg$stage=="W",], aes(x=time, y=value, color=condition)) +
+  geom_line(linewidth=1) +
+  facet_wrap(~factor(stage), strip.position = "bottom") + 
+  labs(y="Amplitude (uV)", x="Time (ms)") +
+  scale_x_continuous(limits=c(0,25), breaks=c(0,12.5,25)) +
+  scale_color_manual(name="Condition", values=c(colour_scheme$con,colour_scheme$W)) +
+  ylim(-0.4,0.4) +
+  theme_minimal(base_size=10) +
+  theme(panel.grid.minor = element_blank(), # remove background lines
+        axis.title.x = element_text(vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(vjust=1.5),
+        text = element_text(family="sans"),
+        legend.position = 'none',
+        plot.margin = margin(0.5,0.5,0.5,0.5,"cm"))
 ```
   
 ```{r SSVEP avg Sleep}
-plot_avg_SSVEPs_stage(data_SSVEPs_avg_sleep, title_plot="Average SSVEPs - Sleep")
+ggplot(data_SSVEPs_avg[data_SSVEPs_avg$stage!="W",], aes(x=time, y=value, color=condition)) +
+  geom_line(linewidth=1) +
+  facet_wrap(~factor(stage), strip.position = "bottom") +  
+  labs(y="Amplitude (uV)", x="Time (ms)") +
+  scale_x_continuous(limits=c(0,25), breaks=c(0,12.5,25)) +
+  scale_color_manual(name="Condition", values=c(colour_scheme$con,colour_scheme$exp)) +
+  ylim(-0.04,0.04) +
+  theme_minimal(base_size=10) +
+  theme(panel.grid.minor = element_blank(), # remove background lines
+        axis.title.x = element_text(vjust=-1), # Label sizes, relative
+        axis.title.y = element_text(vjust=1.5),
+        text = element_text(family="sans"),
+        legend.position = 'none',
+        plot.margin = margin(0.5,0.5,0.5,0.5,"cm"))
 ```
 
 ## SNR - SSVEPamp

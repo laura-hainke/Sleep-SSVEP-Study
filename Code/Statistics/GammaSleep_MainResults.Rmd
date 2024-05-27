@@ -180,6 +180,10 @@ ggplot(data_nr_epochs_long, aes(x=stage, y=value, fill=stage)) +
 
 _Figure: Stimulation duration per sleep stage across subjects, in the experimental condition. Dotted lines represent the usual time spent per night in a given stage. White dots mark mean values._
 
+Mean duration N2: `r mean(data_nr_epochs_long$value[data_nr_epochs_long$stage == "N2"])`  
+Mean duration N3: `r mean(data_nr_epochs_long$value[data_nr_epochs_long$stage == "N3"])`  
+Mean duration REM: `r mean(data_nr_epochs_long$value[data_nr_epochs_long$stage == "REM"])`  
+
 ## H1a: W~exp~ > W~con~ 
 
 ### Parametric test assumptions  

@@ -967,7 +967,7 @@ def compute_SSVEP(data, all_triggers, hypno_up, condition, computeSNR=True):
             # Store peak-to-trough amplitude for this iteration
             random_amplitudes[loop] = np.ptp(random_SSVEP)
                
-        # Get mean of random peak-to-trough amplitude  s      
+        # Get mean of random peak-to-trough amplitude   
         average_noise = random_amplitudes.mean()         
     
         # Compute SNR

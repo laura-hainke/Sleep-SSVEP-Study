@@ -32,7 +32,7 @@ all_paths['path_raw'] = str('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Raw
 all_paths['path_derivatives'] = str('C:/Users/Mitarbeiter/Documents/Gamma_Sleep/Data/Derivatives/')
 
 # Generate subject numbers as strings, to loop over
-subject_IDs = [str(i).zfill(2) for i in range(1,2)]
+subject_IDs = [str(i).zfill(2) for i in range(0,10)]
 
 # Mark datasets to remove
 datasets_to_exclude = ['03','15']
@@ -108,9 +108,6 @@ for subject_nr in subject_IDs:
             
             # Path to output sleep variables
             all_paths['path_out_sleep'] = str(all_paths['path_out'] + all_paths['path_substrings'][0] + subject_nr + all_paths['path_substrings'][1] + '_sleep-data.csv')
-            
-            # Path to output supplementary sleep variables
-            all_paths['path_out_sleep_extra'] = str(all_paths['path_out'] + all_paths['path_substrings'][0] + subject_nr + all_paths['path_substrings'][1] + '_extra-sleep-data.csv')
             
         except:
             
@@ -245,8 +242,7 @@ for subject_nr in subject_IDs:
         
         try:
             
-            ## Session 01 (wake exp only)
-            
+        ## Session 01 (wake exp only)
             if condition == 'exp':
                 # Get nr. of epochs in recording
                 n_wake_epochs = np.floor(raw_s01_EEG.__len__() / raw_s01_EEG.info['sfreq'] / 30)
@@ -291,17 +287,6 @@ for subject_nr in subject_IDs:
                     sleep_data['SOL'] = 0
                 else: 
                     sleep_data['SOL'] = sleep_data['SOL'] - 12
-                    
-            # Calculate REM latency from first epoch of sleep (not from beginning of recording, as the YASA default);
-            # mark highly implausible values as NA (W or N1 being mistaken for REM at the beginning of the recording)
-            if condition == 'con' and sleep_stats['Lat_REM'] < 22: 
-                # Control: 10 min W by design + 2 min to lay down + 10 min after lights off
-                sleep_data['REM_latency'] = np.nan
-            elif condition == 'exp' and sleep_stats['Lat_REM'] < 10: 
-                # Experimental: 10 min after lights off
-                sleep_data['REM_latency'] = np.nan
-            else:
-                sleep_data['REM_latency'] = sleep_stats['Lat_REM'] - sleep_data['SOL']
             
             # Convert metrics dict into panda, save to CSV
             sleep_data = pd.DataFrame.from_dict(sleep_data, orient='index')
@@ -313,270 +298,189 @@ for subject_nr in subject_IDs:
                 
 
 
-        # %% Supplementary sleep parameters
+        # %% Loop over stages to compute PSD & SNR
         
         try:
             
-            # Initialize dictionary for supplementary sleep data
-            sleep_extra_data = dict()
+            # Initialize dict for output metrics
+            PSD_metrics = dict()
             
-            # Hypnogram upsampled to PSG data
-            hypno_up_PSG = yasa.hypno_upsample_to_data(hypno, sf_hypno=1/30, data=raw_PSG)
+            # Initialize array for spectra
+            PSD_spectra = []
             
-            
-            ## Rapid-eye movements detection
-            
-            # Get raw EOG data; note the algorithm needs both channels, so no exclusion based on bad channels; relying on artifact rejection as part of the algorithm
-            eog = raw_PSG.get_data(picks='eog', units="uV")
-            
-            # Run REMs detection
-            REMs = yasa.rem_detect(loc=eog[0], roc=eog[1], sf=raw_PSG.info['sfreq'], hypno=hypno_up_PSG)
-            
-            # Get values averaged across REM epochs
-            REMs_summary = REMs.summary(grp_stage=True)
-            
-            # Store values in dictionary
-            sleep_extra_data['REMs_count'] = REMs_summary['Count'].iloc[0]
-            sleep_extra_data['REMs_duration'] = REMs_summary['Duration'].iloc[0]
-            sleep_extra_data['REMs_amplitude'] = (REMs_summary['LOCAbsValPeak'].iloc[0] + REMs_summary['ROCAbsValPeak'].iloc[0]) / 2 # average of both eye canthi
-            
-            
-            ## Spindles detection
-            
-            # Get raw single-channel central EEG data
-            if 'C3' not in raw_PSG.info['bads']: # C3 as default
-                eeg = raw_PSG.get_data(picks='C3', units="uV")
-            else: # if C3 is a bad channel, take C4
-                eeg = raw_PSG.get_data(picks='C4', units="uV")
+            # Loop
+            for stage in [0,2,3,4]:
                 
-            # Run spindles detection
-            spindles = yasa.spindles_detect(eeg, sf=raw_PSG.info['sfreq'], hypno=hypno_up_PSG)
+                # Select correct raw object and triggers
+                if stage == 0 and condition == 'exp':
+                    
+                    raw_loop = raw_s01_EEG # for stage 0 exp, only data from s01 is of interest
+                    triggers_loop = triggers_s01
+                    
+                else:
+                    
+                    raw_loop = raw_EEG
+                    triggers_loop = triggers
+                
+                # Create and select epochs (=30 sec trials) for PSD analyses of current stage
+                epochs_stage = create_epochs(raw_loop, triggers_loop, event_id=stage)
+                
+                # Print nr. of epochs recorded at this stage
+                print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_stage.events)))
             
-            # Get values averaged across N1, N2, N3 epochs
-            spindles_summary = spindles.summary(grp_stage=True)
+                # Compute PSD and SNR spectra for current stage + metrics
+                PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_stage, stage)
+                
+                # Get nr. of trials factoring into PSD analyses for current stage
+                try:
+                    PSD_ntrials = len(epochs_stage) # only works when bad epochs have been dropped
+                except:
+                    PSD_ntrials = len(epochs_stage.events) # full list of events in case no epochs have been dropped
+                    
+                # Print nr. of epochs used for analysis
+                print('Nr. of epochs used in analysis: ' + str(PSD_ntrials))   
+                
+                # Store metrics in dict
+                if stage == 0: # Wake
+                    
+                    PSD_metrics['PSD_ntrials_W'] = PSD_ntrials
+                    PSD_metrics['PSD_40Hz_W'] = PSD_40Hz
+                    PSD_metrics['PSD_SNR_W'] = SNR_40Hz
+                    
+                elif stage == 2: # N2
+                
+                    PSD_metrics['PSD_ntrials_N2'] = PSD_ntrials
+                    PSD_metrics['PSD_40Hz_N2'] = PSD_40Hz
+                    PSD_metrics['PSD_SNR_N2'] = SNR_40Hz
+                    
+                elif stage == 3: # N3
+                
+                    PSD_metrics['PSD_ntrials_N3'] = PSD_ntrials
+                    PSD_metrics['PSD_40Hz_N3'] = PSD_40Hz
+                    PSD_metrics['PSD_SNR_N3'] = SNR_40Hz
+                    
+                elif stage == 4: # REM
+                
+                    PSD_metrics['PSD_ntrials_REM'] = PSD_ntrials
+                    PSD_metrics['PSD_40Hz_REM'] = PSD_40Hz
+                    PSD_metrics['PSD_SNR_REM'] = SNR_40Hz
             
-            # Store values in dictionary
-            sleep_extra_data['Spindles_N1_count'] = spindles_summary.loc[1,'Count']
-            sleep_extra_data['Spindles_N2_count'] = spindles_summary.loc[2,'Count']
-            sleep_extra_data['Spindles_N3_count'] = spindles_summary.loc[3,'Count']
-            sleep_extra_data['Spindles_N1_amplitude'] = spindles_summary.loc[1,'Amplitude']
-            sleep_extra_data['Spindles_N2_amplitude'] = spindles_summary.loc[2,'Amplitude']
-            sleep_extra_data['Spindles_N3_amplitude'] = spindles_summary.loc[3,'Amplitude']
-            sleep_extra_data['Spindles_N1_frequency'] = spindles_summary.loc[1,'Frequency']
-            sleep_extra_data['Spindles_N2_frequency'] = spindles_summary.loc[2,'Frequency']
-            sleep_extra_data['Spindles_N3_frequency'] = spindles_summary.loc[3,'Frequency']
+                # Store spectra in array
+                PSD_spectra.append(np.ndarray.tolist(PSD_spectrum))
+                PSD_spectra.append(np.ndarray.tolist(SNR_spectrum))
+                    
             
+            ## Create pandas dataframes to export PSD results
             
-            ## Slow oscillations detection
+            # Turn array with spectra into pandas dataframe, transpose
+            PSD_spectra = pd.DataFrame(data=PSD_spectra)
+            PSD_spectra = PSD_spectra.transpose()
             
-            # Run slow oscillations detection
-            SOs = yasa.sw_detect(eeg, sf=raw_PSG.info['sfreq'], hypno=hypno_up_PSG)
+            # Add variable names as headers
+            PSD_spectra.columns=['W_PSD','W_SNR','N2_PSD','N2_SNR','N3_PSD','N3_SNR','REM_PSD','REM_SNR']
             
-            # Get values averaged across N2, N3 epochs
-            SOs_summary = SOs.summary(grp_stage=True)
+            # Convert metrics dict into pandas as well
+            PSD_metrics = pd.DataFrame.from_dict(PSD_metrics, orient='index')
             
-            # Store values in dictionary
-            sleep_extra_data['SOs_N2_count'] = SOs_summary.loc[2,'Count']
-            sleep_extra_data['SOs_N3_count'] = SOs_summary.loc[3,'Count']
-            sleep_extra_data['SOs_N2_amplitude'] = SOs_summary.loc[2,'PTP']
-            sleep_extra_data['SOs_N3_amplitude'] = SOs_summary.loc[3,'PTP']
-            sleep_extra_data['SOs_N2_frequency'] = SOs_summary.loc[2,'Frequency']
-            sleep_extra_data['SOs_N3_frequency'] = SOs_summary.loc[3,'Frequency']
-            
-            
-            # Convert variables dict into panda, save to CSV
-            sleep_extra_data = pd.DataFrame.from_dict(sleep_extra_data, orient='index')
-            sleep_extra_data.to_csv(all_paths['path_out_sleep_extra'], header=False)
+            # Save to CSV
+            PSD_metrics.to_csv(all_paths['path_out_metrics_PSD'], header=False)
+            PSD_spectra.to_csv(all_paths['path_out_spectra_PSD'])
             
         except:
             
-            print('\nERROR: subject',subject_nr,', condition',condition,', section: extra sleep parameters\n')
-            
-            
-
-        # # %% Loop over stages to compute PSD & SNR
-        
-        # try:
-            
-        #     # Initialize dict for output metrics
-        #     PSD_metrics = dict()
-            
-        #     # Initialize array for spectra
-        #     PSD_spectra = []
-            
-        #     # Loop
-        #     for stage in [0,2,3,4]:
-                
-        #         # Select correct raw object and triggers
-        #         if stage == 0 and condition == 'exp':
-                    
-        #             raw_loop = raw_s01_EEG # for stage 0 exp, only data from s01 is of interest
-        #             triggers_loop = triggers_s01
-                    
-        #         else:
-                    
-        #             raw_loop = raw_EEG
-        #             triggers_loop = triggers
-                
-        #         # Create and select epochs (=30 sec trials) for PSD analyses of current stage
-        #         epochs_stage = create_epochs(raw_loop, triggers_loop, event_id=stage)
-                
-        #         # Print nr. of epochs recorded at this stage
-        #         print('\nNr. of epochs recorded, stage ' + str(stage) + ': ' + str(len(epochs_stage.events)))
-            
-        #         # Compute PSD and SNR spectra for current stage + metrics
-        #         PSD_40Hz, SNR_40Hz, PSD_spectrum, SNR_spectrum = compute_PSD(epochs_stage, stage)
-                
-        #         # Get nr. of trials factoring into PSD analyses for current stage
-        #         try:
-        #             PSD_ntrials = len(epochs_stage) # only works when bad epochs have been dropped
-        #         except:
-        #             PSD_ntrials = len(epochs_stage.events) # full list of events in case no epochs have been dropped
-                    
-        #         # Print nr. of epochs used for analysis
-        #         print('Nr. of epochs used in analysis: ' + str(PSD_ntrials))   
-                
-        #         # Store metrics in dict
-        #         if stage == 0: # Wake
-                    
-        #             PSD_metrics['PSD_ntrials_W'] = PSD_ntrials
-        #             PSD_metrics['PSD_40Hz_W'] = PSD_40Hz
-        #             PSD_metrics['PSD_SNR_W'] = SNR_40Hz
-                    
-        #         elif stage == 2: # N2
-                
-        #             PSD_metrics['PSD_ntrials_N2'] = PSD_ntrials
-        #             PSD_metrics['PSD_40Hz_N2'] = PSD_40Hz
-        #             PSD_metrics['PSD_SNR_N2'] = SNR_40Hz
-                    
-        #         elif stage == 3: # N3
-                
-        #             PSD_metrics['PSD_ntrials_N3'] = PSD_ntrials
-        #             PSD_metrics['PSD_40Hz_N3'] = PSD_40Hz
-        #             PSD_metrics['PSD_SNR_N3'] = SNR_40Hz
-                    
-        #         elif stage == 4: # REM
-                
-        #             PSD_metrics['PSD_ntrials_REM'] = PSD_ntrials
-        #             PSD_metrics['PSD_40Hz_REM'] = PSD_40Hz
-        #             PSD_metrics['PSD_SNR_REM'] = SNR_40Hz
-            
-        #         # Store spectra in array
-        #         PSD_spectra.append(np.ndarray.tolist(PSD_spectrum))
-        #         PSD_spectra.append(np.ndarray.tolist(SNR_spectrum))
-                    
-            
-        #     ## Create pandas dataframes to export PSD results
-            
-        #     # Turn array with spectra into pandas dataframe, transpose
-        #     PSD_spectra = pd.DataFrame(data=PSD_spectra)
-        #     PSD_spectra = PSD_spectra.transpose()
-            
-        #     # Add variable names as headers
-        #     PSD_spectra.columns=['W_PSD','W_SNR','N2_PSD','N2_SNR','N3_PSD','N3_SNR','REM_PSD','REM_SNR']
-            
-        #     # Convert metrics dict into pandas as well
-        #     PSD_metrics = pd.DataFrame.from_dict(PSD_metrics, orient='index')
-            
-        #     # Save to CSV
-        #     PSD_metrics.to_csv(all_paths['path_out_metrics_PSD'], header=False)
-        #     PSD_spectra.to_csv(all_paths['path_out_spectra_PSD'])
-            
-        # except:
-            
-        #     print('\nERROR: subject',subject_nr,', condition',condition,', section: PSD computation\n')
+            print('\nERROR: subject',subject_nr,', condition',condition,', section: PSD computation\n')
         
 
         
-        # # %% Loop over stages to compute SSVEP & SNR
+        # %% Loop over stages to compute SSVEP & SNR
         
-        # try:
+        try:
             
-        #     # Define ROI channels, without bad channels
-        #     roi_ch = ['PO3','PO4','POz','O1','O2','Oz']
-        #     [i for i in roi_ch if i not in metadata['bad_channels']]
+            # Define ROI channels, without bad channels
+            roi_ch = ['PO3','PO4','POz','O1','O2','Oz']
+            [i for i in roi_ch if i not in metadata['bad_channels']]
             
-        #     # Access raw ROI data as array, convert from Volts to microVolts; get average of the ROI channels
-        #     if condition == 'exp':
-        #         data_s01 = raw_s01_EEG.get_data(picks=roi_ch) * 1e6
-        #         data_s01 = np.mean(data_s01, axis=0)
+            # Access raw ROI data as array, convert from Volts to microVolts; get average of the ROI channels
+            if condition == 'exp':
+                data_s01 = raw_s01_EEG.get_data(picks=roi_ch) * 1e6
+                data_s01 = np.mean(data_s01, axis=0)
             
-        #     data = raw_EEG.get_data(picks=roi_ch) * 1e6
-        #     data = np.mean(data, axis=0) 
+            data = raw_EEG.get_data(picks=roi_ch) * 1e6
+            data = np.mean(data, axis=0) 
             
-        #     # Initialize dict for output metrics
-        #     SSVEP_metrics = dict()
+            # Initialize dict for output metrics
+            SSVEP_metrics = dict()
             
-        #     # Initialize array for SSVEP curves
-        #     SSVEP_curves = []
+            # Initialize array for SSVEP curves
+            SSVEP_curves = []
             
-        #     # Compute average SSVEP per condition
-        #     for stage in [0,2,3,4]:
+            # Compute average SSVEP per condition
+            for stage in [0,2,3,4]:
                 
-        #         # Select correct raw object and triggers
-        #         if stage == 0 and condition == 'exp':
+                # Select correct raw object and triggers
+                if stage == 0 and condition == 'exp':
                     
-        #             data_loop = data_s01 # for stage 0 exp, only data from s01 is of interest
-        #             triggers_loop = triggers_s01
-        #             hypno_up_loop = hypno_up_s01
+                    data_loop = data_s01 # for stage 0 exp, only data from s01 is of interest
+                    triggers_loop = triggers_s01
+                    hypno_up_loop = hypno_up_s01
                     
-        #         else:
+                else:
                     
-        #             data_loop = data
-        #             triggers_loop = triggers
-        #             hypno_up_loop = hypno_up
+                    data_loop = data
+                    triggers_loop = triggers
+                    hypno_up_loop = hypno_up
                  
-        #         # Compute SSVEP and SNR for current stage + metrics
-        #         SSVEP_amp, SSVEP_SNR, SSVEP_ntrials, SSVEP_curve = compute_SSVEP(data_loop, triggers_loop, hypno_up_loop, stage, computeSNR=True)
+                # Compute SSVEP and SNR for current stage + metrics
+                SSVEP_amp, SSVEP_SNR, SSVEP_ntrials, SSVEP_curve = compute_SSVEP(data_loop, triggers_loop, hypno_up_loop, stage, computeSNR=True)
             
-        #         # Store metrics in dict
-        #         if stage == 0: # Wake
+                # Store metrics in dict
+                if stage == 0: # Wake
                     
-        #             SSVEP_metrics['SSVEP_ntrials_W'] = SSVEP_ntrials
-        #             SSVEP_metrics['SSVEP_PTA_W'] = SSVEP_amp
-        #             SSVEP_metrics['SSVEP_SNR_W'] = SSVEP_SNR
+                    SSVEP_metrics['SSVEP_ntrials_W'] = SSVEP_ntrials
+                    SSVEP_metrics['SSVEP_PTA_W'] = SSVEP_amp
+                    SSVEP_metrics['SSVEP_SNR_W'] = SSVEP_SNR
                     
-        #         elif stage == 2: # N2
+                elif stage == 2: # N2
                 
-        #             SSVEP_metrics['SSVEP_ntrials_N2'] = SSVEP_ntrials
-        #             SSVEP_metrics['SSVEP_PTA_N2'] = SSVEP_amp
-        #             SSVEP_metrics['SSVEP_SNR_N2'] = SSVEP_SNR
+                    SSVEP_metrics['SSVEP_ntrials_N2'] = SSVEP_ntrials
+                    SSVEP_metrics['SSVEP_PTA_N2'] = SSVEP_amp
+                    SSVEP_metrics['SSVEP_SNR_N2'] = SSVEP_SNR
                     
-        #         elif stage == 3: # N3
+                elif stage == 3: # N3
                 
-        #             SSVEP_metrics['SSVEP_ntrials_N3'] = SSVEP_ntrials
-        #             SSVEP_metrics['SSVEP_PTA_N3'] = SSVEP_amp
-        #             SSVEP_metrics['SSVEP_SNR_N3'] = SSVEP_SNR
+                    SSVEP_metrics['SSVEP_ntrials_N3'] = SSVEP_ntrials
+                    SSVEP_metrics['SSVEP_PTA_N3'] = SSVEP_amp
+                    SSVEP_metrics['SSVEP_SNR_N3'] = SSVEP_SNR
                     
-        #         elif stage == 4: # REM
+                elif stage == 4: # REM
                 
-        #             SSVEP_metrics['SSVEP_ntrials_REM'] = SSVEP_ntrials
-        #             SSVEP_metrics['SSVEP_PTA_REM'] = SSVEP_amp
-        #             SSVEP_metrics['SSVEP_SNR_REM'] = SSVEP_SNR
+                    SSVEP_metrics['SSVEP_ntrials_REM'] = SSVEP_ntrials
+                    SSVEP_metrics['SSVEP_PTA_REM'] = SSVEP_amp
+                    SSVEP_metrics['SSVEP_SNR_REM'] = SSVEP_SNR
             
-        #         # Store spectra in array
-        #         SSVEP_curves.append(np.ndarray.tolist(SSVEP_curve))
+                # Store spectra in array
+                SSVEP_curves.append(np.ndarray.tolist(SSVEP_curve))
             
             
-        #     ## Create pandas dataframes to export SSVEP results
+            ## Create pandas dataframes to export SSVEP results
             
-        #     # Turn array with spectra into pandas dataframe, transpose
-        #     SSVEP_curves = pd.DataFrame(data=SSVEP_curves)
-        #     SSVEP_curves = SSVEP_curves.transpose()
+            # Turn array with spectra into pandas dataframe, transpose
+            SSVEP_curves = pd.DataFrame(data=SSVEP_curves)
+            SSVEP_curves = SSVEP_curves.transpose()
             
-        #     # Add variable names as headers
-        #     SSVEP_curves.columns=['W_SSVEP','N2_SSVEP','N3_SSVEP','REM_SSVEP']
+            # Add variable names as headers
+            SSVEP_curves.columns=['W_SSVEP','N2_SSVEP','N3_SSVEP','REM_SSVEP']
             
-        #     # Convert metrics dict into pandas as well
-        #     SSVEP_metrics = pd.DataFrame.from_dict(SSVEP_metrics, orient='index')
+            # Convert metrics dict into pandas as well
+            SSVEP_metrics = pd.DataFrame.from_dict(SSVEP_metrics, orient='index')
             
-        #     # Save to CSV
-        #     SSVEP_metrics.to_csv(all_paths['path_out_metrics_SSVEP'], header=False)
-        #     SSVEP_curves.to_csv(all_paths['path_out_curves_SSVEP'])
+            # Save to CSV
+            SSVEP_metrics.to_csv(all_paths['path_out_metrics_SSVEP'], header=False)
+            SSVEP_curves.to_csv(all_paths['path_out_curves_SSVEP'])
     
-        # except:
+        except:
             
-        #     print('\nERROR: subject',subject_nr,', condition',condition,', section: SSVEP computation\n')
+            print('\nERROR: subject',subject_nr,', condition',condition,', section: SSVEP computation\n')
 
 
 

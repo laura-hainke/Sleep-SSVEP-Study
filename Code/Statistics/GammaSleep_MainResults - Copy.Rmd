@@ -48,7 +48,7 @@ base_size = 7 # base size of plot text
 # Using global environment (<<- assignment) to avoid redundant function arguments
 
 # Path to folders with derivative data
-path_derivatives <<- "C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Data\\Derivatives\\" 
+path_derivatives <<- "C:\\Users\\Mitarbeiter\\Documents\\Gamma_Sleep\\Data\\Derivatives_main\\" 
 
 # List of folder names in directory, corresponding to participant numbers
 list_IDs <<- list.dirs(path = path_derivatives, full.names = FALSE, recursive = FALSE)
@@ -62,8 +62,6 @@ list_IDs <<- list_IDs[! list_IDs %in% c("03","15")] # subjects 03 and 15 were dr
 data_demo <<- initialize_dataframe("demographic")
 
 data_sleep <<- initialize_dataframe("sleep_quality")
-
-data_sleep_extra <<- initialize_dataframe("sleep_supplementary")
 
 data_PSD <<- initialize_dataframe("PSD_metrics")
                         
@@ -935,123 +933,4 @@ _r~N2~_ = `r round(cor(data_PSD$N2_nepochs_exp, data_PSD$N2_PSD40_exp),2)`
 _r~N3~_ = `r round(cor(data_PSD$N3_nepochs_exp, data_PSD$N3_PSD40_exp),2)`  
 _r~REM~_ = `r round(cor(data_PSD$REM_nepochs_exp, data_PSD$REM_PSD40_exp),2)`  
 
-
 ## REM Latency
-
-### Parametric test assumptions
-
-Normality of difference scores (exp - con):  
-```{r REM_lat normality}
-check_normality(data_sleep$REM_lat_exp - data_sleep$REM_lat_con, plot=FALSE)
-```
-Outliers (con):  
-```{r REM_lat outliers con}
-check_outliers(data_sleep$REM_lat_con, plot=FALSE)
-```
-Outliers (exp):  
-```{r REM_lat outliers exp}
-check_outliers(data_sleep$REM_lat_exp, plot=FALSE)
-```
-
-### Statistical test
-
-```{r REM_lat}
-REM_lat_results = test_two_levels(data_sleep$REM_lat_exp, data_sleep$REM_lat_con, parametric=TRUE, alternative="two.sided", verbose=FALSE)
-```
-
-REM latency was inspected post-hoc. An undirected paired t-test was not/significant (_p_ = `r round(REM_lat_results[[1]], 2)`), showing that on average, participants slept for a similarly long time in both the experimental (Mean~exp~ = `r round(mean(data_sleep$REM_lat_exp),2)` min, SD~exp~ = `r round(sd(data_sleep$REM_lat_exp),2)` min)
-and the control (Mean~con~ = `r round(mean(data_sleep$REM_lat_con),2)` min, SD~con~ = `r round(sd(data_sleep$REM_lat_con),2)` min) nights.  
-
-```{r REM_lat plot}
-# Conversion to long format
-data_REM_lat_long = dataframe_wide_to_long(data_sleep[,c("ID","REM_lat_con","REM_lat_exp")])
-
-# Plot
-ggplot(data_REM_lat_long, aes(x=condition, y=value)) + 
-  geom_violinhalf(aes(fill=condition), flip=1) + # Violin plot shape
-  geom_point(color="grey", size=2) + # Data points, jittered
-  geom_line(aes(group = ID), color="grey", linewidth=0.5) + # connect paired dots
-  stat_summary(fun = "mean", geom="point", shape=18, color = "black", size=5) + # Add mean as point
-  labs(title="REM Sleep Latency", x="Condition", y="Minutes") + # Labels
-  scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), guide="none") + # Condition colours, remove legend
-  scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
-  scale_y_continuous(limits=c(315,460),breaks=c(320,390,460)) +
-  coord_fixed(ratio=0.015) +
-  theme_minimal(base_size=base_size) + # Background
-  theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
-        axis.title.y = element_text(size=rel(2), vjust=2),
-        axis.text = element_text(size=rel(1.7)), 
-        panel.grid.major.x = element_blank(),
-        plot.title = element_text(size=rel(3)),
-        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
-```
-
-_Figure: Distribution of REM sleep latencies per condition. Dashed lines connect values for the control and experimental night, per participant. Black squares mark mean values._
-
-
-## REMs
-
-```{r REMs}
-REMs_long = dataframe_wide_to_long(data_sleep_extra[,c("ID","REMs_count_con","REMs_amplitude_con","REMs_density_con","REMs_count_exp","REMs_amplitude_exp","REMs_density_exp")])
-
-# Median SNR values per condition
-medians_REMs = aggregate(value ~ variable * condition, REMs_long, median) # mean likely biased by outliers
-
-ggplot(medians_REMs, aes(x=condition,y=variable,fill=value)) +
-  geom_tile(color = "white",lwd = 1.5) +
-  geom_text(aes(label=round(value, 2)), color = "white", size = 5, fontface="bold") +
-  scale_fill_gradient(low="grey", high="#6082B6") +
-  labs(x="", y="") + # Labels
-  coord_fixed(ratio=1) +
-  theme_minimal(base_size = base_size) + # Background
-  theme(axis.text = element_text(size=rel(1.7)),
-        legend.position = 'none',
-        panel.grid = element_blank(),
-        plot.title = element_text(size=rel(3)),
-        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
-```
-
-## Spindles
-
-```{r Spindles}
-spindles_long = dataframe_wide_to_long(data_sleep_extra[,c("ID","Spindles_count_con","Spindles_amplitude_con","Spindles_frequency_con","Spindles_count_exp","Spindles_amplitude_exp","Spindles_frequency_exp")])
-
-# Median SNR values per condition
-medians_spindles = aggregate(value ~ variable * condition, spindles_long, median) # mean likely biased by outliers
-
-ggplot(medians_spindles, aes(x=condition,y=variable,fill=value)) +
-  geom_tile(color = "white",lwd = 1.5) +
-  geom_text(aes(label=round(value, 2)), color = "white", size = 5, fontface="bold") +
-  scale_fill_gradient(low="grey", high="#6082B6") +
-  labs(x="", y="") + # Labels
-  coord_fixed(ratio=1) +
-  theme_minimal(base_size = base_size) + # Background
-  theme(axis.text = element_text(size=rel(1.7)),
-        legend.position = 'none',
-        panel.grid = element_blank(),
-        plot.title = element_text(size=rel(3)),
-        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
-```
-
-
-## SOs
-
-```{r SOs}
-SOs_long = dataframe_wide_to_long(data_sleep_extra[,c("ID","SOs_count_con","SOs_amplitude_con","SOs_frequency_con","SOs_count_exp","SOs_amplitude_exp","SOs_frequency_exp")])
-
-# Median SNR values per condition
-medians_SOs = aggregate(value ~ variable * condition, SOs_long, median) # mean likely biased by outliers
-
-ggplot(medians_SOs, aes(x=condition,y=variable,fill=value)) +
-  geom_tile(color = "white",lwd = 1.5) +
-  geom_text(aes(label=round(value, 2)), color = "white", size = 5, fontface="bold") +
-  scale_fill_gradient(low="grey", high="#6082B6") +
-  labs(x="", y="") + # Labels
-  coord_fixed(ratio=1) +
-  theme_minimal(base_size = base_size) + # Background
-  theme(axis.text = element_text(size=rel(1.7)),
-        legend.position = 'none',
-        panel.grid = element_blank(),
-        plot.title = element_text(size=rel(3)),
-        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
-```

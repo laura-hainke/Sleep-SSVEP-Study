@@ -26,7 +26,7 @@ library(dplyr)
 # custom_dataframe : dataframe
 # Empty dataframe with columns matching the specified data types
 
-initialize_dataframe <- function(df_type = c("demographic","sleep_quality","sleep_supplementary","PSD_metrics","SSVEP_metrics")) {
+initialize_dataframe <- function(df_type = c("demographic","sleep_quality","PSD_metrics","SSVEP_metrics")) {
   
   # Get number of participants
   n_IDs = length(list_IDs)
@@ -47,7 +47,7 @@ initialize_dataframe <- function(df_type = c("demographic","sleep_quality","slee
                                   # PSG metrics, condition CON 
                                   SOL_con = rep(NA, n_IDs), # Sleep Onset Latency
                                   TST_con = rep(NA, n_IDs), # Total Sleep Time
-                                  WASO_con = rep(NA, n_IDs), # Wake After Sleep Onset
+                                  WASO_con = rep(NA, n_IDs), # Wake After Sleep Onset 
                                   # Time per stage as % of TST, condition CON
                                   perN1_con = rep(NA, n_IDs), # N1
                                   perN2_con = rep(NA, n_IDs), # N2
@@ -55,8 +55,6 @@ initialize_dataframe <- function(df_type = c("demographic","sleep_quality","slee
                                   perREM_con = rep(NA, n_IDs), # REM
                                   # Subjective sleep quality, condition CON
                                   GSQS_con = rep(NA, n_IDs), # Groeningen Sleep Quality Scale sum score
-                                  # Supplementary, condition CON
-                                  REM_lat_con = rep(NA, n_IDs), # REM Latency
                                   # PSG metrics, condition EXP 
                                   SOL_exp = rep(NA, n_IDs), 
                                   TST_exp = rep(NA, n_IDs),
@@ -67,33 +65,8 @@ initialize_dataframe <- function(df_type = c("demographic","sleep_quality","slee
                                   perN3_exp = rep(NA, n_IDs),
                                   perREM_exp = rep(NA, n_IDs),
                                   # Subjective sleep quality, condition EXP
-                                  GSQS_exp = rep(NA, n_IDs) ,
-                                  # Supplementary
-                                  REM_lat_exp = rep(NA, n_IDs))
+                                  GSQS_exp = rep(NA, n_IDs))
   } 
-  else if (df_type == "sleep_supplementary") {
-    custom_dataframe = data.frame(ID = as.factor(list_IDs), 
-                                  # Supplementary sleep parameters, condition CON
-                                  REMs_count_con = rep(NA, n_IDs),
-                                  REMs_amplitude_con = rep(NA, n_IDs),
-                                  REMs_density_con = rep(NA, n_IDs),
-                                  Spindles_count_con = rep(NA, n_IDs),
-                                  Spindles_amplitude_con = rep(NA, n_IDs),
-                                  Spindles_frequency_con = rep(NA, n_IDs),
-                                  SOs_count_con = rep(NA, n_IDs),
-                                  SOs_amplitude_con = rep(NA, n_IDs),
-                                  SOs_frequency_con = rep(NA, n_IDs),
-                                  # Supplementary sleep parameters, condition EXP
-                                  REMs_count_exp = rep(NA, n_IDs),
-                                  REMs_amplitude_exp = rep(NA, n_IDs),
-                                  REMs_density_exp = rep(NA, n_IDs),
-                                  Spindles_count_exp = rep(NA, n_IDs),
-                                  Spindles_amplitude_exp = rep(NA, n_IDs),
-                                  Spindles_frequency_exp = rep(NA, n_IDs),
-                                  SOs_count_exp = rep(NA, n_IDs),
-                                  SOs_amplitude_exp = rep(NA, n_IDs),
-                                  SOs_frequency_exp = rep(NA, n_IDs))
-  }
   else if (df_type == "PSD_metrics") {
     custom_dataframe = data.frame(ID = as.factor(list_IDs), 
                                   # Stage W, condition CON
@@ -184,7 +157,7 @@ initialize_dataframe <- function(df_type = c("demographic","sleep_quality","slee
 load_derivative_data <- function() {
   
   # Subfolders & substrings of the filenames to be imported
-  filename_substrings = data.frame(subfolder=c("\\REDCap\\","\\Control\\","\\Experimental\\","\\Control\\","\\Experimental\\","\\Control\\","\\Experimental\\","\\Control\\","\\Experimental\\"), file_name=c("_personal-data.csv","_control_sleep-data.csv","_experimental_sleep-data.csv","_control_extra-sleep-data.csv","_experimental_extra-sleep-data.csv","_control_PSD-output-metrics.csv","_experimental_PSD-output-metrics.csv","_control_SSVEP-output-metrics.csv","_experimental_SSVEP-output-metrics.csv"))
+  filename_substrings = data.frame(subfolder=c("\\REDCap\\","\\Control\\","\\Experimental\\","\\Control\\","\\Experimental\\","\\Control\\","\\Experimental\\"), file_name=c("_personal-data.csv","_control_sleep-data.csv","_experimental_sleep-data.csv","_control_PSD-output-metrics.csv","_experimental_PSD-output-metrics.csv","_control_SSVEP-output-metrics.csv","_experimental_SSVEP-output-metrics.csv"))
   
   # Loop over all subjects
   for (i in list_IDs) { 
@@ -196,20 +169,16 @@ load_derivative_data <- function() {
       filename = paste(path_derivatives, i, filename_substrings$subfolder[j], i, filename_substrings$file_name[j], sep = "")
       
       # Read CSV file
-      data_csv = read.csv(filename, header=FALSE, na.strings=c("NA"))
+      data_csv = read.csv(filename, header=FALSE)
       
       # Write data to corresponding dataframe
       if (filename_substrings$file_name[j] == "_personal-data.csv") { 
         data_demo[data_demo$ID == i,2:6] <<- data_csv[2,1:5] # Segmenting import to skip variable time_lab_arrival, not relevant for analyses
         data_demo[data_demo$ID == i,7:8] <<- data_csv[2,7:8]
       } else if (filename_substrings$file_name[j] == "_control_sleep-data.csv") {
-        data_sleep[data_sleep$ID == i,2:10] <<- data_csv[,2]
+        data_sleep[data_sleep$ID == i,2:9] <<- data_csv[,2]
       } else if (filename_substrings$file_name[j] == "_experimental_sleep-data.csv") {
-        data_sleep[data_sleep$ID == i,11:19] <<- data_csv[,2]
-      } else if (filename_substrings$file_name[j] == "_control_extra-sleep-data.csv") {
-        data_sleep_extra[data_sleep_extra$ID == i,2:10] <<- data_csv[,2]
-      } else if (filename_substrings$file_name[j] == "_experimental_extra-sleep-data.csv") {
-        data_sleep_extra[data_sleep_extra$ID == i,11:19] <<- data_csv[,2]
+        data_sleep[data_sleep$ID == i,10:17] <<- data_csv[,2]
       } else if (filename_substrings$file_name[j] == "_control_PSD-output-metrics.csv") {
         data_PSD[data_PSD$ID == i,2:13] <<- data_csv[,2]
       } else if (filename_substrings$file_name[j] == "_experimental_PSD-output-metrics.csv") {

@@ -959,12 +959,11 @@ check_outliers(data_sleep$REM_lat_exp, plot=FALSE)
 REM_lat_results = test_two_levels(data_sleep$REM_lat_exp, data_sleep$REM_lat_con, parametric=TRUE, alternative="two.sided", verbose=FALSE)
 ```
 
-REM latency was inspected post-hoc. An undirected paired t-test was not/significant (_p_ = `r round(REM_lat_results[[1]], 2)`), showing that on average, participants slept for a similarly long time in both the experimental (Mean~exp~ = `r round(mean(data_sleep$REM_lat_exp),2)` min, SD~exp~ = `r round(sd(data_sleep$REM_lat_exp),2)` min)
-and the control (Mean~con~ = `r round(mean(data_sleep$REM_lat_con),2)` min, SD~con~ = `r round(sd(data_sleep$REM_lat_con),2)` min) nights.  
+REM latency was inspected post-hoc. An undirected paired t-test was significant (_p_ = `r round(REM_lat_results[[1]], 2)`), showing that on average, participants had a shorter REM sleep latency in the experimental condition (Mean~exp~ = `r round(mean(data_sleep$REM_lat_exp, na.rm=TRUE),2)` min, SD~exp~ = `r round(sd(data_sleep$REM_lat_exp, na.rm=TRUE),2)` min) than in the control condition (Mean~con~ = `r round(mean(data_sleep$REM_lat_con, na.rm=TRUE),2)` min, SD~con~ = `r round(sd(data_sleep$REM_lat_con, na.rm=TRUE),2)` min).  
 
 ```{r REM_lat plot}
 # Conversion to long format
-data_REM_lat_long = dataframe_wide_to_long(data_sleep[,c("ID","REM_lat_con","REM_lat_exp")])
+data_REM_lat_long = dataframe_wide_to_long(data_sleep[2:30,c("ID","REM_lat_con","REM_lat_exp")]) # excluding participant 1, NA
 
 # Plot
 ggplot(data_REM_lat_long, aes(x=condition, y=value)) + 
@@ -975,14 +974,14 @@ ggplot(data_REM_lat_long, aes(x=condition, y=value)) +
   labs(title="REM Sleep Latency", x="Condition", y="Minutes") + # Labels
   scale_fill_manual(values=c(colour_scheme$con, colour_scheme$exp), guide="none") + # Condition colours, remove legend
   scale_x_discrete(labels=c("Control","Experimental")) + # X-tick labels
-  scale_y_continuous(limits=c(315,460),breaks=c(320,390,460)) +
+  # scale_y_continuous(limits=c(315,460),breaks=c(320,390,460)) +
   coord_fixed(ratio=0.015) +
   theme_minimal(base_size=base_size) + # Background
   theme(axis.title.x = element_text(size=rel(2), vjust=-1), # Label sizes, relative
         axis.title.y = element_text(size=rel(2), vjust=2),
         axis.text = element_text(size=rel(1.7)), 
         panel.grid.major.x = element_blank(),
-        plot.title = element_text(size=rel(3)),
+        plot.title = element_text(size=rel(3), hjust=0.7),
         plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
 
@@ -1001,13 +1000,14 @@ ggplot(medians_REMs, aes(x=condition,y=variable,fill=value)) +
   geom_tile(color = "white",lwd = 1.5) +
   geom_text(aes(label=round(value, 2)), color = "white", size = 5, fontface="bold") +
   scale_fill_gradient(low="grey", high="#6082B6") +
-  labs(x="", y="") + # Labels
+  labs(title="Rapid-Eye Movements", x="", y="") + # Labels
+  scale_x_discrete(labels=c("Control","Experimental")) + # x-axis tick labels
   coord_fixed(ratio=1) +
   theme_minimal(base_size = base_size) + # Background
   theme(axis.text = element_text(size=rel(1.7)),
         legend.position = 'none',
         panel.grid = element_blank(),
-        plot.title = element_text(size=rel(3)),
+        plot.title = element_text(size=rel(3), hjust=-0.2),
         plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
 
@@ -1023,16 +1023,23 @@ ggplot(medians_spindles, aes(x=condition,y=variable,fill=value)) +
   geom_tile(color = "white",lwd = 1.5) +
   geom_text(aes(label=round(value, 2)), color = "white", size = 5, fontface="bold") +
   scale_fill_gradient(low="grey", high="#6082B6") +
-  labs(x="", y="") + # Labels
+  labs(title="Spindles", x="", y="") + # Labels
+  scale_x_discrete(labels=c("Control","Experimental")) + # x-axis tick labels
   coord_fixed(ratio=1) +
   theme_minimal(base_size = base_size) + # Background
   theme(axis.text = element_text(size=rel(1.7)),
         legend.position = 'none',
         panel.grid = element_blank(),
-        plot.title = element_text(size=rel(3)),
+        plot.title = element_text(size=rel(3), hjust=0.08),
         plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
+### Post-hoc test: spindle count
 
+```{r Spindle_count}
+spindle_count_results = test_two_levels(data_sleep_extra$Spindles_count_exp, data_sleep_extra$Spindles_count_con, parametric=TRUE, alternative="two.sided", verbose=FALSE)
+```
+
+A post-hoc undirected paired t-test did not reveal significant differences in the amount of spindles in N2 and N3 between conditions (_p_ = `r round(spindle_count_results[[1]], 2)`). 
 
 ## SOs
 
@@ -1046,12 +1053,21 @@ ggplot(medians_SOs, aes(x=condition,y=variable,fill=value)) +
   geom_tile(color = "white",lwd = 1.5) +
   geom_text(aes(label=round(value, 2)), color = "white", size = 5, fontface="bold") +
   scale_fill_gradient(low="grey", high="#6082B6") +
-  labs(x="", y="") + # Labels
+  labs(title="Slow Oscillations", x="", y="") + # Labels
+  scale_x_discrete(labels=c("Control","Experimental")) + # x-axis tick labels
   coord_fixed(ratio=1) +
   theme_minimal(base_size = base_size) + # Background
   theme(axis.text = element_text(size=rel(1.7)),
         legend.position = 'none',
         panel.grid = element_blank(),
-        plot.title = element_text(size=rel(3)),
+        plot.title = element_text(size=rel(3), hjust=0.6),
         plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) # Plot margins
 ```
+
+### Post-hoc test: slow oscillation count
+
+```{r SOs_count}
+SO_count_results = test_two_levels(data_sleep_extra$SOs_count_exp, data_sleep_extra$SOs_count_con, parametric=TRUE, alternative="two.sided", verbose=FALSE)
+```
+
+A post-hoc undirected paired t-test did not reveal significant differences in the amount of slow oscillations in N2 and N3 between conditions (_p_ = `r round(SO_count_results[[1]], 2)`).

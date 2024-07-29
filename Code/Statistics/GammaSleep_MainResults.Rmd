@@ -625,10 +625,10 @@ _Figure: Average time spent in each stage, as a percentage of the total time asl
 
 ```{r Descriptive Table SSVEPamp}
 # Initialize
-descriptive_SSVEPamp = data.frame(Mean_uV_con=rep(NA,4),
-                               Mean_uV_exp=rep(NA,4),
-                               SD_uV_con=rep(NA,4),
-                               SD_uV_exp=rep(NA,4),
+descriptive_SSVEPamp = data.frame(Median_uV_con=rep(NA,4),
+                               Median_uV_exp=rep(NA,4),
+                               IQR_uV_con=rep(NA,4),
+                               IQR_uV_exp=rep(NA,4),
                                Mean_nr_segments_con=rep(NA,4),
                                Mean_nr_segments_exp=rep(NA,4))
 stages = c("W","N2","N3","REM")
@@ -640,10 +640,10 @@ ctr_exp = 15 # counter starting at column 15 of data_SSVEP
 
 for (s in stages) {
 
-  descriptive_SSVEPamp[s,"Mean_uV_con"] = round(mean(data_SSVEP[,ctr_con]),2)
-  descriptive_SSVEPamp[s,"Mean_uV_exp"] = round(mean(data_SSVEP[,ctr_exp]),2)
-  descriptive_SSVEPamp[s,"SD_uV_con"] = round(sd(data_SSVEP[,ctr_con]),2)
-  descriptive_SSVEPamp[s,"SD_uV_exp"] = round(sd(data_SSVEP[,ctr_exp]),2)
+  descriptive_SSVEPamp[s,"Median_uV_con"] = round(median(data_SSVEP[,ctr_con]),2)
+  descriptive_SSVEPamp[s,"Median_uV_exp"] = round(median(data_SSVEP[,ctr_exp]),2)
+  descriptive_SSVEPamp[s,"IQR_uV_con"] = round(IQR(data_SSVEP[,ctr_con]),2)
+  descriptive_SSVEPamp[s,"IQR_uV_exp"] = round(IQR(data_SSVEP[,ctr_exp]),2)
   descriptive_SSVEPamp[s,"Mean_nr_segments_con"] = round(mean(data_SSVEP[,ctr_con-1]),2)
   descriptive_SSVEPamp[s,"Mean_nr_segments_exp"] = round(mean(data_SSVEP[,ctr_exp-1]),2)
   
